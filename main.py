@@ -713,18 +713,6 @@ def supprimer_user(user_id: int, request: Request):
     return Response(status_code=204)
 
 
-@app.get("/api/audit-logs")
-def get_audit_logs(request: Request, limit: int = 200):
-    require_admin(request)
-    conn = get_db()
-    rows = conn.execute(
-        "SELECT id, user_id, username, action, ressource, ressource_id, detail, ip, created_at FROM audit_logs ORDER BY id DESC LIMIT ?",
-        (min(limit, 1000),)
-    ).fetchall()
-    conn.close()
-    return [dict(r) for r in rows]
-
-
 # ============================================================
 # ENDPOINTS CRUD
 # ============================================================
@@ -879,6 +867,10 @@ def modifier_intervention(intervention_id: int, data: InterventionUpdate, reques
 @app.delete("/api/interventions/{intervention_id}")
 def supprimer_intervention(intervention_id: int, request: Request):
     user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Non authentifié")
+    if user.get("role") == "manager":
+        raise HTTPException(status_code=403, detail="Les managers ne peuvent pas supprimer des interventions")
     conn = get_db()
     row = conn.execute("SELECT * FROM interventions WHERE id=?", (intervention_id,)).fetchone()
     if not row:
@@ -961,6 +953,8 @@ def supprimer_commentaire(comment_id: int, request: Request):
     user = get_current_user(request)
     if not user:
         raise HTTPException(status_code=401, detail="Non authentifié")
+    if user.get("role") == "manager":
+        raise HTTPException(status_code=403, detail="Les managers ne peuvent pas supprimer des commentaires")
     conn = get_db()
     comm = conn.execute("SELECT * FROM commentaires WHERE id=?", (comment_id,)).fetchone()
     if not comm:
@@ -1058,6 +1052,8 @@ def supprimer_piece_jointe(pj_id: int, request: Request):
     user = get_current_user(request)
     if not user:
         raise HTTPException(status_code=401, detail="Non authentifié")
+    if user.get("role") == "manager":
+        raise HTTPException(status_code=403, detail="Les managers ne peuvent pas supprimer des fichiers")
     conn = get_db()
     pj = conn.execute("SELECT * FROM pieces_jointes WHERE id=?", (pj_id,)).fetchone()
     if not pj:
@@ -1089,7 +1085,7 @@ def liste_audit_logs(
     username: Optional[str] = Query(None),
     action: Optional[str] = Query(None),
 ):
-    require_admin(request)
+    require_admin_or_manager(request)
     conn = get_db()
     where = "WHERE 1=1"
     params = []

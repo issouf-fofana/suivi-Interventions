@@ -1815,7 +1815,7 @@ function verifierAuth() {
   const role = localStorage.getItem('auth_role');
   const username = localStorage.getItem('auth_username') || '?';
 
-  if (role === 'admin') {
+  if (role === 'admin' || role === 'manager') {
     const btnAdmin = document.getElementById('btnAdmin');
     if (btnAdmin) btnAdmin.style.display = '';
     const btnAdminHeader = document.getElementById('btnAdminHeader');
@@ -1829,7 +1829,7 @@ function verifierAuth() {
 
   const srole = document.getElementById('sidebarRole');
 
-  if (srole) srole.textContent = role === 'admin' ? 'Administrateur' : 'Utilisateur';
+  if (srole) srole.textContent = role === 'admin' ? 'Administrateur' : role === 'manager' ? 'Manager' : 'Utilisateur';
 
   return true;
 
@@ -2223,7 +2223,7 @@ function afficher(d) {
 
       </button>
 
-      <button class="btn-detail-supprimer" onclick="ouvrirModale(${d.id})">
+      ${localStorage.getItem('auth_role') !== 'manager' ? `<button class="btn-detail-supprimer" onclick="ouvrirModale(${d.id})">
 
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
 
@@ -2237,7 +2237,7 @@ function afficher(d) {
 
         Supprimer
 
-      </button>
+      </button>` : ''}
 
       <!-- Impression locale (print) -->
       <button class="btn-detail-dupliquer" onclick="exporterPDF()" style="border-color:#7c3aed;color:#7c3aed" id="btnPDF">
@@ -2815,7 +2815,7 @@ function afficherCommentaires(liste, id) {
   }
   el.innerHTML = liste.map(c => {
     const dt = (c.created_at||'').substring(0,16).replace('T',' ');
-    const canDel = (c.username === meUser || meRole === 'admin');
+    const canDel = (c.username === meUser || meRole === 'admin') && meRole !== 'manager';
     return `<div class="comment-item">
       <div class="comment-header">
         <div class="comment-avatar">${(c.username||'?')[0].toUpperCase()}</div>
@@ -2890,9 +2890,9 @@ function afficherPJ(liste, id) {
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Télécharger
       </a>
-      <button class="pj-del" onclick="supprimerPJ(${pj.id},${id})" title="Supprimer">
+      ${localStorage.getItem('auth_role') !== 'manager' ? `<button class="pj-del" onclick="supprimerPJ(${pj.id},${id})" title="Supprimer">
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-      </button>
+      </button>` : ''}
     </div>`;
   }).join('');
 }

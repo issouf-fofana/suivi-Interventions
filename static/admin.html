@@ -60,8 +60,9 @@
       font-weight: 700;
       text-transform: uppercase;
     }
-    .badge-role.admin { background: #e0e7ff; color: #3b5bdb; }
-    .badge-role.user  { background: #dcfce7; color: #15803d; }
+    .badge-role.admin   { background: #e0e7ff; color: #3b5bdb; }
+    .badge-role.manager { background: #fef3c7; color: #b45309; }
+    .badge-role.user    { background: #dcfce7; color: #15803d; }
 
     .badge-actif {
       display: inline-block;
@@ -381,6 +382,7 @@
       <label>Rôle</label>
       <select id="editRole">
         <option value="user">Utilisateur</option>
+        <option value="manager">Manager</option>
         <option value="admin">Administrateur</option>
       </select>
     </div>
@@ -449,7 +451,7 @@ function verifierAuth() {
   const uname = document.getElementById('sidebarUsername');
   if (uname) uname.textContent = username;
   const srole = document.getElementById('sidebarRole');
-  if (srole) srole.textContent = role === 'admin' ? 'Administrateur' : 'Utilisateur';
+  if (srole) srole.textContent = role === 'admin' ? 'Administrateur' : role === 'manager' ? 'Manager' : 'Utilisateur';
   return true;
 }
 
@@ -481,14 +483,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     localStorage.setItem('auth_role', me.role);
     verifierAuth();
 
-    // Afficher les sections admin seulement pour les admins
-    if (me.role === 'admin') {
+    // Afficher les sections selon le rôle
+    if (me.role === 'admin' || me.role === 'manager') {
       document.getElementById('sectionUsers').style.display = 'block';
-      document.getElementById('sectionBackup').style.display = 'block';
       document.getElementById('sectionAudit').style.display = 'block';
       chargerUsers();
-      chargerBackups();
       chargerAudit();
+    }
+    if (me.role === 'admin') {
+      document.getElementById('sectionBackup').style.display = 'block';
+      chargerBackups();
     }
   } catch (e) {
     window.location.href = 'login.html';
@@ -592,7 +596,7 @@ function afficherUsers() {
         <strong>${escHtml(u.username)}</strong>
         ${isMe ? '<span style="font-size:11px;color:#3b5bdb;margin-left:6px">(vous)</span>' : ''}
       </td>
-      <td><span class="badge-role ${u.role}">${u.role === 'admin' ? 'Administrateur' : 'Utilisateur'}</span></td>
+      <td><span class="badge-role ${u.role}">${u.role === 'admin' ? 'Administrateur' : u.role === 'manager' ? 'Manager' : 'Utilisateur'}</span></td>
       <td>
         <span class="badge-actif ${u.actif ? 'on' : 'off'}"></span>
         <span style="font-size:13px;margin-left:6px">${u.actif ? 'Actif' : 'Inactif'}</span>
@@ -608,10 +612,11 @@ function afficherUsers() {
           <button class="btn-table toggle ${u.actif ? 'deactivate' : ''}" onclick="toggleActif(${u.id}, ${u.actif})">
             ${u.actif ? 'Désactiver' : 'Activer'}
           </button>
+          ${localStorage.getItem('auth_role') === 'admin' ? `
           <button class="btn-table del" onclick="supprimerUser(${u.id}, '${escHtml(u.username)}')">
             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="display:inline;vertical-align:middle"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
             Supprimer
-          </button>` : ''}
+          </button>` : ''}` : ''}
         </div>
       </td>
     </tr>`;
