@@ -127,6 +127,13 @@ def require_admin(request: Request):
     return user
 
 
+def require_admin_or_manager(request: Request):
+    user = get_current_user(request)
+    if not user or user.get("role") not in ("admin", "manager"):
+        raise HTTPException(status_code=403, detail="Accès réservé aux administrateurs et managers")
+    return user
+
+
 # ============================================================
 # MIDDLEWARE AUTH
 # ============================================================
@@ -607,7 +614,7 @@ def change_password(data: ChangePasswordRequest, request: Request):
 
 @app.get("/api/users")
 def liste_users(request: Request):
-    require_admin(request)
+    require_admin_or_manager(request)
     conn = get_db()
     rows = conn.execute("SELECT id, username, role, actif, created_at FROM users ORDER BY id").fetchall()
     conn.close()
@@ -616,9 +623,11 @@ def liste_users(request: Request):
 
 @app.post("/api/users", status_code=201)
 def creer_user(data: UserCreate, request: Request):
-    require_admin(request)
-    if data.role not in ("admin", "user"):
-        raise HTTPException(status_code=400, detail="Rôle invalide (admin ou user)")
+    user = require_admin_or_manager(request)
+    if data.role not in ("admin", "manager", "user"):
+        raise HTTPException(status_code=400, detail="Rôle invalide (admin, manager ou user)")
+    if user["role"] == "manager" and data.role == "admin":
+        raise HTTPException(status_code=403, detail="Un manager ne peut pas créer un admin")
     if len(data.password) < 4:
         raise HTTPException(status_code=400, detail="Mot de passe trop court (min 4 caractères)")
     conn = get_db()
@@ -633,26 +642,34 @@ def creer_user(data: UserCreate, request: Request):
     )
     conn.commit()
     user_id = cur.lastrowid
+    audit(conn, user, "create_user", "user", user_id, detail=f"role={data.role}")
     conn.close()
     return {"id": user_id, "username": data.username, "role": data.role, "actif": 1}
 
 
 @app.put("/api/users/{user_id}")
 def modifier_user(user_id: int, data: UserUpdate, request: Request):
-    require_admin(request)
+    current_admin = require_admin_or_manager(request)
     conn = get_db()
     user = conn.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()
     if not user:
         conn.close()
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
-    current_admin = get_current_user(request)
-    # Empêcher un admin de se désactiver lui-même
+
+    if current_admin["role"] == "manager":
+        if data.role == "admin":
+            conn.close()
+            raise HTTPException(status_code=403, detail="Un manager ne peut pas promouvoir un utilisateur en admin")
+        if data.actif == 0:
+            conn.close()
+            raise HTTPException(status_code=403, detail="Un manager ne peut pas désactiver un utilisateur")
+
     if data.actif == 0 and current_admin["id"] == user_id:
         conn.close()
         raise HTTPException(status_code=400, detail="Vous ne pouvez pas désactiver votre propre compte")
 
     username = data.username or user["username"]
-    role = data.role if data.role in ("admin", "user") else user["role"]
+    role = data.role if data.role in ("admin", "manager", "user") else user["role"]
     actif = data.actif if data.actif is not None else user["actif"]
     pw_hash = hash_password(data.password) if data.password else user["password_hash"]
 
@@ -672,6 +689,8 @@ def modifier_user(user_id: int, data: UserUpdate, request: Request):
         (username, pw_hash, role, actif, user_id)
     )
     conn.commit()
+    audit(conn, current_admin, "modify_user", "user", user_id,
+          detail=f"username={username},role={role},actif={actif}")
     conn.close()
     new_token = hashlib.sha256(f"{username}:{pw_hash}".encode()).hexdigest()
     return {"id": user_id, "username": username, "role": role, "actif": actif, "new_token": new_token}
@@ -679,19 +698,31 @@ def modifier_user(user_id: int, data: UserUpdate, request: Request):
 
 @app.delete("/api/users/{user_id}", status_code=204)
 def supprimer_user(user_id: int, request: Request):
-    require_admin(request)
-    current_admin = get_current_user(request)
+    current_admin = require_admin(request)
     if current_admin["id"] == user_id:
         raise HTTPException(status_code=400, detail="Vous ne pouvez pas supprimer votre propre compte")
     conn = get_db()
-    user = conn.execute("SELECT id FROM users WHERE id=?", (user_id,)).fetchone()
+    user = conn.execute("SELECT id, username FROM users WHERE id=?", (user_id,)).fetchone()
     if not user:
         conn.close()
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
     conn.execute("DELETE FROM users WHERE id=?", (user_id,))
     conn.commit()
+    audit(conn, current_admin, "delete_user", "user", user_id, detail=f"username={user['username']}")
     conn.close()
     return Response(status_code=204)
+
+
+@app.get("/api/audit-logs")
+def get_audit_logs(request: Request, limit: int = 200):
+    require_admin(request)
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT id, user_id, username, action, ressource, ressource_id, detail, ip, created_at FROM audit_logs ORDER BY id DESC LIMIT ?",
+        (min(limit, 1000),)
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
 
 
 # ============================================================
