@@ -623,11 +623,9 @@ def liste_users(request: Request):
 
 @app.post("/api/users", status_code=201)
 def creer_user(data: UserCreate, request: Request):
-    user = require_admin_or_manager(request)
+    user = require_admin(request)
     if data.role not in ("admin", "manager", "user"):
         raise HTTPException(status_code=400, detail="Rôle invalide (admin, manager ou user)")
-    if user["role"] == "manager" and data.role == "admin":
-        raise HTTPException(status_code=403, detail="Un manager ne peut pas créer un admin")
     if len(data.password) < 4:
         raise HTTPException(status_code=400, detail="Mot de passe trop court (min 4 caractères)")
     conn = get_db()
