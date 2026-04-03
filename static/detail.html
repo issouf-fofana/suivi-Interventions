@@ -1620,6 +1620,14 @@
 
     </a>
 
+    <a href="admin.html" class="sidebar-link" id="btnProfil" style="display:none">
+
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+
+      Mon profil
+
+    </a>
+
     <button class="sidebar-link" onclick="toggleDark()" id="btnDark">
 
       <svg id="iconDark" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -1815,11 +1823,15 @@ function verifierAuth() {
   const role = localStorage.getItem('auth_role');
   const username = localStorage.getItem('auth_username') || '?';
 
-  if (role === 'admin' || role === 'manager') {
+  if (role === 'admin') {
     const btnAdmin = document.getElementById('btnAdmin');
     if (btnAdmin) btnAdmin.style.display = '';
     const btnAdminHeader = document.getElementById('btnAdminHeader');
     if (btnAdminHeader) btnAdminHeader.style.display = '';
+  }
+  if (role === 'manager') {
+    const btnProfil = document.getElementById('btnProfil');
+    if (btnProfil) btnProfil.style.display = '';
   }
   const avatar = document.getElementById('sidebarAvatar');
   if (avatar) avatar.textContent = username.charAt(0).toUpperCase();

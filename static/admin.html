@@ -207,7 +207,7 @@
     </div>
     <div class="sidebar-brand-text">
       <div class="sidebar-brand-title">Suivi Interventions</div>
-      <div class="sidebar-brand-sub">Administration</div>
+      <div class="sidebar-brand-sub" id="sidebarPageLabel">Administration</div>
     </div>
   </div>
 
@@ -226,9 +226,9 @@
       Nouvelle intervention
     </a>
     <div class="sidebar-divider"></div>
-    <a href="admin.html" class="sidebar-link active">
+    <a href="admin.html" class="sidebar-link active" id="sidebarAdminLink">
       <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Administration
+      <span id="sidebarAdminLinkText">Administration</span>
     </a>
     <button class="sidebar-link" onclick="toggleDark()" id="btnDark">
       <svg id="iconDark" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -452,6 +452,12 @@ function verifierAuth() {
   if (uname) uname.textContent = username;
   const srole = document.getElementById('sidebarRole');
   if (srole) srole.textContent = role === 'admin' ? 'Administrateur' : role === 'manager' ? 'Manager' : 'Utilisateur';
+  if (role === 'manager') {
+    const lbl = document.getElementById('sidebarPageLabel');
+    if (lbl) lbl.textContent = 'Mon profil';
+    const lnkTxt = document.getElementById('sidebarAdminLinkText');
+    if (lnkTxt) lnkTxt.textContent = 'Mon profil';
+  }
   return true;
 }
 

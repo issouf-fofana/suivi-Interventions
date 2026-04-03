@@ -68,6 +68,10 @@
       <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Administration
     </a>
+    <a href="/admin" class="sidebar-link" id="btnProfil" style="display:none">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Mon profil
+    </a>
     <button class="sidebar-link" onclick="toggleDark()" id="btnDark">
       <svg id="iconDark" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       Mode sombre
@@ -505,9 +509,13 @@ function verifierAuth() {
   }
   const role = localStorage.getItem('auth_role');
   const username = localStorage.getItem('auth_username') || '?';
-  if (role === 'admin' || role === 'manager') {
+  if (role === 'admin') {
     const btnAdmin = document.getElementById('btnAdmin');
     if (btnAdmin) btnAdmin.style.display = '';
+  }
+  if (role === 'manager') {
+    const btnProfil = document.getElementById('btnProfil');
+    if (btnProfil) btnProfil.style.display = '';
   }
   // Sidebar user info
   const avatar = document.getElementById('sidebarAvatar');
