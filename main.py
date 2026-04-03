@@ -585,11 +585,12 @@ def get_me(request: Request):
     user = get_current_user(request)
     if not user:
         raise HTTPException(status_code=401, detail="Non authentifié")
-    conn = get_db()
-    row = conn.execute("SELECT created_at FROM users WHERE id=?", (user["id"],)).fetchone()
-    conn.close()
-    created_at = row["created_at"] if row else None
-    return {"id": user["id"], "username": user["username"], "role": user["role"], "created_at": created_at}
+    return {
+        "id": user["id"],
+        "username": user["username"],
+        "role": user["role"],
+        "created_at": user.get("created_at")
+    }
 
 
 @app.post("/api/auth/change-password")

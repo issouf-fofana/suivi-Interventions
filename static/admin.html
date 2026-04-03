@@ -535,9 +535,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     const r = await fetch(`${API}/auth/me`, { headers: { 'X-Auth-Token': token } });
     if (r.status === 401) { window.location.href = 'login.html'; return; }
-    if (!r.ok) { console.error('Erreur auth/me:', r.status); return; }
+    if (!r.ok) {
+      if (!cachedUsername) window.location.href = 'login.html';
+      return;
+    }
     const me = await r.json();
-    if (!me.username) return;
+    if (!me.username) {
+      if (!cachedUsername) window.location.href = 'login.html';
+      return;
+    }
 
     localStorage.setItem('auth_username', me.username);
     localStorage.setItem('auth_role', me.role);
