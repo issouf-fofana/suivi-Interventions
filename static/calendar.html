@@ -806,7 +806,7 @@
 
     <div class="sidebar-section-label">Navigation</div>
 
-    <a href="index.html" class="sidebar-link">
+    <a href="/" class="sidebar-link">
 
       <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
 
@@ -814,7 +814,15 @@
 
     </a>
 
-    <a href="calendar.html" class="sidebar-link active">
+    <a href="/interventions" class="sidebar-link">
+
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+
+      Liste des interventions
+
+    </a>
+
+    <a href="/calendar" class="sidebar-link active">
 
       <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
 
@@ -822,7 +830,7 @@
 
     </a>
 
-    <a href="form.html" class="sidebar-link">
+    <a href="/form" class="sidebar-link">
 
       <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
 
@@ -832,11 +840,19 @@
 
     <div class="sidebar-divider"></div>
 
-    <a href="admin.html" class="sidebar-link" id="btnAdmin" style="display:none">
+    <a href="/admin" class="sidebar-link" id="btnAdmin" style="display:none">
 
       <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
 
       Administration
+
+    </a>
+
+    <a href="/admin" class="sidebar-link" id="btnProfil" style="display:none">
+
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+
+      Mon profil
 
     </a>
 
@@ -1187,6 +1203,35 @@
 
     </div>
 
+    <!-- Prochaines interventions planifiées -->
+    <div style="margin-top:28px;background:var(--blanc);border:1px solid var(--bordure);border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)">
+      <div style="display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--bordure)">
+        <div style="width:32px;height:32px;border-radius:8px;background:#fef3c7;display:flex;align-items:center;justify-content:center;color:#d97706;flex-shrink:0">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:800;color:var(--texte)">Prochaines interventions planifiées</div>
+          <div style="font-size:12px;color:var(--texte-doux)">Interventions à venir selon les dates planifiées</div>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead>
+            <tr style="background:var(--gris-50)">
+              <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--texte-doux);border-bottom:1px solid var(--bordure)">Prestataire</th>
+              <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--texte-doux);border-bottom:1px solid var(--bordure)">Site</th>
+              <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--texte-doux);border-bottom:1px solid var(--bordure)">Date prévue</th>
+              <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--texte-doux);border-bottom:1px solid var(--bordure)">Dans</th>
+              <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--texte-doux);border-bottom:1px solid var(--bordure)">Travaux précédents</th>
+            </tr>
+          </thead>
+          <tbody id="calProchainesBody">
+            <tr><td colspan="5" style="padding:20px;text-align:center;color:var(--texte-doux)">Chargement...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 
 </main>
@@ -1335,6 +1380,12 @@ function verifierAuth() {
 
     if (btnAdminHeader) btnAdminHeader.style.display = '';
 
+  } else if (role === 'manager') {
+
+    const btnProfil = document.getElementById('btnProfil');
+
+    if (btnProfil) btnProfil.style.display = '';
+
   }
 
   const avatar = document.getElementById('sidebarAvatar');
@@ -1347,7 +1398,7 @@ function verifierAuth() {
 
   const srole = document.getElementById('sidebarRole');
 
-  if (srole) srole.textContent = role === 'admin' ? 'Administrateur' : 'Utilisateur';
+  if (srole) srole.textContent = role === 'admin' ? 'Administrateur' : role === 'manager' ? 'Manager' : 'Utilisateur';
 
   return true;
 
@@ -1456,6 +1507,7 @@ async function chargerInterventions() {
     toutesInterventions = await r.json();
 
     rendreCalendrier();
+    afficherProchainesCalendrier();
 
   } catch (e) {
 
@@ -2097,6 +2149,53 @@ function afficherToast(msg, type = 'info') {
 
   setTimeout(() => t.remove(), 3350);
 
+}
+
+// ============================================================
+// PROCHAINES INTERVENTIONS (tableau en bas)
+// ============================================================
+function afficherProchainesCalendrier() {
+  const tbody = document.getElementById('calProchainesBody');
+  if (!tbody) return;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const prochaines = toutesInterventions
+    .filter(i => i.prochaine_intervention)
+    .map(i => {
+      const d = new Date(i.prochaine_intervention); d.setHours(0,0,0,0);
+      return { ...i, _jours: Math.round((d - today) / 86400000) };
+    })
+    .filter(i => i._jours >= 0)
+    .sort((a, b) => a._jours - b._jours);
+
+  if (!prochaines.length) {
+    tbody.innerHTML = `<tr><td colspan="5" style="padding:24px;text-align:center;color:var(--texte-doux);font-size:13px">Aucune prochaine intervention planifiée</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = prochaines.map(p => {
+    const j = p._jours;
+    const joursAff = j === 0
+      ? `<span style="color:#dc2626;font-weight:700">Aujourd'hui</span>`
+      : j === 1
+        ? `<span style="color:#d97706;font-weight:700">Demain</span>`
+        : j <= 7
+          ? `<span style="color:#d97706;font-weight:600">Dans ${j} j</span>`
+          : `<span style="color:var(--texte-doux)">Dans ${j} j</span>`;
+    const dateAff = p.prochaine_intervention ? p.prochaine_intervention.split('-').reverse().join('/') : '—';
+    const trav = (p.travaux || '').substring(0, 80);
+    return `<tr style="border-bottom:1px solid var(--bordure)">
+      <td style="padding:10px 16px;font-weight:600">${escHtml(p.prestataire || '—')}</td>
+      <td style="padding:10px 16px;color:var(--texte-doux)">${escHtml(p.site || '—')}</td>
+      <td style="padding:10px 16px">
+        <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;background:#fef3c7;color:#92400e">
+          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          ${dateAff}
+        </span>
+      </td>
+      <td style="padding:10px 16px">${joursAff}</td>
+      <td style="padding:10px 16px;color:var(--texte-doux);font-size:12px">${escHtml(trav)}</td>
+    </tr>`;
+  }).join('');
 }
 
 </script>

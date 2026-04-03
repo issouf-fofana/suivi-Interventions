@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liste des interventions — Suivi des Interventions</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<button class="sidebar-toggle" onclick="toggleSidebar()" id="sidebarToggle" aria-label="Menu">
+  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+    <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+  </svg>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-logo">
+      <svg width="20" height="20" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+      </svg>
+    </div>
+    <div class="sidebar-brand-text">
+      <div class="sidebar-brand-title">Suivi Interventions</div>
+      <div class="sidebar-brand-sub">Liste des interventions</div>
+    </div>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="sidebar-section-label">Navigation</div>
+    <a href="/" class="sidebar-link">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Tableau de bord
+    </a>
+    <a href="/interventions" class="sidebar-link active">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg>
+      Liste des interventions
+    </a>
+    <a href="/calendar" class="sidebar-link">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Calendrier
+    </a>
+    <a href="/form" class="sidebar-link">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nouvelle intervention
+    </a>
+
+    <div class="sidebar-divider"></div>
+
+    <a href="/admin" class="sidebar-link" id="btnAdmin" style="display:none">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Administration
+    </a>
+    <a href="/admin" class="sidebar-link" id="btnProfil" style="display:none">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Mon profil
+    </a>
+    <button class="sidebar-link" onclick="toggleDark()" id="btnDark">
+      <svg id="iconDark" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      Mode sombre
+    </button>
+    <button class="sidebar-link danger" onclick="seDeconnecter()">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Déconnexion
+    </button>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-username" id="sidebarUsername">—</div>
+        <div class="sidebar-role" id="sidebarRole">—</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="app-layout">
+<div class="page-content">
+<main class="main">
+  <div class="container">
+
+    <!-- En-tête de page -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+      <div>
+        <h1 style="font-size:20px;font-weight:800;color:var(--texte);margin:0">Liste des interventions</h1>
+        <p style="font-size:13px;color:var(--texte-doux);margin:4px 0 0">Consultez, filtrez et exportez toutes les interventions</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="btn btn-ghost" onclick="ouvrirImport()" style="height:36px;font-size:13px">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+          Importer CSV
+        </button>
+        <button class="btn btn-ghost" onclick="exportCSV()" style="height:36px;font-size:13px">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+          Exporter CSV
+        </button>
+        <button class="btn btn-primary" onclick="exportExcel()" style="height:36px;font-size:13px">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+          Exporter Excel
+        </button>
+      </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="filters-bar" id="filtersBar">
+      <div class="filters-toprow">
+        <div style="position:relative;flex:1;min-width:0">
+          <svg style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--texte-doux);pointer-events:none" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="searchInput" placeholder="Rechercher prestataire, site, travaux..." style="padding-left:34px;width:100%;height:34px;font-size:13px" oninput="rechercheInstantanee()">
+        </div>
+        <button class="btn btn-ghost filters-toggle-btn" id="filtersToggleBtn" onclick="toggleFiltres()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          Filtres
+          <span id="filtresActifsCount" class="filters-badge" style="display:none">0</span>
+          <svg id="filtersChevron" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="transition:transform .2s"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <button class="btn btn-primary" onclick="appliquerFiltres()" style="height:34px;padding:0 14px;font-size:13px">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Filtrer
+        </button>
+      </div>
+      <div class="filters-panel" id="filtersPanel">
+        <div class="filters-row">
+          <div class="filter-group">
+            <label>Prestataire</label>
+            <select id="filterPrestataire">
+              <option value="">Tous</option>
+              <option>DSI</option><option>COGITECH</option><option>Manage Engine</option>
+              <option>CBI</option><option>GBSS</option><option>AWALE</option>
+              <option>PROSUMA</option><option>ORANGE</option><option>MTN</option><option>ARIC</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Type</label>
+            <select id="filterType">
+              <option value="">Tous</option>
+              <option value="Planifiée">Planifiée</option>
+              <option value="Dépannage">Dépannage</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Statut</label>
+            <select id="filterStatut">
+              <option value="">Tous</option>
+              <option>En cours</option><option>Terminée</option>
+              <option>En attente</option><option>Annulée</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Date début ≥</label>
+            <input type="date" id="filterDateDebut" style="padding:7px 10px;border:1px solid var(--bordure);border-radius:8px;background:var(--blanc);color:var(--texte);font-size:13px;font-family:inherit;cursor:pointer;height:34px;">
+          </div>
+          <div class="filter-group">
+            <label>Date début ≤</label>
+            <input type="date" id="filterDateFin" style="padding:7px 10px;border:1px solid var(--bordure);border-radius:8px;background:var(--blanc);color:var(--texte);font-size:13px;font-family:inherit;cursor:pointer;height:34px;">
+          </div>
+          <div class="filter-group">
+            <label>Site</label>
+            <select id="filterSite"><option value="">Tous</option></select>
+          </div>
+          <div class="filter-btns">
+            <button class="btn btn-ghost" onclick="reinitialiserFiltres()" style="height:34px;font-size:13px">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.6"/></svg>
+              Reset
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tableau interventions -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          <div class="section-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg></div>
+          Interventions
+        </div>
+        <div id="tableInfo" style="font-size:12px;color:var(--texte-doux)"></div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="trierPar('id')">#</th>
+              <th onclick="trierPar('prestataire')">Prestataire</th>
+              <th onclick="trierPar('type_intervention')">Type</th>
+              <th onclick="trierPar('statut')">Statut</th>
+              <th onclick="trierPar('site')">Site</th>
+              <th onclick="trierPar('date_debut')">Date début</th>
+              <th class="col-heure">Heure</th>
+              <th class="col-duree" onclick="trierPar('duree_minutes')">Durée</th>
+              <th>Superviseur</th>
+              <th>Équipe</th>
+              <th>Travaux</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="12"><div class="loader"><div class="spinner"></div> Chargement...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Modale suppression -->
+<div class="modal-overlay" id="modalSuppr">
+  <div class="modal">
+    <div class="modal-icon">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+    </div>
+    <h3>Confirmer la suppression</h3>
+    <p>Voulez-vous vraiment supprimer cette intervention ? Cette action est irréversible.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="fermerModal()">Annuler</button>
+      <button class="btn btn-danger" id="btnConfirmSuppr">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modale import CSV -->
+<div class="modal-overlay" id="modalImport">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-icon" style="background:var(--primary-light);color:var(--primary)">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+    </div>
+    <h3>Importer un fichier CSV</h3>
+    <p>Sélectionnez un fichier CSV exporté depuis Excel (séparateur <strong>;</strong>, encodage UTF-8).</p>
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+      <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+      <p id="uploadLabel">Cliquez pour sélectionner un fichier</p>
+      <small style="color:var(--texte-doux)">.csv uniquement</small>
+      <input type="file" id="fileInput" accept=".csv" style="display:none" onchange="fichierSelectionne(this)">
+    </div>
+    <div id="importResult" style="display:none;margin-top:14px"></div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn btn-ghost" onclick="fermerImport()">Annuler</button>
+      <button class="btn btn-primary" id="btnImporter" onclick="lancerImport()" disabled>Importer</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /.page-content -->
+</div><!-- /.app-layout -->
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const API = `${window.location.protocol}//${window.location.host}/api`;
+const AUTH_KEY = 'auth_token';
+
+let toutesInterventions = [];
+let pageCourante = 1;
+const PAR_PAGE = 20;
+let triColonne = 'date_debut';
+let triSens = 'desc';
+let rechercheTimer = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  chargerTheme();
+  verifierAuth();
+  await Promise.all([chargerInterventions(), chargerSelectSites()]);
+});
+
+// ============================================================
+// AUTH
+// ============================================================
+function verifierAuth() {
+  const token = localStorage.getItem(AUTH_KEY);
+  if (!token) { window.location.href = 'login.html'; return; }
+  const role = localStorage.getItem('auth_role');
+  const username = localStorage.getItem('auth_username') || '?';
+  if (role === 'admin') { const b = document.getElementById('btnAdmin'); if (b) b.style.display = ''; }
+  if (role === 'manager') { const b = document.getElementById('btnProfil'); if (b) b.style.display = ''; }
+  const avatar = document.getElementById('sidebarAvatar');
+  if (avatar) avatar.textContent = username.charAt(0).toUpperCase();
+  const uname = document.getElementById('sidebarUsername');
+  if (uname) uname.textContent = username;
+  const srole = document.getElementById('sidebarRole');
+  if (srole) srole.textContent = role === 'admin' ? 'Administrateur' : role === 'manager' ? 'Manager' : 'Utilisateur';
+}
+
+function headersAuth() {
+  return { 'Content-Type': 'application/json', 'X-Auth-Token': localStorage.getItem(AUTH_KEY) || '' };
+}
+
+async function seDeconnecter() {
+  try { await fetch(`${API}/auth/logout`, { method: 'POST', headers: headersAuth() }); } catch(e) {}
+  localStorage.removeItem(AUTH_KEY);
+  localStorage.removeItem('auth_username');
+  localStorage.removeItem('auth_role');
+  window.location.href = 'login.html';
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+
+// ============================================================
+// CHARGEMENT
+// ============================================================
+async function chargerInterventions(filtres = {}) {
+  const params = new URLSearchParams();
+  if (filtres.prestataire) params.append('prestataire', filtres.prestataire);
+  if (filtres.type_intervention) params.append('type_intervention', filtres.type_intervention);
+  if (filtres.statut) params.append('statut', filtres.statut);
+  if (filtres.date_debut_from) params.append('date_debut_from', filtres.date_debut_from);
+  if (filtres.date_debut_to) params.append('date_debut_to', filtres.date_debut_to);
+  if (filtres.site) params.append('site', filtres.site);
+  if (filtres.search) params.append('search', filtres.search);
+
+  try {
+    const r = await fetch(`${API}/interventions?${params}`, { headers: { 'X-Auth-Token': localStorage.getItem(AUTH_KEY) || '' } });
+    if (r.status === 401) { window.location.href = 'login.html'; return; }
+    if (!r.ok) throw new Error();
+    toutesInterventions = await r.json();
+    pageCourante = 1;
+    afficherTableau();
+  } catch(e) {
+    document.getElementById('tableBody').innerHTML = `<tr><td colspan="12" style="text-align:center;color:var(--danger);padding:24px">Erreur de chargement</td></tr>`;
+  }
+}
+
+async function chargerSelectSites() {
+  try {
+    const r = await fetch(`${API}/interventions`, { headers: { 'X-Auth-Token': localStorage.getItem(AUTH_KEY) || '' } });
+    const data = await r.json();
+    const sites = [...new Set(data.map(d => d.site).filter(Boolean))].sort();
+    const sel = document.getElementById('filterSite');
+    sites.forEach(s => { const o = document.createElement('option'); o.value = o.textContent = s; sel.appendChild(o); });
+  } catch(e) {}
+}
+
+// ============================================================
+// TABLEAU
+// ============================================================
+function afficherTableau() {
+  const sorted = [...toutesInterventions].sort((a, b) => {
+    let va = a[triColonne], vb = b[triColonne];
+    if (va == null) va = ''; if (vb == null) vb = '';
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    if (va < vb) return triSens === 'asc' ? -1 : 1;
+    if (va > vb) return triSens === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const total = sorted.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAR_PAGE));
+  if (pageCourante > totalPages) pageCourante = totalPages;
+  const debut = (pageCourante - 1) * PAR_PAGE;
+  const page = sorted.slice(debut, debut + PAR_PAGE);
+  const role = localStorage.getItem('auth_role');
+
+  const tbody = document.getElementById('tableBody');
+  if (!page.length) {
+    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-state">
+      <div class="empty-state-icon"><svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg></div>
+      <strong>Aucune intervention trouvée</strong><p>Modifiez les filtres</p>
+    </div></td></tr>`;
+  } else {
+    tbody.innerHTML = page.map(inter => {
+      const type = normaliseType(inter.type_intervention);
+      const badge = type === 'Planifiée'
+        ? `<span class="badge badge-planifiee"><span class="badge-dot"></span>Planifiée</span>`
+        : `<span class="badge badge-depannage"><span class="badge-dot"></span>Dépannage</span>`;
+      const duree = inter.duree_minutes ? formatDuree(inter.duree_minutes) : '—';
+      const longue = inter.duree_minutes && inter.duree_minutes > 480;
+      const travaux = inter.travaux || '';
+      const trav = travaux.length > 60
+        ? `<td class="td-travaux" title="${escHtml(travaux)}">${escHtml(travaux.substring(0, 60))}…</td>`
+        : `<td class="td-travaux">${escHtml(travaux) || '<span style="color:var(--gris-300)">—</span>'}</td>`;
+      const statut = inter.statut || 'En cours';
+      const statutCfg = {
+        'Terminée':   { bg:'#dcfce7', color:'#15803d', dot:'#22c55e' },
+        'En cours':   { bg:'#dbeafe', color:'#1d4ed8', dot:'#3b82f6' },
+        'En attente': { bg:'#fef9c3', color:'#a16207', dot:'#eab308' },
+        'Annulée':    { bg:'#fee2e2', color:'#b91c1c', dot:'#ef4444' },
+      }[statut] || { bg:'#f1f5f9', color:'#475569', dot:'#94a3b8' };
+      const badgeStatut = `<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;background:${statutCfg.bg};color:${statutCfg.color}">
+        <span style="width:6px;height:6px;border-radius:50%;background:${statutCfg.dot};flex-shrink:0"></span>${escHtml(statut)}</span>`;
+      const superviseur = inter.superviseur || inter.technicien || '';
+      const equipe = inter.equipe || '';
+
+      // badge équipe
+      const equipeColors = { Réseaux:'#dbeafe', Systèmes:'#ede9fe', Exploitation:'#dcfce7', Autre:'#f1f5f9' };
+      const equipeText = { Réseaux:'#1d4ed8', Systèmes:'#7c3aed', Exploitation:'#15803d', Autre:'#475569' };
+      const badgeEquipe = equipe
+        ? `<span style="padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:${equipeColors[equipe]||'#f1f5f9'};color:${equipeText[equipe]||'#475569'}">${escHtml(equipe)}</span>`
+        : '<span style="color:var(--gris-300)">—</span>';
+
+      return `<tr ${longue ? 'style="background:#fff7ed"' : ''}>
+        <td class="td-num">${inter.id}</td>
+        <td class="td-prestataire">${escHtml(inter.prestataire || '—')}</td>
+        <td>${badge}</td>
+        <td>${badgeStatut}</td>
+        <td>${escHtml(inter.site || '—')}</td>
+        <td>${formatDate(inter.date_debut)}</td>
+        <td class="col-heure" style="color:var(--texte-doux)">${inter.heure_debut || '—'}</td>
+        <td class="col-duree"><span style="font-weight:600;color:${longue ? '#dc2626' : 'var(--primary)'}">${duree}${longue ? ' ⚠' : ''}</span></td>
+        <td style="font-size:13px">${escHtml(superviseur) || '<span style="color:var(--gris-300)">—</span>'}</td>
+        <td>${badgeEquipe}</td>
+        ${trav}
+        <td class="actions-cell">
+          <a href="/detail?id=${inter.id}" class="btn btn-sm btn-icon" style="background:#1d4ed8;color:#fff;box-shadow:0 2px 6px rgba(29,78,216,.4)" title="Voir le détail">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </a>
+          <a href="/form?id=${inter.id}" class="btn btn-sm btn-primary btn-icon" title="Modifier" style="background:#2563eb;box-shadow:0 2px 6px rgba(37,99,235,.35)">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </a>
+          <button class="btn btn-sm btn-icon" onclick="dupliquer(${inter.id})" title="Dupliquer" style="background:#059669;color:#fff;box-shadow:0 2px 6px rgba(5,150,105,.35)">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+          ${role !== 'manager' ? `<button class="btn btn-sm btn-danger btn-icon" onclick="confirmerSuppression(${inter.id})" title="Supprimer" style="box-shadow:0 2px 6px rgba(220,38,38,.35)">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          </button>` : ''}
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  document.getElementById('tableInfo').textContent = `${total} intervention${total > 1 ? 's' : ''}`;
+  afficherPagination(totalPages, total);
+}
+
+function trierPar(col) {
+  triSens = triColonne === col ? (triSens === 'asc' ? 'desc' : 'asc') : 'asc';
+  triColonne = col;
+  afficherTableau();
+}
+
+function afficherPagination(totalPages, total) {
+  const pag = document.getElementById('pagination');
+  if (!total) { pag.innerHTML = ''; return; }
+  const debut = (pageCourante - 1) * PAR_PAGE + 1;
+  const fin = Math.min(pageCourante * PAR_PAGE, total);
+  let html = `<div class="pagination-info">Affichage <strong>${debut}–${fin}</strong> sur <strong>${total}</strong></div>
+  <div class="pagination-controls">
+    <button class="page-btn" onclick="changerPage(1)" ${pageCourante === 1 ? 'disabled' : ''}>&laquo;</button>
+    <button class="page-btn" onclick="changerPage(${pageCourante - 1})" ${pageCourante === 1 ? 'disabled' : ''}>&lsaquo;</button>`;
+  for (let p = Math.max(1, pageCourante - 2); p <= Math.min(totalPages, pageCourante + 2); p++)
+    html += `<button class="page-btn ${p === pageCourante ? 'active' : ''}" onclick="changerPage(${p})">${p}</button>`;
+  html += `<button class="page-btn" onclick="changerPage(${pageCourante + 1})" ${pageCourante === totalPages ? 'disabled' : ''}>&rsaquo;</button>
+    <button class="page-btn" onclick="changerPage(${totalPages})" ${pageCourante === totalPages ? 'disabled' : ''}>&raquo;</button>
+  </div>`;
+  pag.innerHTML = html;
+}
+
+function changerPage(p) {
+  pageCourante = p;
+  afficherTableau();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============================================================
+// FILTRES
+// ============================================================
+function obtenirFiltresActuels() {
+  return {
+    prestataire: document.getElementById('filterPrestataire').value,
+    type_intervention: document.getElementById('filterType').value,
+    statut: document.getElementById('filterStatut').value,
+    date_debut_from: document.getElementById('filterDateDebut').value,
+    date_debut_to: document.getElementById('filterDateFin').value,
+    site: document.getElementById('filterSite').value,
+    search: document.getElementById('searchInput').value,
+  };
+}
+
+let _filtresPanelOuvert = false;
+function toggleFiltres() {
+  _filtresPanelOuvert = !_filtresPanelOuvert;
+  const panel = document.getElementById('filtersPanel');
+  const chevron = document.getElementById('filtersChevron');
+  const btn = document.getElementById('filtersToggleBtn');
+  panel.classList.toggle('open', _filtresPanelOuvert);
+  chevron.style.transform = _filtresPanelOuvert ? 'rotate(180deg)' : '';
+  btn.classList.toggle('active', _filtresPanelOuvert);
+  btn.style.borderColor = _filtresPanelOuvert ? 'var(--primary-mid)' : '';
+}
+
+function majBadgeFiltres() {
+  const f = obtenirFiltresActuels();
+  const n = [f.prestataire, f.type_intervention, f.statut, f.date_debut_from, f.date_debut_to, f.site].filter(Boolean).length;
+  const badge = document.getElementById('filtresActifsCount');
+  if (badge) { badge.textContent = n; badge.style.display = n > 0 ? 'inline-flex' : 'none'; }
+}
+
+function appliquerFiltres() { majBadgeFiltres(); chargerInterventions(obtenirFiltresActuels()); }
+
+function reinitialiserFiltres() {
+  ['filterPrestataire','filterType','filterStatut','filterSite','filterDateDebut','filterDateFin'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('searchInput').value = '';
+  majBadgeFiltres();
+  chargerInterventions();
+}
+
+function rechercheInstantanee() {
+  clearTimeout(rechercheTimer);
+  rechercheTimer = setTimeout(() => chargerInterventions(obtenirFiltresActuels()), 350);
+}
+
+// ============================================================
+// ACTIONS
+// ============================================================
+function confirmerSuppression(id) {
+  document.getElementById('modalSuppr').classList.add('active');
+  document.getElementById('btnConfirmSuppr').onclick = () => supprimerIntervention(id);
+}
+function fermerModal() { document.getElementById('modalSuppr').classList.remove('active'); }
+document.getElementById('modalSuppr').addEventListener('click', e => { if (e.target === e.currentTarget) fermerModal(); });
+
+async function supprimerIntervention(id) {
+  const btn = document.getElementById('btnConfirmSuppr');
+  btn.textContent = '...'; btn.disabled = true;
+  try {
+    const r = await fetch(`${API}/interventions/${id}`, { method: 'DELETE', headers: { 'X-Auth-Token': localStorage.getItem(AUTH_KEY) || '' } });
+    if (r.ok) { fermerModal(); afficherToast('Intervention supprimée', 'success'); await chargerInterventions(obtenirFiltresActuels()); }
+    else afficherToast('Erreur suppression', 'error');
+  } catch { afficherToast('Erreur connexion', 'error'); }
+  btn.textContent = 'Supprimer'; btn.disabled = false;
+}
+
+async function dupliquer(id) {
+  try {
+    const r = await fetch(`${API}/interventions/${id}/dupliquer`, { method: 'POST', headers: { 'X-Auth-Token': localStorage.getItem(AUTH_KEY) || '' } });
+    if (r.ok) {
+      const nouveau = await r.json();
+      afficherToast('Intervention dupliquée !', 'success');
+      setTimeout(() => window.location.href = `/nouvelle-intervention?id=${nouveau.id}`, 1500);
+    } else afficherToast('Erreur duplication', 'error');
+  } catch { afficherToast('Erreur connexion', 'error'); }
+}
+
+// ============================================================
+// EXPORT / IMPORT
+// ============================================================
+async function exportCSV() {
+  try {
+    const r = await fetch(`${API}/export/csv`, { headers: { 'X-Auth-Token': localStorage.getItem(AUTH_KEY) || '' } });
+    if (r.status === 401) { window.location.href = 'login.html'; return; }
+    if (!r.ok) throw new Error();
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url;
+    a.download = `interventions_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+  } catch { afficherToast('Erreur export CSV', 'error'); }
+}
+
+async function exportExcel() {
+  try {
+    const r = await fetch(`${API}/export/excel`, { headers: { 'X-Auth-Token': localStorage.getItem(AUTH_KEY) || '' } });
+    if (r.status === 401) { window.location.href = 'login.html'; return; }
+    if (!r.ok) throw new Error();
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url;
+    a.download = `interventions_${new Date().toISOString().split('T')[0]}.xlsx`;
+    a.click(); URL.revokeObjectURL(url);
+  } catch { afficherToast('Erreur export Excel', 'error'); }
+}
+
+function ouvrirImport() { document.getElementById('modalImport').classList.add('active'); }
+function fermerImport() {
+  document.getElementById('modalImport').classList.remove('active');
+  document.getElementById('fileInput').value = '';
+  document.getElementById('uploadLabel').textContent = 'Cliquez pour sélectionner un fichier';
+  document.getElementById('btnImporter').disabled = true;
+  document.getElementById('importResult').style.display = 'none';
+}
+document.getElementById('modalImport').addEventListener('click', e => { if (e.target === e.currentTarget) fermerImport(); });
+
+function fichierSelectionne(input) {
+  if (input.files[0]) {
+    document.getElementById('uploadLabel').textContent = input.files[0].name;
+    document.getElementById('btnImporter').disabled = false;
+  }
+}
+
+async function lancerImport() {
+  const file = document.getElementById('fileInput').files[0];
+  if (!file) return;
+  const btn = document.getElementById('btnImporter');
+  btn.textContent = 'Import en cours...'; btn.disabled = true;
+  const formData = new FormData(); formData.append('file', file);
+  try {
+    const r = await fetch(`${API}/import/csv`, { method: 'POST', body: formData, headers: { 'X-Auth-Token': localStorage.getItem(AUTH_KEY) || '' } });
+    if (r.status === 401) { window.location.href = 'login.html'; return; }
+    const data = await r.json();
+    const res = document.getElementById('importResult'); res.style.display = 'block';
+    if (r.ok) {
+      res.innerHTML = `<div style="background:var(--success-light);border:1px solid #6ee7b7;border-radius:var(--radius);padding:12px 14px;color:#065f46;font-size:13px">
+        <strong>Import réussi !</strong><br>✅ ${data.importees} lignes importées<br>
+        ${data.erreurs > 0 ? `⚠ ${data.erreurs} erreurs<br>` : ''}
+        ${data.ignorees > 0 ? `— ${data.ignorees} lignes vides ignorées` : ''}</div>`;
+      afficherToast(`${data.importees} interventions importées !`, 'success');
+      setTimeout(() => { fermerImport(); chargerInterventions(); }, 2000);
+    } else {
+      res.innerHTML = `<div style="background:var(--danger-light);border:1px solid #fca5a5;border-radius:var(--radius);padding:12px 14px;color:#991b1b;font-size:13px">${data.detail || 'Erreur import'}</div>`;
+    }
+  } catch { afficherToast('Erreur import', 'error'); }
+  btn.textContent = 'Importer'; btn.disabled = false;
+}
+
+// ============================================================
+// DARK MODE & UTILS
+// ============================================================
+function toggleDark() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  localStorage.setItem('theme', isDark ? 'light' : 'dark');
+  document.getElementById('iconDark').innerHTML = isDark
+    ? `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`
+    : `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+}
+
+function chargerTheme() {
+  const saved = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+  if (saved === 'dark') {
+    document.getElementById('iconDark').innerHTML = `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+  }
+}
+
+function normaliseType(t) { if (!t) return '—'; const tl = t.toLowerCase(); if (tl.includes('plan')) return 'Planifiée'; if (tl.includes('dep') || tl.includes('dép')) return 'Dépannage'; return t; }
+function formatDate(d) { if (!d) return '—'; try { const [y, m, j] = d.split('-'); return `${j}/${m}/${y}`; } catch { return d; } }
+function formatDuree(m) { if (!m) return '—'; const h = Math.floor(m / 60), mn = m % 60; return h > 0 ? (mn > 0 ? `${h}h${mn}min` : `${h}h`) : `${mn}min`; }
+function escHtml(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function afficherToast(msg, type = 'info') {
+  const icons = { success: `<polyline points="20 6 9 17 4 12"/>`, error: `<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`, info: `<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>` };
+  const titles = { success: 'Succès', error: 'Erreur', info: 'Info' };
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div'); t.className = `toast ${type}`;
+  t.innerHTML = `<div class="toast-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">${icons[type] || icons.info}</svg></div><div class="toast-left"><div class="toast-title">${titles[type] || 'Info'}</div><div class="toast-message">${escHtml(msg)}</div></div>`;
+  c.appendChild(t);
+  setTimeout(() => t.style.animation = 'toastIn .3s reverse', 3000);
+  setTimeout(() => t.remove(), 3350);
+}
+</script>
+</body>
+</html>

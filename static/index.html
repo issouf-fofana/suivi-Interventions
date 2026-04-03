@@ -39,11 +39,15 @@
       <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
       Tableau de bord
     </a>
-    <a href="/calendrier" class="sidebar-link">
+    <a href="/interventions" class="sidebar-link">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      Liste des interventions
+    </a>
+    <a href="/calendar" class="sidebar-link">
       <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       Calendrier
     </a>
-    <a href="/nouvelle-intervention" class="sidebar-link">
+    <a href="/form" class="sidebar-link">
       <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Nouvelle intervention
     </a>
@@ -307,77 +311,59 @@
       </div>
     </div>
 
-    <!-- Tableau interventions -->
-    <div class="section-card">
-      <div class="section-header">
-        <div class="section-title">
-          <div class="section-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg></div>
-          Liste des interventions
-        </div>
-        <div id="tableInfo" style="font-size:12px;color:var(--texte-doux)"></div>
-      </div>
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th onclick="trierPar('id')">#</th>
-              <th onclick="trierPar('prestataire')">Prestataire</th>
-              <th onclick="trierPar('type_intervention')">Type</th>
-              <th onclick="trierPar('statut')">Statut</th>
-              <th onclick="trierPar('site')">Site</th>
-              <th onclick="trierPar('date_debut')">Date début</th>
-              <th class="col-heure" onclick="trierPar('heure_debut')">Heure</th>
-              <th class="col-duree" onclick="trierPar('duree_minutes')">Durée</th>
-              <th>Travaux</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody">
-            <tr><td colspan="10"><div class="loader"><div class="spinner"></div> Chargement...</div></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="pagination" id="pagination"></div>
-    </div>
-
-    <!-- Interventions longues -->
-    <div class="section-card" id="sectionLongues" style="display:none;margin-bottom:24px">
-      <div class="section-header">
-        <div class="section-title">
-          <div class="section-icon" style="background:#fee2e2;color:#dc2626">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          </div>
-          Interventions longues (&gt; 8h)
-        </div>
-      </div>
-      <div class="table-wrapper">
-        <table>
-          <thead><tr><th>Prestataire</th><th>Site</th><th>Date</th><th>Durée</th><th>Travaux</th></tr></thead>
-          <tbody id="longuesBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Prochaines interventions -->
-    <div class="section-card">
-      <div class="section-header">
-        <div class="section-title">
-          <div class="section-icon" style="background:var(--warning-light);color:var(--warning)">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          </div>
-          Prochaines interventions planifiées
-        </div>
-      </div>
-      <div class="table-wrapper">
-        <table>
-          <thead><tr><th>Prestataire</th><th>Site</th><th>Date prévue</th><th>Dans</th><th>Travaux précédents</th></tr></thead>
-          <tbody id="prochainesBody"><tr><td colspan="5"><div class="loader"><div class="spinner"></div></div></td></tr></tbody>
-        </table>
-      </div>
+    <!-- Lien vers la liste complète -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <a href="/interventions" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;background:var(--primary);color:#fff;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 2px 8px rgba(37,99,235,.35);transition:opacity .2s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg>
+        Voir la liste complète des interventions
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+      <button onclick="ouvrirImpressionDashboard()" style="display:inline-flex;align-items:center;gap:7px;padding:10px 16px;background:var(--blanc);border:1px solid var(--bordure);color:var(--texte);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s" onmouseover="this.style.background='var(--gris-50)'" onmouseout="this.style.background='var(--blanc)'">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimer le tableau de bord
+      </button>
     </div>
 
   </div>
 </main>
+
+<!-- Modale impression dashboard -->
+<div class="modal-overlay" id="modalImpression">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-icon" style="background:#ede9fe;color:#7c3aed">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    </div>
+    <h3>Imprimer le tableau de bord</h3>
+    <div style="display:grid;gap:14px;margin-bottom:8px">
+      <div>
+        <label style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--texte-doux);display:block;margin-bottom:6px">Prestataire</label>
+        <select id="printPrestataire" style="width:100%;padding:9px 12px;border:1px solid var(--bordure);border-radius:8px;font-size:13px;background:var(--blanc);color:var(--texte)">
+          <option value="">Tous les prestataires</option>
+          <option>DSI</option><option>COGITECH</option><option>Manage Engine</option>
+          <option>CBI</option><option>GBSS</option><option>AWALE</option>
+          <option>PROSUMA</option><option>ORANGE</option><option>MTN</option><option>ARIC</option>
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--texte-doux);display:block;margin-bottom:6px">Date début</label>
+          <input type="date" id="printDateDebut" style="width:100%;padding:9px 12px;border:1px solid var(--bordure);border-radius:8px;font-size:13px;background:var(--blanc);color:var(--texte)">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--texte-doux);display:block;margin-bottom:6px">Date fin</label>
+          <input type="date" id="printDateFin" style="width:100%;padding:9px 12px;border:1px solid var(--bordure);border-radius:8px;font-size:13px;background:var(--blanc);color:var(--texte)">
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="fermerImpressionDashboard()">Annuler</button>
+      <button class="btn btn-primary" onclick="lancerImpressionDashboard()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimer
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- ===== MODALE SUPPRESSION ===== -->
 <div class="modal-overlay" id="modalSuppr">
@@ -613,7 +599,6 @@ async function chargerDonnees(filtres = {}) {
     }
 
     mettreAJourGraphiques(stats);
-    afficherTableau();
     afficherProchaines(stats.prochaines_interventions);
 
   } catch(err) {
@@ -1180,6 +1165,92 @@ async function lancerImport() {
     afficherToast('Erreur import','error');
   }
   btn.textContent='Importer'; btn.disabled=false;
+}
+
+// ============================================================
+// IMPRESSION DASHBOARD
+// ============================================================
+function ouvrirImpressionDashboard() {
+  document.getElementById('modalImpression').classList.add('active');
+}
+function fermerImpressionDashboard() {
+  document.getElementById('modalImpression').classList.remove('active');
+}
+document.getElementById('modalImpression').addEventListener('click', e => {
+  if (e.target === e.currentTarget) fermerImpressionDashboard();
+});
+
+async function lancerImpressionDashboard() {
+  const prestataire = document.getElementById('printPrestataire').value;
+  const dateDebut   = document.getElementById('printDateDebut').value;
+  const dateFin     = document.getElementById('printDateFin').value;
+  const token       = localStorage.getItem(AUTH_KEY) || '';
+
+  const params = new URLSearchParams();
+  if (prestataire) params.append('prestataire', prestataire);
+  if (dateDebut)   params.append('date_debut_from', dateDebut);
+  if (dateFin)     params.append('date_debut_to', dateFin);
+
+  try {
+    const [r1, r2] = await Promise.all([
+      fetch(`${API}/interventions?${params}`, { headers: { 'X-Auth-Token': token } }),
+      fetch(`${API}/stats?${params}`, { headers: { 'X-Auth-Token': token } })
+    ]);
+    const interventions = await r1.json();
+    const stats         = await r2.json();
+    const filtreLabel   = [
+      prestataire ? `Prestataire : ${prestataire}` : '',
+      dateDebut   ? `Du ${formatDate(dateDebut)}`  : '',
+      dateFin     ? `Au ${formatDate(dateFin)}`     : ''
+    ].filter(Boolean).join(' — ') || 'Toutes les interventions';
+
+    const w = window.open('', '_blank');
+    w.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+    <title>Tableau de bord — ${filtreLabel}</title>
+    <style>
+      body{font-family:system-ui,sans-serif;font-size:13px;color:#1e293b;margin:0;padding:24px}
+      h1{font-size:18px;font-weight:800;margin:0 0 4px}
+      .sub{color:#64748b;font-size:12px;margin-bottom:20px}
+      .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+      .kpi{border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center}
+      .kpi-val{font-size:22px;font-weight:800;color:#2563eb}
+      .kpi-lbl{font-size:11px;color:#64748b;margin-top:3px}
+      table{width:100%;border-collapse:collapse;font-size:12px}
+      th{background:#f8fafc;padding:8px 10px;text-align:left;border-bottom:2px solid #e2e8f0;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.03em}
+      td{padding:7px 10px;border-bottom:1px solid #f1f5f9}
+      tr:nth-child(even) td{background:#f8fafc}
+      .badge{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+      .plan{background:#d1fae5;color:#065f46}.dep{background:#fee2e2;color:#991b1b}
+      @media print{body{padding:12px}}
+    </style></head><body>
+    <h1>Tableau de bord — Suivi des Interventions</h1>
+    <div class="sub">Filtre : ${filtreLabel} · Généré le ${new Date().toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric'})}</div>
+    <div class="kpis">
+      <div class="kpi"><div class="kpi-val">${stats.total||0}</div><div class="kpi-lbl">Total interventions</div></div>
+      <div class="kpi"><div class="kpi-val">${stats.nb_prestataires||0}</div><div class="kpi-lbl">Prestataires</div></div>
+      <div class="kpi"><div class="kpi-val">${Math.round((stats.duree_totale_minutes||0)/60)}h</div><div class="kpi-lbl">Durée totale</div></div>
+      <div class="kpi"><div class="kpi-val">${stats.nb_sites||0}</div><div class="kpi-lbl">Sites couverts</div></div>
+      <div class="kpi"><div class="kpi-val">${Math.round(stats.duree_moyenne_minutes||0)} min</div><div class="kpi-lbl">Durée moyenne</div></div>
+      <div class="kpi"><div class="kpi-val">${stats.duree_max_minutes||0} min</div><div class="kpi-lbl">Durée max</div></div>
+    </div>
+    <table><thead><tr><th>#</th><th>Prestataire</th><th>Type</th><th>Statut</th><th>Site</th><th>Date</th><th>Durée</th><th>Superviseur</th><th>Équipe</th><th>Travaux</th></tr></thead><tbody>
+    ${(Array.isArray(interventions) ? interventions : []).map(i => {
+      const type = (i.type_intervention||'').toLowerCase().includes('plan') ? 'Planifiée' : 'Dépannage';
+      const dm = i.duree_minutes; const d = dm ? `${Math.floor(dm/60)}h${dm%60>0?dm%60+'min':''}` : '—';
+      const date = i.date_debut ? i.date_debut.split('-').reverse().join('/') : '—';
+      const sup = i.superviseur || i.technicien || '—';
+      const eq = i.equipe || '—';
+      return `<tr><td>${i.id}</td><td>${i.prestataire||'—'}</td>
+        <td><span class="badge ${type==='Planifiée'?'plan':'dep'}">${type}</span></td>
+        <td>${i.statut||'—'}</td><td>${i.site||'—'}</td><td>${date}</td><td>${d}</td>
+        <td>${sup}</td><td>${eq}</td>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(i.travaux||'').substring(0,80)}</td></tr>`;
+    }).join('')}
+    </tbody></table>
+    <script>window.onload=()=>window.print()<\/script></body></html>`);
+    w.document.close();
+    fermerImpressionDashboard();
+  } catch(e) { afficherToast('Erreur génération impression', 'error'); }
 }
 
 // ============================================================

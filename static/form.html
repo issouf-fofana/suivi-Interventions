@@ -76,7 +76,7 @@
 
     <div class="sidebar-section-label">Navigation</div>
 
-    <a href="index.html" class="sidebar-link">
+    <a href="/" class="sidebar-link">
 
       <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
 
@@ -84,7 +84,15 @@
 
     </a>
 
-    <a href="calendar.html" class="sidebar-link">
+    <a href="/interventions" class="sidebar-link">
+
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+
+      Liste des interventions
+
+    </a>
+
+    <a href="/calendar" class="sidebar-link">
 
       <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
 
@@ -92,7 +100,7 @@
 
     </a>
 
-    <a href="form.html" class="sidebar-link active">
+    <a href="/form" class="sidebar-link active">
 
       <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
 
@@ -102,11 +110,19 @@
 
     <div class="sidebar-divider"></div>
 
-    <a href="admin.html" class="sidebar-link" id="btnAdmin" style="display:none">
+    <a href="/admin" class="sidebar-link" id="btnAdmin" style="display:none">
 
       <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
 
       Administration
+
+    </a>
+
+    <a href="/admin" class="sidebar-link" id="btnProfil" style="display:none">
+
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+
+      Mon profil
 
     </a>
 
@@ -197,6 +213,10 @@
         <a href="/" class="form-btn-cancel">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           Annuler
+        </a>
+        <a id="btnPDF" href="#" target="_blank" class="form-btn-cancel" style="display:none;background:#6366f1;color:#fff;border-color:#6366f1;">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Générer PDF
         </a>
         <button type="submit" form="formIntervention" class="form-btn-submit" id="btnSubmit">
           <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
@@ -387,10 +407,10 @@
       <!-- Section 4 -->
       <div class="fc-section-label fc-full">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-        Statut, Technicien &amp; Travaux
+        Statut, Superviseur &amp; Équipe
       </div>
 
-      <!-- Ligne 4 : Statut + Technicien + Prochaine -->
+      <!-- Ligne 4 : Statut + Superviseur + Équipe + Prochaine -->
       <div class="fc-group" id="grpStatut">
         <label class="fc-label">Statut</label>
         <select id="statut" class="fc-input">
@@ -402,8 +422,19 @@
       </div>
 
       <div class="fc-group">
-        <label class="fc-label">Technicien <span class="fc-opt">optionnel</span></label>
-        <input type="text" id="technicien" class="fc-input" placeholder="Nom du technicien">
+        <label class="fc-label">Superviseur <span class="fc-opt">optionnel</span></label>
+        <input type="text" id="superviseur" class="fc-input" placeholder="Nom du superviseur">
+      </div>
+
+      <div class="fc-group">
+        <label class="fc-label">Équipe <span class="fc-opt">optionnel</span></label>
+        <select id="equipe" class="fc-input">
+          <option value="">— Sélectionner —</option>
+          <option value="Réseaux">Réseaux</option>
+          <option value="Systèmes">Systèmes</option>
+          <option value="Exploitation">Exploitation</option>
+          <option value="Autre">Autre</option>
+        </select>
       </div>
 
       <div class="fc-group">
@@ -530,6 +561,12 @@ function verifierAuth() {
 
     if (btnAdmin) btnAdmin.style.display = '';
 
+  } else if (role === 'manager') {
+
+    const btnProfil = document.getElementById('btnProfil');
+
+    if (btnProfil) btnProfil.style.display = '';
+
   }
 
   const avatar = document.getElementById('sidebarAvatar');
@@ -542,7 +579,7 @@ function verifierAuth() {
 
   const srole = document.getElementById('sidebarRole');
 
-  if (srole) srole.textContent = role === 'admin' ? 'Administrateur' : 'Utilisateur';
+  if (srole) srole.textContent = role === 'admin' ? 'Administrateur' : role === 'manager' ? 'Manager' : 'Utilisateur';
 
   return true;
 
@@ -612,6 +649,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnSubmit').innerHTML = `
       <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
       Mettre à jour`;
+    const btnPDF = document.getElementById('btnPDF');
+    if (btnPDF) { btnPDF.href = `${API}/interventions/${id}/pdf`; btnPDF.style.display = ''; }
     chargerIntervention(id);
   }
 
@@ -740,7 +779,9 @@ function remplirFormulaire(data) {
 
   if (data.notes) document.getElementById('notes').value = data.notes;
   if (data.statut) document.getElementById('statut').value = data.statut;
-  if (data.technicien) document.getElementById('technicien').value = data.technicien || '';
+  const supVal = data.superviseur || data.technicien || '';
+  if (supVal) document.getElementById('superviseur').value = supVal;
+  if (data.equipe) document.getElementById('equipe').value = data.equipe || '';
 
   calculerDuree();
 
@@ -942,7 +983,8 @@ async function soumettreFormulaire(e) {
     prochaine_intervention: document.getElementById('prochaine_intervention').value || null,
     notes: document.getElementById('notes').value.trim() || null,
     statut: document.getElementById('statut').value || 'En cours',
-    technicien: document.getElementById('technicien').value.trim() || null,
+    superviseur: document.getElementById('superviseur').value.trim() || null,
+    equipe: document.getElementById('equipe').value || null,
   };
 
 

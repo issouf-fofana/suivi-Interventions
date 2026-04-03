@@ -185,6 +185,8 @@ def init_db():
             notes TEXT,
             statut TEXT DEFAULT 'En cours',
             technicien TEXT,
+            superviseur TEXT,
+            equipe TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
     """)
@@ -193,6 +195,8 @@ def init_db():
         ("notes", "TEXT"),
         ("statut", "TEXT DEFAULT 'En cours'"),
         ("technicien", "TEXT"),
+        ("superviseur", "TEXT"),
+        ("equipe", "TEXT"),
     ]:
         try:
             conn.execute(f"ALTER TABLE interventions ADD COLUMN {col} {coldef}")
@@ -316,13 +320,25 @@ async def page_dashboard():
 async def page_calendrier():
     return serve("calendar.html")
 
+@app.get("/calendar", include_in_schema=False)
+async def page_calendar():
+    return serve("calendar.html")
+
 @app.get("/nouvelle-intervention", include_in_schema=False)
 async def page_nouvelle_intervention():
+    return serve("form.html")
+
+@app.get("/form", include_in_schema=False)
+async def page_form():
     return serve("form.html")
 
 @app.get("/detail", include_in_schema=False)
 async def page_detail():
     return serve("detail.html")
+
+@app.get("/interventions", include_in_schema=False)
+async def page_interventions():
+    return serve("liste-interventions.html")
 
 @app.get("/admin", include_in_schema=False)
 async def page_admin():
@@ -386,6 +402,8 @@ class InterventionCreate(BaseModel):
     notes: Optional[str] = None
     statut: Optional[str] = "En cours"
     technicien: Optional[str] = None
+    superviseur: Optional[str] = None
+    equipe: Optional[str] = None
 
 
 class InterventionUpdate(InterventionCreate):
@@ -780,12 +798,12 @@ def creer_intervention(data: InterventionCreate, request: Request):
     cur = conn.execute("""
         INSERT INTO interventions
         (prestataire, type_intervention, mois, annee, date_debut, heure_debut,
-         date_fin, heure_fin, duree_minutes, site, travaux, prochaine_intervention, notes, statut, technicien)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+         date_fin, heure_fin, duree_minutes, site, travaux, prochaine_intervention, notes, statut, technicien, superviseur, equipe)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     """, (data.prestataire, data.type_intervention, mois, annee,
           data.date_debut, data.heure_debut, data.date_fin, data.heure_fin,
           duree, data.site, data.travaux, data.prochaine_intervention, data.notes,
-          statut, data.technicien))
+          statut, data.technicien, data.superviseur, data.equipe))
     new_id = cur.lastrowid
 
     enregistrer_historique(conn, new_id, "creation", user_id=user["id"] if user else None)
@@ -832,6 +850,8 @@ def modifier_intervention(intervention_id: int, data: InterventionUpdate, reques
         "notes": data.notes,
         "statut": data.statut,
         "technicien": data.technicien,
+        "superviseur": data.superviseur,
+        "equipe": data.equipe,
     }
     ancien = row_to_dict(ancien_row)
 
@@ -840,12 +860,12 @@ def modifier_intervention(intervention_id: int, data: InterventionUpdate, reques
             prestataire=?, type_intervention=?, mois=?, annee=?,
             date_debut=?, heure_debut=?, date_fin=?, heure_fin=?,
             duree_minutes=?, site=?, travaux=?, prochaine_intervention=?,
-            notes=?, statut=?, technicien=?
+            notes=?, statut=?, technicien=?, superviseur=?, equipe=?
         WHERE id=?
     """, (data.prestataire, data.type_intervention, mois, annee,
           data.date_debut, data.heure_debut, data.date_fin, data.heure_fin,
           duree, data.site, data.travaux, data.prochaine_intervention,
-          data.notes, data.statut, data.technicien, intervention_id))
+          data.notes, data.statut, data.technicien, data.superviseur, data.equipe, intervention_id))
 
     uid = user["id"] if user else None
     for champ, nouvelle_val in champs_a_comparer.items():
@@ -1354,7 +1374,8 @@ def export_pdf_intervention(intervention_id: int, request: Request):
     section("INFORMATIONS GÉNÉRALES")
     info_rows = [
         row2("TYPE D'INTERVENTION", inter.get("type_intervention", "—")),
-        row2("TECHNICIEN",          inter.get("technicien") or "—"),
+        row2("SUPERVISEUR",         inter.get("superviseur") or inter.get("technicien") or "—"),
+        row2("ÉQUIPE",              inter.get("equipe") or "—"),
         row2("MOIS / ANNÉE",        f"{(inter.get('mois') or '').capitalize()} {inter.get('annee') or ''}"),
     ]
     if prochaine_str:
