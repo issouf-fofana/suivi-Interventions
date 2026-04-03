@@ -290,6 +290,32 @@
     </div>
   </div>
 
+  <!-- Section : Infos mon compte -->
+  <div class="admin-section" id="sectionMonCompte">
+    <div class="admin-section-title">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Mon compte
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;padding:4px 0">
+      <div style="background:var(--gris-50);border-radius:10px;padding:16px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--texte-doux);margin-bottom:6px">Nom d'utilisateur</div>
+        <div style="font-size:16px;font-weight:700;color:var(--texte)" id="infoUsername">—</div>
+      </div>
+      <div style="background:var(--gris-50);border-radius:10px;padding:16px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--texte-doux);margin-bottom:6px">Rôle</div>
+        <div style="font-size:15px;font-weight:600" id="infoRole">—</div>
+      </div>
+      <div style="background:var(--gris-50);border-radius:10px;padding:16px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--texte-doux);margin-bottom:6px">Compte créé le</div>
+        <div style="font-size:15px;font-weight:600;color:var(--texte)" id="infoCreatedAt">—</div>
+      </div>
+      <div style="background:var(--gris-50);border-radius:10px;padding:16px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--texte-doux);margin-bottom:6px">ID</div>
+        <div style="font-size:15px;font-weight:600;color:var(--texte)" id="infoId">—</div>
+      </div>
+    </div>
+  </div>
+
   <!-- Section : Gestion des utilisateurs (admin only) -->
   <div class="admin-section" id="sectionUsers" style="display:none">
     <div class="admin-section-title">
@@ -488,6 +514,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     localStorage.setItem('auth_username', me.username);
     localStorage.setItem('auth_role', me.role);
     verifierAuth();
+
+    // Remplir la section "Mon compte"
+    document.getElementById('infoUsername').textContent = me.username;
+    document.getElementById('infoId').textContent = '#' + me.id;
+    const roleLabels = { admin: 'Administrateur', manager: 'Manager', user: 'Utilisateur' };
+    const roleColors = { admin: '#3b5bdb', manager: '#b45309', user: '#15803d' };
+    document.getElementById('infoRole').textContent = roleLabels[me.role] || me.role;
+    document.getElementById('infoRole').style.color = roleColors[me.role] || 'inherit';
+    if (me.created_at) {
+      document.getElementById('infoCreatedAt').textContent = me.created_at.substring(0, 10);
+    }
 
     // Afficher les sections selon le rôle
     if (me.role === 'admin' || me.role === 'manager') {
