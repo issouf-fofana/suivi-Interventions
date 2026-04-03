@@ -655,12 +655,9 @@ def modifier_user(user_id: int, data: UserUpdate, request: Request):
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
 
     if current_admin["role"] == "manager":
-        if data.role == "admin":
+        if current_admin["id"] != user_id:
             conn.close()
-            raise HTTPException(status_code=403, detail="Un manager ne peut pas promouvoir un utilisateur en admin")
-        if data.actif == 0:
-            conn.close()
-            raise HTTPException(status_code=403, detail="Un manager ne peut pas désactiver un utilisateur")
+            raise HTTPException(status_code=403, detail="Un manager ne peut modifier que son propre compte")
 
     if data.actif == 0 and current_admin["id"] == user_id:
         conn.close()
