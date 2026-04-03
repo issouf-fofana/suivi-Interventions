@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administration — Suivi des Interventions</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    .admin-page { max-width: 1200px; margin: 0 auto; padding: 32px 32px 60px; }
+
+    .admin-section {
+      background: var(--blanc);
+      border: 1px solid var(--bordure);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      box-shadow: var(--ombre);
+    }
+
+    .admin-section-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--texte);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .admin-section-title svg { color: var(--primary); }
+
+    /* Table users */
+    .users-table { width: 100%; border-collapse: collapse; }
+    .users-table th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--texte-doux);
+      padding: 10px 12px;
+      border-bottom: 2px solid var(--bordure);
+    }
+    .users-table td {
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--bordure);
+      font-size: 14px;
+      color: var(--texte);
+    }
+    .users-table tr:last-child td { border-bottom: none; }
+    .users-table tr:hover td { background: var(--gris-50); }
+
+    .badge-role {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-role.admin { background: #e0e7ff; color: #3b5bdb; }
+    .badge-role.user  { background: #dcfce7; color: #15803d; }
+
+    .badge-actif {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+    .badge-actif.on  { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,.5); }
+    .badge-actif.off { background: #94a3b8; }
+
+    .btn-table {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity .2s;
+    }
+    .btn-table:hover { opacity: .8; }
+    .btn-table.edit  { background: #eef2ff; color: #3b5bdb; }
+    .btn-table.del   { background: #fef2f2; color: #dc2626; }
+    .btn-table.toggle { background: #f0fdf4; color: #15803d; }
+    .btn-table.toggle.deactivate { background: #fff7ed; color: #c2410c; }
+
+    /* Modale */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px;
+      opacity: 0; pointer-events: none; transition: opacity .2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal-card {
+      background: var(--blanc);
+      border-radius: 20px;
+      padding: 32px;
+      width: 100%; max-width: 440px;
+      box-shadow: 0 24px 60px rgba(0,0,0,.25);
+      transform: scale(.95); transition: transform .2s;
+    }
+    .modal-overlay.open .modal-card { transform: scale(1); }
+    .modal-title {
+      font-size: 18px; font-weight: 800; color: var(--texte);
+      margin-bottom: 20px;
+    }
+    .modal-form-group { margin-bottom: 16px; }
+    .modal-form-group label {
+      display: block; font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .4px;
+      color: var(--texte); margin-bottom: 7px;
+    }
+    .modal-form-group input,
+    .modal-form-group select {
+      width: 100%; padding: 12px 14px;
+      border: 2px solid var(--bordure); border-radius: 10px;
+      font-size: 14px; background: var(--blanc); color: var(--texte);
+      transition: border-color .2s;
+      box-sizing: border-box;
+    }
+    .modal-form-group input:focus,
+    .modal-form-group select:focus {
+      outline: none; border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59,91,219,.1);
+    }
+    .modal-hint { font-size: 11px; color: var(--texte-doux); margin-top: 4px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
+    .modal-btn {
+      flex: 1; padding: 12px; border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: opacity .2s;
+    }
+    .modal-btn:hover { opacity: .85; }
+    .modal-btn.primary { background: #3b5bdb; color: #fff; }
+    .modal-btn.cancel  { background: var(--gris-100); color: var(--texte); }
+    .modal-error {
+      background: #fef2f2; border: 1px solid #fca5a5;
+      border-radius: 8px; padding: 10px 12px;
+      color: #991b1b; font-size: 12px; font-weight: 600;
+      display: none; margin-bottom: 14px;
+    }
+    .modal-error.visible { display: block; }
+
+    /* Change password section */
+    .change-pw-form { display: grid; gap: 16px; }
+    .change-pw-btn {
+      padding: 12px 24px; background: #3b5bdb; color: #fff;
+      border: none; border-radius: 10px; font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: opacity .2s; width: fit-content;
+    }
+    .change-pw-btn:hover { opacity: .85; }
+    .change-pw-success {
+      background: #f0fdf4; border: 1px solid #86efac;
+      border-radius: 8px; padding: 10px 14px;
+      color: #15803d; font-size: 13px; font-weight: 600;
+      display: none; margin-top: 12px;
+    }
+    .change-pw-success.visible { display: block; }
+    .change-pw-error {
+      background: #fef2f2; border: 1px solid #fca5a5;
+      border-radius: 8px; padding: 10px 14px;
+      color: #991b1b; font-size: 13px; font-weight: 600;
+      display: none; margin-top: 12px;
+    }
+    .change-pw-error.visible { display: block; }
+
+    .add-user-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 18px; background: #3b5bdb; color: #fff;
+      border: none; border-radius: 10px; font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: opacity .2s; margin-bottom: 20px;
+    }
+    .add-user-btn:hover { opacity: .85; }
+
+    .empty-users {
+      text-align: center; padding: 40px 20px; color: var(--texte-doux); font-size: 14px;
+    }
+</style>
+</head>
+<body>
+
+<!-- ===== SIDEBAR TOGGLE (mobile) ===== -->
+<button class="sidebar-toggle" onclick="toggleSidebar()" id="sidebarToggle" aria-label="Menu">
+  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <line x1="3" y1="12" x2="21" y2="12"/>
+    <line x1="3" y1="18" x2="21" y2="18"/>
+  </svg>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<div class="app-layout">
+
+<!-- ===== SIDEBAR ===== -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-logo">
+      <svg width="20" height="20" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+      </svg>
+    </div>
+    <div class="sidebar-brand-text">
+      <div class="sidebar-brand-title">Suivi Interventions</div>
+      <div class="sidebar-brand-sub">Administration</div>
+    </div>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="sidebar-section-label">Navigation</div>
+    <a href="index.html" class="sidebar-link">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Tableau de bord
+    </a>
+    <a href="calendar.html" class="sidebar-link">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Calendrier
+    </a>
+    <a href="form.html" class="sidebar-link">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nouvelle intervention
+    </a>
+    <div class="sidebar-divider"></div>
+    <a href="admin.html" class="sidebar-link active">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Administration
+    </a>
+    <button class="sidebar-link" onclick="toggleDark()" id="btnDark">
+      <svg id="iconDark" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      Mode sombre
+    </button>
+    <button class="sidebar-link danger" onclick="seDeconnecter()">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Déconnexion
+    </button>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-username" id="sidebarUsername">—</div>
+        <div class="sidebar-role" id="sidebarRole">—</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="page-content">
+
+<div class="admin-page">
+
+  <!-- Section : Changer son mot de passe -->
+  <div class="admin-section">
+    <div class="admin-section-title">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      Changer mon mot de passe
+      <span style="margin-left:auto;font-size:13px;font-weight:600;color:var(--texte-doux)">
+        Connecté en tant que : <strong id="currentUsername" style="color:var(--primary)">—</strong>
+      </span>
+    </div>
+    <div class="change-pw-form">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+        <div class="modal-form-group" style="margin:0">
+          <label>Ancien mot de passe</label>
+          <input type="password" id="pwAncien" placeholder=""¢"¢"¢"¢"¢"¢"¢"¢">
+        </div>
+        <div class="modal-form-group" style="margin:0">
+          <label>Nouveau mot de passe</label>
+          <input type="password" id="pwNouveau" placeholder=""¢"¢"¢"¢"¢"¢"¢"¢">
+        </div>
+        <div class="modal-form-group" style="margin:0">
+          <label>Confirmer</label>
+          <input type="password" id="pwConfirm" placeholder=""¢"¢"¢"¢"¢"¢"¢"¢">
+        </div>
+      </div>
+      <div>
+        <button class="change-pw-btn" onclick="changerMotDePasse()">Modifier le mot de passe</button>
+      </div>
+      <div class="change-pw-success" id="pwSuccess">Mot de passe modifié avec succès. Reconnexion automatique...</div>
+      <div class="change-pw-error" id="pwError"></div>
+    </div>
+  </div>
+
+  <!-- Section : Gestion des utilisateurs (admin only) -->
+  <div class="admin-section" id="sectionUsers" style="display:none">
+    <div class="admin-section-title">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      Gestion des utilisateurs
+    </div>
+
+    <button class="add-user-btn" onclick="ouvrirModalAjout()">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Nouvel utilisateur
+    </button>
+
+    <div id="usersTableWrap">
+      <div class="empty-users">Chargement...</div>
+    </div>
+  </div>
+
+  <!-- Section : Sauvegarde (masquée) -->
+  <div class="admin-section" id="sectionBackup" style="display:none!important;visibility:hidden;height:0;overflow:hidden;padding:0;margin:0;border:none">
+    <div class="admin-section-title">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Sauvegarde de la base de données
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
+      <button class="add-user-btn" style="margin:0" onclick="creerBackup()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Créer une sauvegarde
+      </button>
+      <a id="btnDownloadDB" href="#" onclick="telechargerDB(event)" class="add-user-btn" style="margin:0;background:#059669;text-decoration:none">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Télécharger la DB
+      </a>
+    </div>
+    <div id="backupList"><div class="empty-users">Chargement...</div></div>
+  </div>
+
+  <!-- Section : Journal d'audit (admin only) -->
+  <div class="admin-section" id="sectionAudit" style="display:none">
+    <div class="admin-section-title">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+        <polyline points="10 9 9 9 8 9"/>
+      </svg>
+      Journal d'audit
+      <button onclick="chargerAudit()" style="margin-left:auto;background:none;border:1px solid var(--bordure);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--texte-doux)">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.6"/></svg>
+        Actualiser
+      </button>
+    </div>
+    <div style="margin-bottom:14px;display:flex;gap:10px">
+      <input type="text" id="auditFilterUser" placeholder="Filtrer par utilisateur..." style="flex:1;padding:8px 12px;border:1px solid var(--bordure);border-radius:8px;font-size:13px;background:var(--blanc);color:var(--texte)" oninput="chargerAudit()">
+      <input type="text" id="auditFilterAction" placeholder="Filtrer par action..." style="flex:1;padding:8px 12px;border:1px solid var(--bordure);border-radius:8px;font-size:13px;background:var(--blanc);color:var(--texte)" oninput="chargerAudit()">
+    </div>
+    <div id="auditBody"><div class="empty-users">Chargement...</div></div>
+  </div>
+
+</div>
+
+<!-- Modale Ajouter/Modifier utilisateur -->
+<div class="modal-overlay" id="modalUser">
+  <div class="modal-card">
+    <div class="modal-title" id="modalUserTitle">Nouvel utilisateur</div>
+    <div class="modal-error" id="modalUserError"></div>
+    <input type="hidden" id="editUserId">
+    <div class="modal-form-group">
+      <label>Nom d'utilisateur</label>
+      <input type="text" id="editUsername" placeholder="ex: jean.dupont" autocomplete="off">
+    </div>
+    <div class="modal-form-group">
+      <label>Mot de passe <span id="pwEditHint" style="font-weight:400;text-transform:none;letter-spacing:0">(laisser vide = ne pas changer)</span></label>
+      <input type="password" id="editPassword" placeholder=""¢"¢"¢"¢"¢"¢"¢"¢" autocomplete="new-password">
+      <div class="modal-hint">Minimum 4 caractères</div>
+    </div>
+    <div class="modal-form-group">
+      <label>Rôle</label>
+      <select id="editRole">
+        <option value="user">Utilisateur</option>
+        <option value="admin">Administrateur</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="fermerModal()">Annuler</button>
+      <button class="modal-btn primary" onclick="sauvegarderUser()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /.page-content -->
+</div><!-- /.app-layout -->
+
+<!-- Toast -->
+<div id="toastContainer" class="toast-container"></div>
+
+<script>
+const API = `${window.location.protocol}//${window.location.host}/api`;
+const AUTH_KEY = 'auth_token';
+
+// Helpers sidebar / thème / auth
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (!sidebar || !overlay) return;
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('open');
+}
+
+function toggleDark() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  localStorage.setItem('theme', isDark ? 'light' : 'dark');
+  const icon = document.getElementById('iconDark');
+  if (icon) {
+    icon.innerHTML = isDark
+      ? `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`
+      : `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+  }
+}
+
+function chargerTheme() {
+  const saved = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+  if (saved === 'dark') {
+    const icon = document.getElementById('iconDark');
+    if (icon) {
+      icon.innerHTML = `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+    }
+  }
+}
+
+function verifierAuth() {
+  const token = localStorage.getItem(AUTH_KEY);
+  if (!token) { window.location.href = 'login.html'; return false; }
+  const role = localStorage.getItem('auth_role');
+  const username = localStorage.getItem('auth_username') || '?';
+
+  if (role === 'admin') {
+    const btnAdmin = document.getElementById('btnAdmin');
+    if (btnAdmin) btnAdmin.style.display = '';
+  }
+  const avatar = document.getElementById('sidebarAvatar');
+  if (avatar) avatar.textContent = username.charAt(0).toUpperCase();
+  const uname = document.getElementById('sidebarUsername');
+  if (uname) uname.textContent = username;
+  const srole = document.getElementById('sidebarRole');
+  if (srole) srole.textContent = role === 'admin' ? 'Administrateur' : 'Utilisateur';
+  return true;
+}
+
+function headersAuth() {
+  return { 'X-Auth-Token': localStorage.getItem(AUTH_KEY) || '', 'Content-Type': 'application/json' };
+}
+
+async function seDeconnecter() {
+  await fetch(`${API}/auth/logout`, { method: 'POST', headers: headersAuth() });
+  localStorage.removeItem(AUTH_KEY);
+  localStorage.removeItem('auth_username');
+  localStorage.removeItem('auth_role');
+  window.location.href = 'login.html';
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!verifierAuth()) return;
+  chargerTheme();
+
+  const token = localStorage.getItem(AUTH_KEY);
+
+  // Charger les infos de l'utilisateur courant
+  try {
+    const r = await fetch(`${API}/auth/me`, { headers: { 'X-Auth-Token': token } });
+    if (r.status === 401) { window.location.href = 'login.html'; return; }
+    const me = await r.json();
+    document.getElementById('currentUsername').textContent = me.username;
+    localStorage.setItem('auth_username', me.username);
+    localStorage.setItem('auth_role', me.role);
+    verifierAuth();
+
+    // Afficher les sections admin seulement pour les admins
+    if (me.role === 'admin') {
+      document.getElementById('sectionUsers').style.display = 'block';
+      document.getElementById('sectionBackup').style.display = 'block';
+      document.getElementById('sectionAudit').style.display = 'block';
+      chargerUsers();
+      chargerBackups();
+      chargerAudit();
+    }
+  } catch (e) {
+    window.location.href = 'login.html';
+  }
+});
+
+// ============================================================
+// CHANGER MOT DE PASSE
+// ============================================================
+
+async function changerMotDePasse() {
+  const ancien = document.getElementById('pwAncien').value;
+  const nouveau = document.getElementById('pwNouveau').value;
+  const confirm = document.getElementById('pwConfirm').value;
+  const successDiv = document.getElementById('pwSuccess');
+  const errorDiv = document.getElementById('pwError');
+
+  successDiv.classList.remove('visible');
+  errorDiv.classList.remove('visible');
+
+  if (!ancien || !nouveau || !confirm) {
+    errorDiv.textContent = 'Veuillez remplir tous les champs';
+    errorDiv.classList.add('visible');
+    return;
+  }
+  if (nouveau !== confirm) {
+    errorDiv.textContent = 'Le nouveau mot de passe et la confirmation ne correspondent pas';
+    errorDiv.classList.add('visible');
+    return;
+  }
+  if (nouveau.length < 4) {
+    errorDiv.textContent = 'Le mot de passe doit faire au moins 4 caractères';
+    errorDiv.classList.add('visible');
+    return;
+  }
+
+  try {
+    const r = await fetch(`${API}/auth/change-password`, {
+      method: 'POST',
+      headers: headersAuth(),
+      body: JSON.stringify({ ancien_mdp: ancien, nouveau_mdp: nouveau })
+    });
+    const data = await r.json();
+    if (r.ok) {
+      // Mettre à jour le token
+      localStorage.setItem(AUTH_KEY, data.token);
+      successDiv.classList.add('visible');
+      document.getElementById('pwAncien').value = '';
+      document.getElementById('pwNouveau').value = '';
+      document.getElementById('pwConfirm').value = '';
+      afficherToast('Mot de passe modifié avec succès', 'success');
+    } else {
+      errorDiv.textContent = data.detail || 'Erreur lors du changement de mot de passe';
+      errorDiv.classList.add('visible');
+    }
+  } catch (e) {
+    errorDiv.textContent = 'Erreur de connexion au serveur';
+    errorDiv.classList.add('visible');
+  }
+}
+
+// ============================================================
+// GESTION UTILISATEURS
+// ============================================================
+
+let usersData = [];
+
+async function chargerUsers() {
+  try {
+    const r = await fetch(`${API}/users`, { headers: { 'X-Auth-Token': localStorage.getItem(AUTH_KEY) || '' } });
+    if (!r.ok) return;
+    usersData = await r.json();
+    afficherUsers();
+  } catch (e) {}
+}
+
+function afficherUsers() {
+  const wrap = document.getElementById('usersTableWrap');
+  if (!usersData.length) {
+    wrap.innerHTML = '<div class="empty-users">Aucun utilisateur</div>';
+    return;
+  }
+
+  const currentUser = localStorage.getItem('auth_username');
+  let html = `<table class="users-table">
+    <thead><tr>
+      <th>#</th>
+      <th>Nom d'utilisateur</th>
+      <th>Rôle</th>
+      <th>Statut</th>
+      <th>Créé le</th>
+      <th>Actions</th>
+    </tr></thead><tbody>`;
+
+  for (const u of usersData) {
+    const isMe = u.username === currentUser;
+    const dateStr = u.created_at ? u.created_at.substring(0, 10) : '—';
+    html += `<tr>
+      <td style="color:var(--texte-doux);font-size:12px">#${u.id}</td>
+      <td>
+        <strong>${escHtml(u.username)}</strong>
+        ${isMe ? '<span style="font-size:11px;color:#3b5bdb;margin-left:6px">(vous)</span>' : ''}
+      </td>
+      <td><span class="badge-role ${u.role}">${u.role === 'admin' ? 'Administrateur' : 'Utilisateur'}</span></td>
+      <td>
+        <span class="badge-actif ${u.actif ? 'on' : 'off'}"></span>
+        <span style="font-size:13px;margin-left:6px">${u.actif ? 'Actif' : 'Inactif'}</span>
+      </td>
+      <td style="color:var(--texte-doux);font-size:13px">${dateStr}</td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn-table edit" onclick="ouvrirModalEdition(${u.id})">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="display:inline;vertical-align:middle"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Modifier
+          </button>
+          ${!isMe ? `
+          <button class="btn-table toggle ${u.actif ? 'deactivate' : ''}" onclick="toggleActif(${u.id}, ${u.actif})">
+            ${u.actif ? 'Désactiver' : 'Activer'}
+          </button>
+          <button class="btn-table del" onclick="supprimerUser(${u.id}, '${escHtml(u.username)}')">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="display:inline;vertical-align:middle"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+            Supprimer
+          </button>` : ''}
+        </div>
+      </td>
+    </tr>`;
+  }
+
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+function ouvrirModalAjout() {
+  document.getElementById('editUserId').value = '';
+  document.getElementById('editUsername').value = '';
+  document.getElementById('editPassword').value = '';
+  document.getElementById('editRole').value = 'user';
+  document.getElementById('modalUserTitle').textContent = 'Nouvel utilisateur';
+  document.getElementById('pwEditHint').style.display = 'none';
+  document.getElementById('modalUserError').classList.remove('visible');
+  document.getElementById('modalUser').classList.add('open');
+}
+
+function ouvrirModalEdition(id) {
+  const u = usersData.find(x => x.id === id);
+  if (!u) return;
+  document.getElementById('editUserId').value = u.id;
+  document.getElementById('editUsername').value = u.username;
+  document.getElementById('editPassword').value = '';
+  document.getElementById('editRole').value = u.role;
+  document.getElementById('modalUserTitle').textContent = `Modifier — ${u.username}`;
+  document.getElementById('pwEditHint').style.display = '';
+  document.getElementById('modalUserError').classList.remove('visible');
+  document.getElementById('modalUser').classList.add('open');
+}
+
+function fermerModal() {
+  document.getElementById('modalUser').classList.remove('open');
+}
+
+async function sauvegarderUser() {
+  const id = document.getElementById('editUserId').value;
+  const username = document.getElementById('editUsername').value.trim();
+  const password = document.getElementById('editPassword').value;
+  const role = document.getElementById('editRole').value;
+  const errDiv = document.getElementById('modalUserError');
+
+  errDiv.classList.remove('visible');
+
+  if (!username) { errDiv.textContent = 'Le nom d\'utilisateur est requis'; errDiv.classList.add('visible'); return; }
+  if (!id && !password) { errDiv.textContent = 'Le mot de passe est requis pour un nouvel utilisateur'; errDiv.classList.add('visible'); return; }
+  if (password && password.length < 4) { errDiv.textContent = 'Le mot de passe doit faire au moins 4 caractères'; errDiv.classList.add('visible'); return; }
+
+  const token = localStorage.getItem(AUTH_KEY) || '';
+  const headers = { 'X-Auth-Token': token, 'Content-Type': 'application/json' };
+
+  try {
+    let r, data;
+    if (id) {
+      const body = { username, role };
+      if (password) body.password = password;
+      r = await fetch(`${API}/users/${id}`, { method: 'PUT', headers, body: JSON.stringify(body) });
+    } else {
+      r = await fetch(`${API}/users`, { method: 'POST', headers, body: JSON.stringify({ username, password, role }) });
+    }
+    data = await r.json();
+    if (r.ok) {
+      fermerModal();
+      afficherToast(id ? 'Utilisateur modifié' : 'Utilisateur créé', 'success');
+      // Si on a modifié notre propre compte et le token a changé
+      const currentUser = localStorage.getItem('auth_username');
+      if (id && data.new_token && username === currentUser) {
+        localStorage.setItem(AUTH_KEY, data.new_token);
+        localStorage.setItem('auth_username', username);
+      }
+      chargerUsers();
+    } else {
+      errDiv.textContent = data.detail || 'Erreur';
+      errDiv.classList.add('visible');
+    }
+  } catch (e) {
+    errDiv.textContent = 'Erreur de connexion au serveur';
+    errDiv.classList.add('visible');
+  }
+}
+
+async function toggleActif(id, actifActuel) {
+  const nouvelActif = actifActuel ? 0 : 1;
+  const token = localStorage.getItem(AUTH_KEY) || '';
+  try {
+    const r = await fetch(`${API}/users/${id}`, {
+      method: 'PUT',
+      headers: { 'X-Auth-Token': token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ actif: nouvelActif })
+    });
+    if (r.ok) {
+      afficherToast(nouvelActif ? 'Compte activé' : 'Compte désactivé', 'success');
+      chargerUsers();
+    } else {
+      const d = await r.json();
+      afficherToast(d.detail || 'Erreur', 'error');
+    }
+  } catch (e) { afficherToast('Erreur', 'error'); }
+}
+
+async function supprimerUser(id, username) {
+  if (!confirm(`Supprimer l'utilisateur "${username}" ? Cette action est irréversible.`)) return;
+  const token = localStorage.getItem(AUTH_KEY) || '';
+  try {
+    const r = await fetch(`${API}/users/${id}`, {
+      method: 'DELETE',
+      headers: { 'X-Auth-Token': token }
+    });
+    if (r.ok || r.status === 204) {
+      afficherToast('Utilisateur supprimé', 'success');
+      chargerUsers();
+    } else {
+      const d = await r.json();
+      afficherToast(d.detail || 'Erreur', 'error');
+    }
+  } catch (e) { afficherToast('Erreur', 'error'); }
+}
+
+// Fermer la modale en cliquant l'overlay
+document.getElementById('modalUser').addEventListener('click', function(e) {
+  if (e.target === this) fermerModal();
+});
+
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function afficherToast(msg, type = 'info') {
+  const icons = {
+    success: `<polyline points="20 6 9 17 4 12"/>`,
+    error: `<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`,
+    info: `<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>`
+  };
+  const titles = { success: 'Succès', error: 'Erreur', info: 'Info' };
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `
+    <div class="toast-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">${icons[type]||icons.info}</svg></div>
+    <div class="toast-left">
+      <div class="toast-title">${titles[type]||'Info'}</div>
+      <div class="toast-message">${escHtml(msg)}</div>
+    </div>`;
+  c.appendChild(t);
+  setTimeout(() => t.style.animation = 'toastIn .3s reverse', 3000);
+  setTimeout(() => t.remove(), 3350);
+}
+
+// ============================================================
+// BACKUP
+// ============================================================
+async function creerBackup() {
+  try {
+    const r = await fetch(`${API}/admin/backup`, { method: 'POST', headers: headersAuth() });
+    if (!r.ok) { const e = await r.json(); afficherToast(e.detail||'Erreur', 'error'); return; }
+    const d = await r.json();
+    afficherToast(`Sauvegarde créée : ${d.filename} (${Math.round(d.size_bytes/1024)} Ko)`, 'success');
+    chargerBackups();
+  } catch(e) { afficherToast('Erreur réseau', 'error'); }
+}
+
+async function telechargerDB(e) {
+  e.preventDefault();
+  const token = localStorage.getItem('auth_token') || '';
+  const r = await fetch(`${API}/admin/backup/download`, { headers: headersAuth() });
+  if (!r.ok) { afficherToast('Erreur téléchargement', 'error'); return; }
+  const blob = await r.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `backup_${new Date().toISOString().slice(0,10)}.db`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function chargerBackups() {
+  try {
+    const r = await fetch(`${API}/admin/backups`, { headers: headersAuth() });
+    if (!r.ok) return;
+    const list = await r.json();
+    const el = document.getElementById('backupList');
+    if (!el) return;
+    if (!list.length) { el.innerHTML = `<p style="color:var(--texte-doux);font-size:13px;text-align:center;padding:16px">Aucune sauvegarde.</p>`; return; }
+    el.innerHTML = `<table class="users-table"><thead><tr><th>Fichier</th><th>Taille</th><th>Date</th></tr></thead><tbody>` +
+      list.map(b => `<tr><td style="font-family:monospace;font-size:12px">${b.filename}</td>
+        <td>${Math.round(b.size_bytes/1024)} Ko</td>
+        <td style="color:var(--texte-doux)">${b.created_at.replace('T',' ').substring(0,16)}</td>
+      </tr>`).join('') + `</tbody></table>`;
+  } catch(e) {}
+}
+
+// ============================================================
+// AUDIT LOGS
+// ============================================================
+async function chargerAudit() {
+  const el = document.getElementById('auditBody');
+  if (!el) return;
+  const user = document.getElementById('auditFilterUser')?.value || '';
+  const action = document.getElementById('auditFilterAction')?.value || '';
+  try {
+    const params = new URLSearchParams({ limit: 50 });
+    if (user) params.append('username', user);
+    if (action) params.append('action', action);
+    const r = await fetch(`${API}/audit-logs?${params}`, { headers: headersAuth() });
+    if (!r.ok) return;
+    const { data, total } = await r.json();
+    if (!data.length) { el.innerHTML = `<p style="color:var(--texte-doux);font-size:13px;text-align:center;padding:16px">Aucune entrée dans le journal.</p>`; return; }
+    const actionColors = {
+      login: '#059669', logout: '#64748b',
+      create_intervention: '#3b5bdb', update_intervention: '#d97706',
+      delete_intervention: '#dc2626', add_comment: '#7c3aed',
+      upload_file: '#0891b2', backup: '#059669',
+    };
+    el.innerHTML = `<div style="font-size:11px;color:var(--texte-doux);margin-bottom:8px">${total} entrées au total — affichage des 50 dernières</div>
+    <table class="users-table"><thead><tr>
+      <th>Date</th><th>Utilisateur</th><th>Action</th><th>Ressource</th><th>Détail</th><th>IP</th>
+    </tr></thead><tbody>` +
+    data.map(a => {
+      const c = actionColors[a.action] || '#64748b';
+      const dt = (a.created_at||'').replace('T',' ').substring(0,16);
+      return `<tr>
+        <td style="font-size:12px;color:var(--texte-doux);white-space:nowrap">${dt}</td>
+        <td><strong>${a.username||'—'}</strong></td>
+        <td><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:${c}18;color:${c}">${a.action}</span></td>
+        <td style="font-size:12px">${a.ressource ? a.ressource+(a.ressource_id?` #${a.ressource_id}`:'') : '—'}</td>
+        <td style="font-size:12px;color:var(--texte-doux);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.detail||'—'}</td>
+        <td style="font-size:11px;color:var(--texte-doux)">${a.ip||'—'}</td>
+      </tr>`;
+    }).join('') + `</tbody></table>`;
+  } catch(e) { el.innerHTML = `<p style="color:var(--texte-doux);font-size:13px;padding:16px">Erreur de chargement.</p>`; }
+}
+</script>
+</body>
+</html>
+
+

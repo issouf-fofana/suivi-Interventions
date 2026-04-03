@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Intervention — Suivi des Interventions</title>
+
+  <link rel="stylesheet" href="/static/style.css">
+
+  <style>
+
+    html, body { height: 100%; }
+
+  </style>
+
+</head>
+
+<body>
+
+
+
+<!-- ===== SIDEBAR TOGGLE (mobile) ===== -->
+
+<button class="sidebar-toggle" onclick="toggleSidebar()" id="sidebarToggle" aria-label="Menu">
+
+  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+
+    <line x1="3" y1="6" x2="21" y2="6"/>
+
+    <line x1="3" y1="12" x2="21" y2="12"/>
+
+    <line x1="3" y1="18" x2="21" y2="18"/>
+
+  </svg>
+
+</button>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+
+
+<!-- ===== SIDEBAR ===== -->
+
+<nav class="sidebar" id="sidebar">
+
+  <div class="sidebar-brand">
+
+    <div class="sidebar-logo">
+
+      <svg width="20" height="20" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+
+        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+
+      </svg>
+
+    </div>
+
+    <div class="sidebar-brand-text">
+
+      <div class="sidebar-brand-title">Suivi Interventions</div>
+
+      <div class="sidebar-brand-sub">Formulaire</div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="sidebar-nav">
+
+    <div class="sidebar-section-label">Navigation</div>
+
+    <a href="index.html" class="sidebar-link">
+
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+
+      Tableau de bord
+
+    </a>
+
+    <a href="calendar.html" class="sidebar-link">
+
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+
+      Calendrier
+
+    </a>
+
+    <a href="form.html" class="sidebar-link active">
+
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+
+      Nouvelle intervention
+
+    </a>
+
+    <div class="sidebar-divider"></div>
+
+    <a href="admin.html" class="sidebar-link" id="btnAdmin" style="display:none">
+
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+
+      Administration
+
+    </a>
+
+    <button class="sidebar-link" onclick="toggleDark()" id="btnDark">
+
+      <svg id="iconDark" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+
+      Mode sombre
+
+    </button>
+
+    <button class="sidebar-link danger" onclick="seDeconnecter()">
+
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+
+      Déconnexion
+
+    </button>
+
+  </div>
+
+
+
+  <div class="sidebar-footer">
+
+    <div class="sidebar-user">
+
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+
+      <div class="sidebar-user-info">
+
+        <div class="sidebar-username" id="sidebarUsername">—</div>
+
+        <div class="sidebar-role" id="sidebarRole">—</div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</nav>
+
+
+
+<div class="app-layout">
+
+<div class="page-content">
+
+<!-- ===== FORMULAIRE ===== -->
+
+<div class="form-page-full">
+
+
+
+  <!-- Toast alertes -->
+
+  <div class="form-toast success" id="alertSuccess">
+
+    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+
+    <span id="alertSuccessMsg">Intervention enregistrée avec succès !</span>
+
+  </div>
+
+  <div class="form-toast error" id="alertError">
+
+    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+
+    <span id="alertErrorMsg">Une erreur est survenue.</span>
+
+  </div>
+
+
+
+  <div class="form-compact">
+
+    <div class="form-actions-bar" style="margin-top:0;">
+      <div class="form-duree-bloc">
+        <div class="form-duree-label">Durée calculée</div>
+        <div class=”form-duree-val” id=”dureeAffichee”>—</div>
+      </div>
+      <div class="form-actions-buttons">
+        <button type="button" class="form-btn-reset" onclick="reinitialiserFormulaire()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.6"/></svg>
+          Réinitialiser
+        </button>
+        <a href="/" class="form-btn-cancel">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Annuler
+        </a>
+        <button type="submit" form="formIntervention" class="form-btn-submit" id="btnSubmit">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Enregistrer
+        </button>
+      </div>
+    </div>
+
+    <!-- Grille champs -->
+    <form id="formIntervention" novalidate class="form-fields">
+
+      <!-- Section 1 -->
+      <div class="fc-section-label fc-full">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        Prestataire &amp; Type
+      </div>
+
+      <!-- Ligne 1 : Prestataire + Type -->
+
+      <div class="fc-group" id="grpPrestataire">
+
+        <label class="fc-label">Prestataire <span class="required">*</span></label>
+
+        <select id="prestataire" class="fc-input">
+
+          <option value=””>— Sélectionner —</option>
+
+          <option>DSI</option><option>COGITECH</option><option>Manage Engine</option>
+
+          <option>CBI</option><option>GBSS</option><option>AWALE</option>
+
+          <option>PROSUMA</option><option>ORANGE</option><option>MTN</option>
+
+          <option>ARIC</option><option value="__autre__">Autre...</option>
+
+        </select>
+
+        <input type="text" id="prestataireAutre" class="fc-input autre-input" placeholder="Nom du prestataire">
+
+        <span class="fc-error" id="errPrestataire">Champ obligatoire</span>
+
+      </div>
+
+
+
+      <div class="fc-group" id="grpType">
+
+        <label class="fc-label">Type <span class="required">*</span></label>
+
+        <div class="radio-group">
+
+          <label class="radio-option">
+
+            <input type="radio" name="type_intervention" value="Planifiée" checked>
+
+            <span class="badge badge-planifiee"><span class="badge-dot"></span>Planifiée</span>
+
+          </label>
+
+          <label class="radio-option">
+
+            <input type="radio" name="type_intervention" value="Dépannage">
+
+            <span class="badge badge-depannage"><span class="badge-dot"></span>Dépannage</span>
+
+          </label>
+
+        </div>
+
+        <span class="fc-error" id="errType">Sélectionnez un type</span>
+
+      </div>
+
+
+
+      <!-- Section 2 -->
+      <div class="fc-section-label fc-full">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Site d'intervention
+      </div>
+
+      <!-- Ligne 2 : Site (pleine largeur) -->
+
+      <div class="fc-group fc-full" id="grpSite">
+
+        <label class="fc-label">Site d'intervention <span class="required">*</span></label>
+
+        <select id="site" class="fc-input">
+
+          <option value=””>— Sélectionner —</option>
+
+          <option>Centrale</option><option>DAFCI</option><option>CA2P</option>
+
+          <option>SAPRIM</option><option>CAVA</option><option>DPH</option>
+
+          <option>Casino Golf</option><option>SuperU Plateau</option>
+
+          <option>Cash Zone 4</option><option>Sococe Zone 4</option>
+
+          <option>Téléassistance</option><option>centrale/salle serveur</option>
+
+          <option>centrale/service exploitation</option>
+
+          <option>Achat frais et entrepôt frais</option><option>Achat frais</option>
+
+          <option>Cash U toit rouge</option><option>CASINO MADARINE ANGRE</option>
+
+          <option>S2P BOUAKE</option><option>OENOPHILE COSMOS</option>
+
+          <option>NESPRESSO NAH</option><option>HYPER U 2 PLATEAUX</option>
+
+          <option>SUPRETTE BOUAKE</option><option>S2P GAGNOA</option>
+
+          <option>PRIMA</option><option>GIFI Z4</option><option>SEMAT</option>
+
+          <option>Salle serveur SAPRIM</option><option>TREICHVILLE</option>
+
+          <option>SAPRIM/TREICHVILLE</option>
+
+          <option value="__autre__">Autre...</option>
+
+        </select>
+
+        <input type="text" id="siteAutre" class="fc-input autre-input" placeholder="Nom du site">
+
+        <span class="fc-error" id="errSite">Champ obligatoire</span>
+
+      </div>
+
+
+
+      <!-- Section 3 -->
+      <div class="fc-section-label fc-full">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Dates &amp; Heures
+      </div>
+
+      <!-- Ligne 3 : 4 dates/heures -->
+
+      <div class="fc-group" id="grpDateDebut">
+
+        <label class="fc-label">Date début <span class="required">*</span></label>
+
+        <input type="date" id="date_debut" class="fc-input">
+
+        <span class="fc-error" id="errDateDebut">Champ obligatoire</span>
+
+      </div>
+
+
+
+      <div class="fc-group" id="grpHeureDebut">
+
+        <label class="fc-label">Heure début <span class="required">*</span></label>
+
+        <input type="time" id="heure_debut" class="fc-input">
+
+        <span class="fc-error" id="errHeureDebut">Champ obligatoire</span>
+
+      </div>
+
+
+
+      <div class="fc-group" id="grpDateFin">
+
+        <label class="fc-label">Date fin</label>
+
+        <input type="date" id="date_fin" class="fc-input">
+
+        <span class="fc-error" id="errDateFin">Date invalide</span>
+
+      </div>
+
+
+
+      <div class="fc-group" id="grpHeureFin">
+
+        <label class="fc-label">Heure fin</label>
+
+        <input type="time" id="heure_fin" class="fc-input">
+
+        <span class="fc-error" id="errHeureFin">Heure invalide</span>
+
+      </div>
+
+
+
+      <!-- Section 4 -->
+      <div class="fc-section-label fc-full">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Statut, Technicien &amp; Travaux
+      </div>
+
+      <!-- Ligne 4 : Statut + Technicien + Prochaine -->
+      <div class="fc-group" id="grpStatut">
+        <label class="fc-label">Statut</label>
+        <select id="statut" class="fc-input">
+          <option value="En cours">En cours</option>
+          <option value="Terminée">Terminée</option>
+          <option value="En attente">En attente</option>
+          <option value="Annulée">Annulée</option>
+        </select>
+      </div>
+
+      <div class="fc-group">
+        <label class="fc-label">Technicien <span class="fc-opt">optionnel</span></label>
+        <input type="text" id="technicien" class="fc-input" placeholder="Nom du technicien">
+      </div>
+
+      <div class="fc-group">
+        <label class="fc-label">Prochaine intervention <span class="fc-opt">optionnel</span></label>
+        <input type="date" id="prochaine_intervention" class="fc-input">
+      </div>
+
+      <div class="fc-group fc-span3" style="grid-column: span 3">
+        <label class="fc-label">Travaux effectués</label>
+        <textarea id="travaux" class="fc-input fc-textarea" placeholder="Décrivez les travaux réalisés..."></textarea>
+      </div>
+
+      <!-- Notes -->
+      <div class="fc-group fc-full">
+        <label class="fc-label">Notes internes <span class="fc-opt">optionnel</span></label>
+        <textarea id="notes" class="fc-input fc-textarea" placeholder="Remarques internes..."></textarea>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+
+</div><!-- /.page-content -->
+
+</div><!-- /.app-layout -->
+
+
+
+<script>
+
+const API = `${window.location.protocol}//${window.location.host}/api`;
+
+const AUTH_KEY = 'auth_token';
+
+let modeEdition = false;
+
+let idEdition = null;
+
+
+
+// Helpers sidebar / thème / auth
+
+function toggleSidebar() {
+
+  const sidebar = document.getElementById('sidebar');
+
+  const overlay = document.getElementById('sidebarOverlay');
+
+  if (!sidebar || !overlay) return;
+
+  sidebar.classList.toggle('open');
+
+  overlay.classList.toggle('open');
+
+}
+
+
+
+function toggleDark() {
+
+  const html = document.documentElement;
+
+  const isDark = html.getAttribute('data-theme') === 'dark';
+
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+
+  localStorage.setItem('theme', isDark ? 'light' : 'dark');
+
+  const icon = document.getElementById('iconDark');
+
+  if (icon) {
+
+    icon.innerHTML = isDark
+
+      ? `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`
+
+      : `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+
+  }
+
+}
+
+
+
+function chargerTheme() {
+
+  const saved = localStorage.getItem('theme') || 'light';
+
+  document.documentElement.setAttribute('data-theme', saved);
+
+  if (saved === 'dark') {
+
+    const icon = document.getElementById('iconDark');
+
+    if (icon) {
+
+      icon.innerHTML = `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+
+    }
+
+  }
+
+}
+
+
+
+function verifierAuth() {
+
+  const token = localStorage.getItem(AUTH_KEY);
+
+  if (!token) { window.location.href = 'login.html'; return false; }
+
+  const role = localStorage.getItem('auth_role');
+
+  const username = localStorage.getItem('auth_username') || '?';
+
+
+
+  if (role === 'admin') {
+
+    const btnAdmin = document.getElementById('btnAdmin');
+
+    if (btnAdmin) btnAdmin.style.display = '';
+
+  }
+
+  const avatar = document.getElementById('sidebarAvatar');
+
+  if (avatar) avatar.textContent = username.charAt(0).toUpperCase();
+
+  const uname = document.getElementById('sidebarUsername');
+
+  if (uname) uname.textContent = username;
+
+  const srole = document.getElementById('sidebarRole');
+
+  if (srole) srole.textContent = role === 'admin' ? 'Administrateur' : 'Utilisateur';
+
+  return true;
+
+}
+
+
+
+/**
+
+ * Retourne les headers avec le token d'auth.
+
+ */
+
+function headersAuth(extra) {
+
+  return Object.assign({ 'X-Auth-Token': localStorage.getItem(AUTH_KEY) || '' }, extra || {});
+
+}
+
+
+
+/**
+
+ * Déconnecte et redirige vers /static/login.html.
+
+ */
+
+async function seDeconnecter() {
+
+  try {
+
+    await fetch(`${API}/auth/logout`, { method: 'POST', headers: headersAuth() });
+
+  } catch (e) {}
+
+  localStorage.removeItem(AUTH_KEY);
+
+  localStorage.removeItem('auth_username');
+
+  localStorage.removeItem('auth_role');
+
+  window.location.href = 'login.html';
+
+}
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  if (!verifierAuth()) return;
+
+  chargerTheme();
+
+
+
+  const params = new URLSearchParams(window.location.search);
+
+  const id = params.get('id');
+
+
+
+  if (id) {
+    modeEdition = true;
+    idEdition = parseInt(id);
+    document.getElementById('btnSubmit').innerHTML = `
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      Mettre à jour`;
+    chargerIntervention(id);
+  }
+
+
+  ['date_debut','heure_debut','date_fin','heure_fin'].forEach(id => {
+
+    document.getElementById(id).addEventListener('input', calculerDuree);
+
+  });
+
+
+
+  document.getElementById('prestataire').addEventListener('change', function() {
+
+    const a = document.getElementById('prestataireAutre');
+
+    a.classList.toggle('visible', this.value === '__autre__');
+
+    if (this.value === '__autre__') a.focus();
+
+  });
+
+
+
+  document.getElementById('site').addEventListener('change', function() {
+
+    const a = document.getElementById('siteAutre');
+
+    a.classList.toggle('visible', this.value === '__autre__');
+
+    if (this.value === '__autre__') a.focus();
+
+  });
+
+
+
+  document.getElementById('formIntervention').addEventListener('submit', soumettreFormulaire);
+
+});
+
+
+
+async function chargerIntervention(id) {
+
+  try {
+
+    const res = await fetch(`${API}/interventions/${id}`, { headers: headersAuth() });
+
+    if (res.status === 401) { window.location.href = 'login.html'; return; }
+
+    if (!res.ok) throw new Error();
+
+    remplirFormulaire(await res.json());
+
+  } catch {
+
+    afficherAlerte('error', `Intervention #${id} introuvable.`);
+
+  }
+
+}
+
+
+
+function remplirFormulaire(data) {
+
+  const sel = document.getElementById('prestataire');
+
+  if ([...sel.options].find(o => o.value === data.prestataire)) {
+
+    sel.value = data.prestataire;
+
+  } else if (data.prestataire) {
+
+    sel.value = '__autre__';
+
+    const a = document.getElementById('prestataireAutre');
+
+    a.value = data.prestataire; a.classList.add('visible');
+
+  }
+
+
+
+  document.querySelectorAll('input[name="type_intervention"]').forEach(r => {
+
+    const t = (data.type_intervention || '').toLowerCase();
+
+    if (t.includes('plan') && r.value === 'Planifiée') r.checked = true;
+
+    if ((t.includes('dep') || t.includes('dép')) && r.value === 'Dépannage') r.checked = true;
+
+  });
+
+
+
+  const sSite = document.getElementById('site');
+
+  if ([...sSite.options].find(o => o.value === data.site)) {
+
+    sSite.value = data.site;
+
+  } else if (data.site) {
+
+    sSite.value = '__autre__';
+
+    const a = document.getElementById('siteAutre');
+
+    a.value = data.site; a.classList.add('visible');
+
+  }
+
+
+
+  if (data.date_debut) document.getElementById('date_debut').value = data.date_debut;
+
+  if (data.heure_debut) document.getElementById('heure_debut').value = data.heure_debut;
+
+  if (data.date_fin) document.getElementById('date_fin').value = data.date_fin;
+
+  if (data.heure_fin) document.getElementById('heure_fin').value = data.heure_fin;
+
+  if (data.travaux) document.getElementById('travaux').value = data.travaux;
+
+  if (data.prochaine_intervention) document.getElementById('prochaine_intervention').value = data.prochaine_intervention;
+
+  if (data.notes) document.getElementById('notes').value = data.notes;
+  if (data.statut) document.getElementById('statut').value = data.statut;
+  if (data.technicien) document.getElementById('technicien').value = data.technicien || '';
+
+  calculerDuree();
+
+}
+
+
+
+function calculerDuree() {
+
+  const dd = document.getElementById('date_debut').value;
+
+  const hd = document.getElementById('heure_debut').value;
+
+  const df = document.getElementById('date_fin').value;
+
+  const hf = document.getElementById('heure_fin').value;
+
+  const el = document.getElementById('dureeAffichee');
+
+
+
+  if (!dd || !hd || !df || !hf) {
+
+    el.textContent = '—';
+
+    el.style.color = '';
+
+    return;
+
+  }
+
+
+
+  const debut = new Date(`${dd}T${hd}`);
+
+  const fin   = new Date(`${df}T${hf}`);
+
+  const diff  = fin - debut;
+
+
+
+  if (diff < 0) {
+
+    el.textContent = 'Invalide';
+
+    el.style.color = '#fca5a5';
+
+    return;
+
+  }
+
+
+
+  el.style.color = '';
+
+  const totalMin = Math.floor(diff / 60000);
+
+  const h = Math.floor(totalMin / 60);
+
+  const m = totalMin % 60;
+
+  el.textContent = h > 0 ? `${h}h${m > 0 ? m + 'min' : ''}` : `${m}min`;
+
+}
+
+
+
+function validerFormulaire() {
+
+  let ok = true;
+
+  document.querySelectorAll('.fc-error').forEach(e => e.classList.remove('visible'));
+
+  document.querySelectorAll('.fc-group').forEach(g => g.classList.remove('has-error'));
+
+
+
+  if (!obtenirPrestataire()) { err('grpPrestataire','errPrestataire'); ok = false; }
+
+  if (!document.querySelector('input[name="type_intervention"]:checked')) { err('grpType','errType'); ok = false; }
+
+  if (!obtenirSite()) { err('grpSite','errSite'); ok = false; }
+
+  if (!document.getElementById('date_debut').value) { err('grpDateDebut','errDateDebut'); ok = false; }
+
+  if (!document.getElementById('heure_debut').value) { err('grpHeureDebut','errHeureDebut'); ok = false; }
+
+
+
+  const dd = document.getElementById('date_debut').value;
+
+  const df = document.getElementById('date_fin').value;
+
+  const hd = document.getElementById('heure_debut').value;
+
+  const hf = document.getElementById('heure_fin').value;
+
+
+
+  if (df && dd && df < dd) { err('grpDateFin','errDateFin'); ok = false; }
+
+  if (df && hf && dd && hd && df === dd && hf <= hd) { err('grpHeureFin','errHeureFin'); ok = false; }
+
+
+
+  return ok;
+
+}
+
+
+
+function err(grpId, errId) {
+
+  const g = document.getElementById(grpId);
+
+  const e = document.getElementById(errId);
+
+  if (g) g.classList.add('has-error');
+
+  if (e) e.classList.add('visible');
+
+}
+
+
+
+function obtenirPrestataire() {
+
+  const s = document.getElementById('prestataire');
+
+  return s.value === '__autre__'
+
+    ? document.getElementById('prestataireAutre').value.trim()
+
+    : s.value;
+
+}
+
+
+
+function obtenirSite() {
+
+  const s = document.getElementById('site');
+
+  return s.value === '__autre__'
+
+    ? document.getElementById('siteAutre').value.trim()
+
+    : s.value;
+
+}
+
+
+
+async function soumettreFormulaire(e) {
+
+  e.preventDefault();
+
+  if (!validerFormulaire()) return;
+
+
+
+  const dd = document.getElementById('date_debut').value;
+
+  const hd = document.getElementById('heure_debut').value;
+
+  const df = document.getElementById('date_fin').value;
+
+  const hf = document.getElementById('heure_fin').value;
+
+
+
+  let dureeMinutes = null;
+
+  if (dd && hd && df && hf) {
+
+    const diff = new Date(`${df}T${hf}`) - new Date(`${dd}T${hd}`);
+
+    if (diff >= 0) dureeMinutes = Math.floor(diff / 60000);
+
+  }
+
+
+
+  const payload = {
+
+    prestataire: obtenirPrestataire(),
+
+    type_intervention: document.querySelector('input[name="type_intervention"]:checked').value,
+
+    site: obtenirSite(),
+
+    date_debut: dd || null, heure_debut: hd || null,
+
+    date_fin: df || null,   heure_fin: hf || null,
+
+    duree_minutes: dureeMinutes,
+
+    travaux: document.getElementById('travaux').value.trim() || null,
+    prochaine_intervention: document.getElementById('prochaine_intervention').value || null,
+    notes: document.getElementById('notes').value.trim() || null,
+    statut: document.getElementById('statut').value || 'En cours',
+    technicien: document.getElementById('technicien').value.trim() || null,
+  };
+
+
+
+  const btn = document.getElementById('btnSubmit');
+
+  btn.disabled = true;
+
+  btn.innerHTML = `<div class="spinner" style="width:16px;height:16px;border-width:2px"></div> Enregistrement...`;
+
+
+
+  try {
+
+    const res = await fetch(
+
+      modeEdition ? `${API}/interventions/${idEdition}` : `${API}/interventions`,
+
+      {
+
+        method: modeEdition ? 'PUT' : 'POST',
+
+        headers: headersAuth({ 'Content-Type': 'application/json' }),
+
+        body: JSON.stringify(payload)
+
+      }
+
+    );
+
+    if (res.status === 401) { window.location.href = 'login.html'; return; }
+
+
+
+    if (res.ok) {
+
+      afficherAlerte('success', modeEdition
+
+        ? 'Intervention mise à jour ! Redirection dans 2 secondes...'
+
+        : 'Intervention enregistrée ! Redirection dans 2 secondes...');
+
+      setTimeout(() => window.location.href = 'index.html', 2000);
+
+    } else {
+
+      const errData = await res.json();
+
+      afficherAlerte('error', errData.detail || 'Erreur serveur');
+
+      btn.disabled = false;
+
+      btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> ${modeEdition ? 'Mettre à jour' : 'Enregistrer'}`;
+
+    }
+
+  } catch {
+
+    afficherAlerte('error', 'Impossible de joindre le serveur.');
+
+    btn.disabled = false;
+
+    btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> ${modeEdition ? 'Mettre à jour' : 'Enregistrer'}`;
+
+  }
+
+}
+
+
+
+function reinitialiserFormulaire() {
+
+  if (modeEdition) chargerIntervention(idEdition);
+
+  else {
+
+    document.getElementById('formIntervention').reset();
+
+    document.getElementById('prestataireAutre').classList.remove('visible');
+
+    document.getElementById('siteAutre').classList.remove('visible');
+
+    calculerDuree();
+
+  }
+
+  document.querySelectorAll('.field-error').forEach(e => e.classList.remove('visible'));
+
+  document.querySelectorAll('.form-group').forEach(g => g.classList.remove('has-error'));
+
+  masquerAlertes();
+
+}
+
+
+
+function afficherAlerte(type, msg) {
+
+  masquerAlertes();
+
+  const el = document.getElementById(type === 'success' ? 'alertSuccess' : 'alertError');
+
+  document.getElementById(type === 'success' ? 'alertSuccessMsg' : 'alertErrorMsg').textContent = msg;
+
+  el.classList.add('visible');
+
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+}
+
+
+
+function masquerAlertes() {
+
+  document.getElementById('alertSuccess').classList.remove('visible');
+
+  document.getElementById('alertError').classList.remove('visible');
+
+}
+
+</script>
+
+</body>
+
+</html>
+
+
+

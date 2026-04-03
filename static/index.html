@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Suivi des Interventions</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ===== SIDEBAR TOGGLE (mobile) ===== -->
+<button class="sidebar-toggle" onclick="toggleSidebar()" id="sidebarToggle" aria-label="Menu">
+  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <line x1="3" y1="12" x2="21" y2="12"/>
+    <line x1="3" y1="18" x2="21" y2="18"/>
+  </svg>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- ===== SIDEBAR ===== -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-logo">
+      <svg width="20" height="20" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+      </svg>
+    </div>
+    <div class="sidebar-brand-text">
+      <div class="sidebar-brand-title">Suivi Interventions</div>
+      <div class="sidebar-brand-sub">Tableau de bord</div>
+    </div>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="sidebar-section-label">Navigation</div>
+    <a href="/" class="sidebar-link active">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Tableau de bord
+    </a>
+    <a href="/calendrier" class="sidebar-link">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Calendrier
+    </a>
+    <a href="/nouvelle-intervention" class="sidebar-link">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nouvelle intervention
+    </a>
+
+    <div class="sidebar-section-label" style="margin-top:8px">Outils</div>
+    <button class="sidebar-link" onclick="ouvrirImport()">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+      Importer CSV
+    </button>
+    <button class="sidebar-link" onclick="exportCSV()">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Exporter CSV
+    </button>
+    <button class="sidebar-link" onclick="exportExcel()">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+      Exporter Excel
+    </button>
+
+    <div class="sidebar-divider"></div>
+
+    <a href="/admin" class="sidebar-link" id="btnAdmin" style="display:none">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Administration
+    </a>
+    <button class="sidebar-link" onclick="toggleDark()" id="btnDark">
+      <svg id="iconDark" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      Mode sombre
+    </button>
+    <button class="sidebar-link danger" onclick="seDeconnecter()">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Déconnexion
+    </button>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-username" id="sidebarUsername">—</div>
+        <div class="sidebar-role" id="sidebarRole">—</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="app-layout">
+<div class="page-content">
+<main class="main">
+  <div class="container">
+
+    <!-- Alertes interventions longues -->
+    <div id="alerteLongues" style="display:none" class="alerte-longues-banner">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="alerteLonguesTxt"></span>
+      <button onclick="document.getElementById('alerteLongues').style.display='none'" style="margin-left:auto;background:none;border:none;cursor:pointer;color:inherit">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- KPI -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="kpiTotal">—</div>
+          <div class="kpi-label">Total interventions</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="kpiPrestataires">—</div>
+          <div class="kpi-label">Prestataires actifs</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="kpiDuree">—</div>
+          <div class="kpi-label">Durée moy. (min)</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="kpiSites">—</div>
+          <div class="kpi-label">Sites couverts</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap" style="background:#fef3c7;color:#d97706">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="kpiDureeMax" style="color:#d97706">—</div>
+          <div class="kpi-label">Durée max (min)</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap" style="background:#ede9fe;color:#7c3aed">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="kpiDureeTotale" style="color:#7c3aed">—</div>
+          <div class="kpi-label">Durée totale (h)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtres sauvegardés (chips) -->
+    <div id="filtresSauvegardesWrap" style="display:none;margin-bottom:10px">
+      <div style="font-size:11px;font-weight:700;color:var(--texte-doux);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
+        Filtres sauvegardés
+      </div>
+      <div id="filtresSauvegardesChips" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+    </div>
+
+    <!-- Filtres (barre compacte, collapsible) -->
+    <div class="filters-bar" id="filtersBar">
+      <!-- Ligne toujours visible -->
+      <div class="filters-toprow">
+        <div style="position:relative;flex:1;min-width:0">
+          <svg style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--texte-doux);pointer-events:none" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="searchInput" placeholder="Rechercher prestataire, site, travaux..." style="padding-left:34px;width:100%;height:34px;font-size:13px" oninput="rechercheInstantanee()">
+        </div>
+        <button class="btn btn-ghost filters-toggle-btn" id="filtersToggleBtn" onclick="toggleFiltres()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          Filtres
+          <span id="filtresActifsCount" class="filters-badge" style="display:none">0</span>
+          <svg id="filtersChevron" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="transition:transform .2s"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <button class="btn btn-primary" onclick="appliquerFiltres()" style="height:34px;padding:0 14px;font-size:13px">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Filtrer
+        </button>
+      </div>
+
+      <!-- Panneau collapsible -->
+      <div class="filters-panel" id="filtersPanel">
+        <div class="filters-row">
+          <div class="filter-group">
+            <label>Prestataire</label>
+            <select id="filterPrestataire">
+              <option value="">Tous</option>
+              <option>DSI</option><option>COGITECH</option><option>Manage Engine</option>
+              <option>CBI</option><option>GBSS</option><option>AWALE</option>
+              <option>PROSUMA</option><option>ORANGE</option><option>MTN</option><option>ARIC</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Type</label>
+            <select id="filterType">
+              <option value="">Tous</option>
+              <option value="Planifiée">Planifiée</option>
+              <option value="Dépannage">Dépannage</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Date début ≥</label>
+            <input type="date" id="filterDateDebut" style="padding:7px 10px;border:1px solid var(--bordure);border-radius:8px;background:var(--blanc);color:var(--texte);font-size:13px;font-family:inherit;cursor:pointer;height:34px;">
+          </div>
+          <div class="filter-group">
+            <label>Date début ≤</label>
+            <input type="date" id="filterDateFin" style="padding:7px 10px;border:1px solid var(--bordure);border-radius:8px;background:var(--blanc);color:var(--texte);font-size:13px;font-family:inherit;cursor:pointer;height:34px;">
+          </div>
+          <div class="filter-group">
+            <label>Site</label>
+            <select id="filterSite"><option value="">Tous</option></select>
+          </div>
+          <div class="filter-btns">
+            <button class="btn btn-ghost" onclick="reinitialiserFiltres()" style="height:34px;font-size:13px">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.6"/></svg>
+              Reset
+            </button>
+            <button class="btn btn-ghost" onclick="ouvrirModaleSauvegarderFiltre()" style="height:34px;font-size:13px">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Sauvegarder
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Graphiques ligne 1 : Comparatif prestataires (pleine largeur) -->
+    <div class="section-card" style="margin-bottom:20px">
+      <div class="section-header">
+        <div class="section-title">
+          <div class="section-icon" style="background:var(--purple-light);color:var(--purple)">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+          </div>
+          Comparatif prestataires
+        </div>
+        <div style="font-size:12px;color:var(--texte-doux)">Barres : nb interventions · Ligne : durée moyenne (min) · Top 10</div>
+      </div>
+      <div style="padding:16px 20px 20px">
+        <div class="chart-container" style="height:260px"><canvas id="chartBubble"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Graphiques ligne 2 : Statuts + Mois -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-icon" style="background:#ecfdf5;color:#059669"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+          <div><div class="chart-title">Statuts des interventions</div><div class="chart-sub">En cours · Terminée · En attente · Annulée</div></div>
+        </div>
+        <div class="chart-container chart-donut"><canvas id="chartStatut"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg></div>
+          <div><div class="chart-title">Interventions par mois</div><div class="chart-sub">Évolution mensuelle</div></div>
+        </div>
+        <div class="chart-container"><canvas id="chartMois"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Graphiques ligne 3 : Type + Top sites -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-icon" style="background:#fef3c7;color:#d97706"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+          <div><div class="chart-title">Planifiée vs Dépannage</div><div class="chart-sub">Comparaison des types</div></div>
+        </div>
+        <div class="chart-container"><canvas id="chartType"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-icon" style="background:#ede9fe;color:#7c3aed"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          <div><div class="chart-title">Top sites</div><div class="chart-sub">Sites les plus sollicités</div></div>
+        </div>
+        <div class="chart-container"><canvas id="chartSite"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Graphique évolution (courbe) -->
+    <div class="section-card" style="margin-bottom:24px">
+      <div class="section-header">
+        <div class="section-title">
+          <div class="section-icon" style="background:#ecfdf5;color:#059669">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          </div>
+          Évolution dans le temps
+        </div>
+        <div style="font-size:12px;color:var(--texte-doux)">Nombre d'interventions par période</div>
+      </div>
+      <div style="padding:20px">
+        <div class="chart-container" style="height:200px"><canvas id="chartEvolution"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Tableau interventions -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          <div class="section-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg></div>
+          Liste des interventions
+        </div>
+        <div id="tableInfo" style="font-size:12px;color:var(--texte-doux)"></div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="trierPar('id')">#</th>
+              <th onclick="trierPar('prestataire')">Prestataire</th>
+              <th onclick="trierPar('type_intervention')">Type</th>
+              <th onclick="trierPar('statut')">Statut</th>
+              <th onclick="trierPar('site')">Site</th>
+              <th onclick="trierPar('date_debut')">Date début</th>
+              <th class="col-heure" onclick="trierPar('heure_debut')">Heure</th>
+              <th class="col-duree" onclick="trierPar('duree_minutes')">Durée</th>
+              <th>Travaux</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="10"><div class="loader"><div class="spinner"></div> Chargement...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+
+    <!-- Interventions longues -->
+    <div class="section-card" id="sectionLongues" style="display:none;margin-bottom:24px">
+      <div class="section-header">
+        <div class="section-title">
+          <div class="section-icon" style="background:#fee2e2;color:#dc2626">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          Interventions longues (&gt; 8h)
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>Prestataire</th><th>Site</th><th>Date</th><th>Durée</th><th>Travaux</th></tr></thead>
+          <tbody id="longuesBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Prochaines interventions -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          <div class="section-icon" style="background:var(--warning-light);color:var(--warning)">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          Prochaines interventions planifiées
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>Prestataire</th><th>Site</th><th>Date prévue</th><th>Dans</th><th>Travaux précédents</th></tr></thead>
+          <tbody id="prochainesBody"><tr><td colspan="5"><div class="loader"><div class="spinner"></div></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ===== MODALE SUPPRESSION ===== -->
+<div class="modal-overlay" id="modalSuppr">
+  <div class="modal">
+    <div class="modal-icon">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+    </div>
+    <h3>Confirmer la suppression</h3>
+    <p>Voulez-vous vraiment supprimer cette intervention ? Cette action est irréversible.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="fermerModal()">Annuler</button>
+      <button class="btn btn-danger" id="btnConfirmSuppr">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODALE IMPORT CSV ===== -->
+<div class="modal-overlay" id="modalImport">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-icon" style="background:var(--primary-light);color:var(--primary)">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+    </div>
+    <h3>Importer un fichier CSV</h3>
+    <p>Sélectionnez un fichier CSV exporté depuis Excel (séparateur <strong>;</strong>, encodage UTF-8).</p>
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+      <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+      <p id="uploadLabel">Cliquez pour sélectionner un fichier</p>
+      <small style="color:var(--texte-doux)">.csv uniquement</small>
+      <input type="file" id="fileInput" accept=".csv" style="display:none" onchange="fichierSelectionne(this)">
+    </div>
+    <div id="importResult" style="display:none;margin-top:14px"></div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn btn-ghost" onclick="fermerImport()">Annuler</button>
+      <button class="btn btn-primary" id="btnImporter" onclick="lancerImport()" disabled>Importer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODALE SAUVEGARDER FILTRE ===== -->
+<div class="modal-overlay" id="modalSauvegarderFiltre">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-icon" style="background:var(--primary-light);color:var(--primary)">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+        <polyline points="17 21 17 13 7 13 7 21"/>
+        <polyline points="7 3 7 8 15 8"/>
+      </svg>
+    </div>
+    <h3>Sauvegarder ce filtre</h3>
+    <p>Donnez un nom à votre filtre pour le retrouver facilement. Maximum 5 filtres sauvegardés.</p>
+    <input type="text" id="nomFiltreInput" placeholder="Ex : DSI - Janvier 2025" style="width:100%;margin-bottom:4px" maxlength="50">
+    <div id="errNomFiltre" style="font-size:12px;color:var(--danger);display:none;margin-bottom:8px">Ce nom est déjà utilisé ou le champ est vide.</div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn btn-ghost" onclick="fermerModaleSauvegarderFiltre()">Annuler</button>
+      <button class="btn btn-primary" onclick="sauvegarderFiltre()">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /.page-content -->
+</div><!-- /.app-layout -->
+
+<!-- ===== RECHERCHE GLOBALE Ctrl+K ===== -->
+<div id="globalSearchOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);z-index:1000;align-items:flex-start;justify-content:center;padding-top:80px" onclick="fermerRecherche(event)">
+  <div style="background:var(--blanc);border:1px solid var(--bordure);border-radius:16px;width:100%;max-width:620px;margin:0 16px;box-shadow:0 24px 60px rgba(0,0,0,.25);overflow:hidden" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--bordure)">
+      <svg width="18" height="18" fill="none" stroke="var(--texte-doux)" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="globalSearchInput" type="text" placeholder="Rechercher intervention, site, prestataire, travaux..." style="flex:1;border:none;outline:none;font-size:15px;background:transparent;color:var(--texte);font-family:inherit" oninput="rechercheGlobale(this.value)" onkeydown="navRecherche(event)">
+      <kbd style="font-size:11px;padding:2px 7px;border:1px solid var(--bordure);border-radius:5px;color:var(--texte-doux);background:var(--gris-100);cursor:pointer" onclick="fermerRecherche()">Échap</kbd>
+    </div>
+    <div id="globalSearchResults" style="max-height:420px;overflow-y:auto;padding:8px"></div>
+    <div style="padding:8px 16px;border-top:1px solid var(--bordure);display:flex;gap:14px;font-size:11px;color:var(--texte-doux)">
+      <span><kbd style="padding:1px 5px;border:1px solid var(--bordure);border-radius:3px;background:var(--gris-100)">↵</kbd> Ouvrir</span>
+      <span><kbd style="padding:1px 5px;border:1px solid var(--bordure);border-radius:3px;background:var(--gris-100)">↑↓</kbd> Naviguer</span>
+      <span><kbd style="padding:1px 5px;border:1px solid var(--bordure);border-radius:3px;background:var(--gris-100)">Échap</kbd> Fermer</span>
+    </div>
+  </div>
+</div>
+
+<!-- Toasts -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ============================================================
+// Dashboard — Suivi des Interventions v3
+// ============================================================
+const API = `${window.location.protocol}//${window.location.host}/api`;
+
+// Clé du token d'authentification dans localStorage
+const AUTH_KEY = 'auth_token';
+
+let toutesInterventions = [];
+let interventionsFiltrees = [];
+let pageCourante = 1;
+const PAR_PAGE = 10;
+let triColonne = 'date_debut';
+let triSens = 'desc';
+let charts = {};
+let idASupprimer = null;
+let rechercheTimer = null;
+
+const PALETTE = ['#2563eb','#0ea5e9','#059669','#d97706','#7c3aed','#db2777','#dc2626','#0891b2','#65a30d','#9333ea'];
+
+// Nombre maximum de filtres sauvegardés
+const MAX_FILTRES = 5;
+const CLE_FILTRES = 'filtres_sauvegardes';
+
+document.addEventListener('DOMContentLoaded', async () => {
+  chargerTheme();
+  // Vérifier l'authentification
+  verifierAuth();
+  afficherFiltresSauvegardes();
+  await Promise.all([chargerDonnees(), chargerSelectSites(), chargerBubbleChart()]);
+});
+
+// ============================================================
+// AUTHENTIFICATION
+// ============================================================
+
+/**
+ * Vérifie que le token est présent dans localStorage.
+ * Si absent, redirige vers /static/login.html.
+ */
+function verifierAuth() {
+  const token = localStorage.getItem(AUTH_KEY);
+  if (!token) {
+    window.location.href = 'login.html';
+    return;
+  }
+  const role = localStorage.getItem('auth_role');
+  const username = localStorage.getItem('auth_username') || '?';
+  if (role === 'admin') {
+    const btnAdmin = document.getElementById('btnAdmin');
+    if (btnAdmin) btnAdmin.style.display = '';
+  }
+  // Sidebar user info
+  const avatar = document.getElementById('sidebarAvatar');
+  if (avatar) avatar.textContent = username.charAt(0).toUpperCase();
+  const uname = document.getElementById('sidebarUsername');
+  if (uname) uname.textContent = username;
+  const srole = document.getElementById('sidebarRole');
+  if (srole) srole.textContent = role === 'admin' ? 'Administrateur' : 'Utilisateur';
+}
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('open');
+}
+
+/**
+ * Retourne les headers avec le token d'auth pour chaque fetch.
+ */
+function headersAuth() {
+  return {
+    'Content-Type': 'application/json',
+    'X-Auth-Token': localStorage.getItem(AUTH_KEY) || ''
+  };
+}
+
+/**
+ * Déconnecte l'utilisateur : supprime le token et redirige vers /static/login.html.
+ */
+async function seDeconnecter() {
+  try {
+    await fetch(`${API}/auth/logout`, {
+      method: 'POST',
+      headers: headersAuth()
+    });
+  } catch (e) {}
+  localStorage.removeItem(AUTH_KEY);
+  localStorage.removeItem('auth_username');
+  localStorage.removeItem('auth_role');
+  window.location.href = 'login.html';
+}
+
+// ============================================================
+// CHARGEMENT
+// ============================================================
+async function chargerDonnees(filtres = {}) {
+  const params = new URLSearchParams();
+  if (filtres.prestataire) params.append('prestataire', filtres.prestataire);
+  if (filtres.type_intervention) params.append('type_intervention', filtres.type_intervention);
+  if (filtres.date_debut_from) params.append('date_debut_from', filtres.date_debut_from);
+  if (filtres.date_debut_to)   params.append('date_debut_to',   filtres.date_debut_to);
+  if (filtres.mois)  params.append('mois',  filtres.mois);
+  if (filtres.annee) params.append('annee', filtres.annee);
+  if (filtres.site) params.append('site', filtres.site);
+  if (filtres.search) params.append('search', filtres.search);
+
+  try {
+    const authHeaders = { 'X-Auth-Token': localStorage.getItem(AUTH_KEY) || '' };
+    const [r1, r2] = await Promise.all([
+      fetch(`${API}/interventions?${params}`, { headers: authHeaders }),
+      fetch(`${API}/stats?${params}`, { headers: authHeaders })
+    ]);
+    if (!r1.ok || !r2.ok) {
+      // Si non authentifié, rediriger vers login
+      if (r1.status === 401 || r2.status === 401) {
+        window.location.href = 'login.html';
+        return;
+      }
+      throw new Error();
+    }
+
+    toutesInterventions = await r1.json();
+    const stats = await r2.json();
+    interventionsFiltrees = [...toutesInterventions];
+    pageCourante = 1;
+
+    // KPI
+    animerNombre('kpiTotal', stats.total, 0);
+    animerNombre('kpiPrestataires', stats.nb_prestataires, 0);
+    animerNombre('kpiDuree', stats.duree_moyenne_minutes, 1);
+    animerNombre('kpiSites', stats.nb_sites, 0);
+    animerNombre('kpiDureeMax', stats.duree_max_minutes, 0);
+    animerNombre('kpiDureeTotale', Math.round((stats.duree_totale_minutes||0)/60), 0);
+
+    // Alerte interventions longues
+    if (stats.nb_interventions_longues > 0) {
+      document.getElementById('alerteLongues').style.display = 'flex';
+      document.getElementById('alerteLonguesTxt').textContent =
+        `${stats.nb_interventions_longues} intervention${stats.nb_interventions_longues>1?'s':''} dépassent 8h — durées inhabituelles détectées`;
+      afficherLongues(stats.interventions_longues);
+    } else {
+      document.getElementById('alerteLongues').style.display = 'none';
+      document.getElementById('sectionLongues').style.display = 'none';
+    }
+
+    mettreAJourGraphiques(stats);
+    afficherTableau();
+    afficherProchaines(stats.prochaines_interventions);
+
+  } catch(err) {
+    console.error(err);
+    afficherToast('Erreur de connexion au serveur', 'error');
+    document.getElementById('tableBody').innerHTML = `<tr><td colspan="10">
+      <div class="empty-state">
+        <div class="empty-state-icon"><svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+        <strong>Serveur indisponible</strong>
+        <p>Vérifiez que uvicorn tourne sur le port 8000</p>
+      </div></td></tr>`;
+  }
+}
+
+async function chargerSelectSites() {
+  try {
+    const r = await fetch(`${API}/interventions`, { headers: { 'X-Auth-Token': localStorage.getItem(AUTH_KEY) || '' } });
+    const data = await r.json();
+    const sites = [...new Set(data.map(d=>d.site).filter(Boolean))].sort();
+    const sel = document.getElementById('filterSite');
+    sites.forEach(s => { const o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
+  } catch(e) {}
+}
+
+
+// ============================================================
+// FILTRES
+// ============================================================
+const NOMS_MOIS_FR = ['','janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+
+function obtenirFiltresActuels() {
+  return {
+    prestataire: document.getElementById('filterPrestataire').value,
+    type_intervention: document.getElementById('filterType').value,
+    date_debut_from: document.getElementById('filterDateDebut').value,
+    date_debut_to:   document.getElementById('filterDateFin').value,
+    site: document.getElementById('filterSite').value,
+    search: document.getElementById('searchInput').value.trim(),
+  };
+}
+
+let _filtresPanelOuvert = false;
+
+function toggleFiltres() {
+  _filtresPanelOuvert = !_filtresPanelOuvert;
+  const panel = document.getElementById('filtersPanel');
+  const chevron = document.getElementById('filtersChevron');
+  const btn = document.getElementById('filtersToggleBtn');
+  panel.style.display = _filtresPanelOuvert ? 'block' : 'none';
+  chevron.style.transform = _filtresPanelOuvert ? 'rotate(180deg)' : '';
+  btn.style.background = _filtresPanelOuvert ? 'var(--primary-light)' : '';
+  btn.style.color = _filtresPanelOuvert ? 'var(--primary)' : '';
+  btn.style.borderColor = _filtresPanelOuvert ? 'var(--primary-mid)' : '';
+}
+
+function majBadgeFiltres() {
+  const f = obtenirFiltresActuels();
+  const n = [f.prestataire, f.type_intervention, f.date_debut_from, f.date_debut_to, f.site].filter(Boolean).length;
+  const badge = document.getElementById('filtresActifsCount');
+  if (badge) { badge.textContent = n; badge.style.display = n > 0 ? 'inline-flex' : 'none'; }
+}
+
+function appliquerFiltres() { majBadgeFiltres(); chargerDonnees(obtenirFiltresActuels()); }
+
+function reinitialiserFiltres() {
+  ['filterPrestataire','filterType','filterSite','filterDateDebut','filterDateFin'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('searchInput').value = '';
+  majBadgeFiltres();
+  chargerDonnees();
+}
+
+function rechercheInstantanee() {
+  clearTimeout(rechercheTimer);
+  rechercheTimer = setTimeout(() => chargerDonnees(obtenirFiltresActuels()), 350);
+}
+
+// ============================================================
+// TABLEAU
+// ============================================================
+function afficherTableau() {
+  const sorted = [...interventionsFiltrees].sort((a,b) => {
+    let va=a[triColonne]??'', vb=b[triColonne]??'';
+    if(typeof va==='string') va=va.toLowerCase();
+    if(typeof vb==='string') vb=vb.toLowerCase();
+    if(va<vb) return triSens==='asc'?-1:1;
+    if(va>vb) return triSens==='asc'?1:-1;
+    return 0;
+  });
+
+  const total=sorted.length;
+  const totalPages=Math.max(1,Math.ceil(total/PAR_PAGE));
+  if(pageCourante>totalPages) pageCourante=totalPages;
+  const debut=(pageCourante-1)*PAR_PAGE;
+  const page=sorted.slice(debut, debut+PAR_PAGE);
+
+  const tbody=document.getElementById('tableBody');
+
+  if(!page.length) {
+    tbody.innerHTML=`<tr><td colspan="10"><div class="empty-state">
+      <div class="empty-state-icon"><svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg></div>
+      <strong>Aucune intervention trouvée</strong><p>Modifiez les filtres</p>
+    </div></td></tr>`;
+  } else {
+    tbody.innerHTML = page.map(inter => {
+      const type = normaliseType(inter.type_intervention);
+      const badge = type==='Planifiée'
+        ? `<span class="badge badge-planifiee"><span class="badge-dot"></span>Planifiée</span>`
+        : `<span class="badge badge-depannage"><span class="badge-dot"></span>Dépannage</span>`;
+      const duree = inter.duree_minutes ? formatDuree(inter.duree_minutes) : '—';
+      const longue = inter.duree_minutes && inter.duree_minutes > 480;
+      const travaux = inter.travaux||'';
+      const trav = travaux.length>60
+        ? `<td class="td-travaux" title="${escHtml(travaux)}">${escHtml(travaux.substring(0,60))}"¦</td>`
+        : `<td class="td-travaux">${escHtml(travaux)||'<span style="color:var(--gris-300)">—</span>'}</td>`;
+
+      const statut = inter.statut || 'En cours';
+      const statutCfg = {
+        'Terminée':   { bg:'#dcfce7', color:'#15803d', dot:'#22c55e' },
+        'En cours':   { bg:'#dbeafe', color:'#1d4ed8', dot:'#3b82f6' },
+        'En attente': { bg:'#fef9c3', color:'#a16207', dot:'#eab308' },
+        'Annulée':    { bg:'#fee2e2', color:'#b91c1c', dot:'#ef4444' },
+      }[statut] || { bg:'#f1f5f9', color:'#475569', dot:'#94a3b8' };
+      const badgeStatut = `<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;background:${statutCfg.bg};color:${statutCfg.color}">
+        <span style="width:6px;height:6px;border-radius:50%;background:${statutCfg.dot};flex-shrink:0"></span>${escHtml(statut)}</span>`;
+
+      return `<tr ${longue?'style="background:#fff7ed"':''}>
+        <td class="td-num">${inter.id}</td>
+        <td class="td-prestataire">${escHtml(inter.prestataire||'—')}</td>
+        <td>${badge}</td>
+        <td>${badgeStatut}</td>
+        <td>${escHtml(inter.site||'—')}</td>
+        <td>${formatDate(inter.date_debut)}</td>
+        <td class="col-heure" style="color:var(--texte-doux)">${inter.heure_debut||'—'}</td>
+        <td class="col-duree"><span style="font-weight:600;color:${longue?'#dc2626':'var(--primary)'}">${duree}${longue?' ⚠':''}</span></td>
+        ${trav}
+        <td class="actions-cell">
+          <a href="/detail?id=${inter.id}" class="btn btn-sm btn-icon" style="background:#1d4ed8;color:#fff;box-shadow:0 2px 6px rgba(29,78,216,.4)" title="Voir le détail">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </a>
+          <a href="/nouvelle-intervention?id=${inter.id}" class="btn btn-sm btn-primary btn-icon" title="Modifier" style="background:#2563eb;box-shadow:0 2px 6px rgba(37,99,235,.35)">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </a>
+          <button class="btn btn-sm btn-icon" onclick="dupliquer(${inter.id})" title="Dupliquer" style="background:#059669;color:#fff;box-shadow:0 2px 6px rgba(5,150,105,.35)">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+          <button class="btn btn-sm btn-danger btn-icon" onclick="confirmerSuppression(${inter.id})" title="Supprimer" style="box-shadow:0 2px 6px rgba(220,38,38,.35)">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          </button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  document.getElementById('tableInfo').textContent = `${total} intervention${total>1?'s':''}`;
+  afficherPagination(totalPages, total);
+}
+
+function trierPar(col) {
+  triSens = triColonne===col ? (triSens==='asc'?'desc':'asc') : 'asc';
+  triColonne = col;
+  afficherTableau();
+}
+
+function afficherPagination(totalPages, total) {
+  const pag=document.getElementById('pagination');
+  if(!total){ pag.innerHTML=''; return; }
+  const debut=(pageCourante-1)*PAR_PAGE+1;
+  const fin=Math.min(pageCourante*PAR_PAGE,total);
+  let html=`<div class="pagination-info">Affichage <strong>${debut}"“${fin}</strong> sur <strong>${total}</strong></div>
+  <div class="pagination-controls">
+    <button class="page-btn" onclick="changerPage(1)" ${pageCourante===1?'disabled':''}>&laquo;</button>
+    <button class="page-btn" onclick="changerPage(${pageCourante-1})" ${pageCourante===1?'disabled':''}>&lsaquo;</button>`;
+  for(let p=Math.max(1,pageCourante-2);p<=Math.min(totalPages,pageCourante+2);p++)
+    html+=`<button class="page-btn ${p===pageCourante?'active':''}" onclick="changerPage(${p})">${p}</button>`;
+  html+=`<button class="page-btn" onclick="changerPage(${pageCourante+1})" ${pageCourante===totalPages?'disabled':''}>&rsaquo;</button>
+    <button class="page-btn" onclick="changerPage(${totalPages})" ${pageCourante===totalPages?'disabled':''}>&raquo;</button>
+  </div>`;
+  pag.innerHTML=html;
+}
+
+function changerPage(p) {
+  pageCourante=p;
+  afficherTableau();
+  document.querySelector('.section-card').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ============================================================
+// PROCHAINES INTERVENTIONS
+// ============================================================
+function afficherProchaines(prochaines) {
+  const tbody=document.getElementById('prochainesBody');
+  if(!prochaines||!prochaines.length) {
+    tbody.innerHTML=`<tr><td colspan="5"><div class="empty-state">
+      <div class="empty-state-icon"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+      <strong>Aucune prochaine intervention</strong><p>Renseignez une date dans le formulaire</p>
+    </div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML=prochaines.map(p => {
+    const jours = p.jours_restants != null ? Math.round(p.jours_restants) : null;
+    const joursAff = jours!=null
+      ? (jours===0 ? `<span style="color:var(--danger);font-weight:700">Aujourd'hui</span>`
+        : jours===1 ? `<span style="color:var(--warning);font-weight:700">Demain</span>`
+        : `<span style="color:var(--success);font-weight:600">Dans ${jours}j</span>`)
+      : '—';
+    return `<tr>
+      <td class="td-prestataire">${escHtml(p.prestataire||'—')}</td>
+      <td>${escHtml(p.site||'—')}</td>
+      <td><span class="prochaine-badge"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${formatDate(p.prochaine_intervention)}</span></td>
+      <td>${joursAff}</td>
+      <td class="td-travaux">${escHtml((p.travaux||'').substring(0,80))}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ============================================================
+// INTERVENTIONS LONGUES
+// ============================================================
+function afficherLongues(longues) {
+  if(!longues||!longues.length) return;
+  document.getElementById('sectionLongues').style.display='block';
+  document.getElementById('longuesBody').innerHTML = longues.map(l => `
+    <tr>
+      <td class="td-prestataire">${escHtml(l.prestataire||'—')}</td>
+      <td>${escHtml(l.site||'—')}</td>
+      <td>${formatDate(l.date_debut)}</td>
+      <td><span style="font-weight:700;color:#dc2626">${formatDuree(l.duree_minutes)}</span></td>
+      <td class="td-travaux">${escHtml((l.travaux||'').substring(0,80))}</td>
+    </tr>`).join('');
+}
+
+// ============================================================
+// GRAPHIQUES
+// ============================================================
+const isMobile = () => window.innerWidth < 768;
+
+const TOOLTIP_STYLE = {
+  backgroundColor:'#1e293b', titleFont:{size:13,weight:700},
+  bodyFont:{size:12}, padding:12, cornerRadius:8, boxPadding:4
+};
+
+function mettreAJourGraphiques(stats) {
+  creerDonutStatut('chartStatut', stats.par_statut || {});
+  creerBarH('chartMois', stats.par_mois, '#2563eb');
+  creerBarType('chartType', stats.par_type);
+  creerBarH('chartSite', stats.par_site, '#7c3aed');
+  creerEvolution('chartEvolution', stats.evolution);
+}
+
+function creerDonut(id, data) {
+  if(charts[id]) charts[id].destroy();
+  // Nettoyer les labels vides
+  const rawEntries = Object.entries(data);
+  const entries = rawEntries.map(([k,v]) => [k.trim() || '(Inconnu)', v]);
+  // Fusionner si doublons "(Inconnu)"
+  const merged = {};
+  for (const [k,v] of entries) merged[k] = (merged[k]||0) + v;
+  const labels = Object.keys(merged), values = Object.values(merged);
+  if(!labels.length) return;
+  const mob=isMobile();
+  const total = values.reduce((a,b)=>a+b, 0);
+  charts[id]=new Chart(document.getElementById(id),{
+    type:'doughnut',
+    data:{labels,datasets:[{data:values,backgroundColor:PALETTE,borderWidth:3,borderColor:'#fff',hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+      plugins:{
+        legend:{
+          position:mob?'bottom':'right',
+          labels:{
+            font:{size:mob?10:11},
+            padding:mob?7:12,
+            boxWidth:mob?8:12,
+            generateLabels: function(chart) {
+              return chart.data.labels.map((label, i) => ({
+                text: `${label}  (${chart.data.datasets[0].data[i]})`,
+                fillStyle: PALETTE[i % PALETTE.length],
+                strokeStyle: '#fff',
+                lineWidth: 1,
+                hidden: false,
+                index: i
+              }));
+            }
+          }
+        },
+        tooltip:{
+          ...TOOLTIP_STYLE,
+          callbacks:{
+            label: ctx => {
+              const pct = total > 0 ? Math.round(ctx.parsed / total * 100) : 0;
+              return ` ${ctx.label} : ${ctx.parsed} intervention${ctx.parsed>1?'s':''} (${pct}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function creerDonutStatut(id, data) {
+  if(charts[id]) charts[id].destroy();
+  const STATUT_COLORS = {
+    'Terminée':   '#10b981',
+    'En cours':   '#3b5bdb',
+    'En attente': '#f59e0b',
+    'Annulée':    '#ef4444',
+    'Inconnu':    '#94a3b8',
+  };
+  const entries = Object.entries(data).map(([k,v]) => [k.trim() || 'Inconnu', v]);
+  const merged = {};
+  for (const [k,v] of entries) merged[k] = (merged[k]||0) + v;
+  const labels = Object.keys(merged), values = Object.values(merged);
+  if (!labels.length) return;
+  const colors = labels.map(l => STATUT_COLORS[l] || '#94a3b8');
+  const total = values.reduce((a,b) => a+b, 0);
+  const mob = isMobile();
+  charts[id] = new Chart(document.getElementById(id), {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 3, borderColor: '#fff', hoverOffset: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '62%',
+      plugins: {
+        legend: {
+          position: mob ? 'bottom' : 'right',
+          labels: {
+            font: { size: 11 }, padding: 12, boxWidth: 12,
+            generateLabels: chart => chart.data.labels.map((label, i) => ({
+              text: `${label}  (${chart.data.datasets[0].data[i]})`,
+              fillStyle: colors[i], strokeStyle: '#fff', lineWidth: 1, hidden: false, index: i
+            }))
+          }
+        },
+        tooltip: { ...TOOLTIP_STYLE, callbacks: { label: ctx => {
+          const pct = total > 0 ? Math.round(ctx.parsed / total * 100) : 0;
+          return ` ${ctx.label} : ${ctx.parsed} (${pct}%)`;
+        }}}
+      }
+    }
+  });
+}
+
+function creerBarH(id, data, color) {
+  if(charts[id]) charts[id].destroy();
+  const labels=Object.keys(data), values=Object.values(data);
+  if(!labels.length) return;
+  const mob=isMobile(), fs=mob?10:11;
+  charts[id]=new Chart(document.getElementById(id),{
+    type:'bar',
+    data:{labels,datasets:[{data:values,backgroundColor:color,borderRadius:5,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+      plugins:{legend:{display:false},tooltip:{...TOOLTIP_STYLE}},
+      scales:{
+        x:{beginAtZero:true,ticks:{stepSize:1,font:{size:fs},maxTicksLimit:6},grid:{color:'#f1f5f9'}},
+        y:{ticks:{font:{size:fs},callback:function(v){
+          const l=this.getLabelForValue(v);
+          const max=mob?13:22;
+          return l.length>max?l.substring(0,max-1)+'"¦':l;
+        }},grid:{display:false}}
+      }
+    }
+  });
+}
+
+function creerBarType(id, data) {
+  if(charts[id]) charts[id].destroy();
+  const labels=Object.keys(data), values=Object.values(data);
+  if(!labels.length) return;
+  const mob=isMobile();
+  const colors=labels.map(l=>l.toLowerCase().includes('plan')?'#059669':'#dc2626');
+  const bgColors=labels.map(l=>l.toLowerCase().includes('plan')?'#d1fae5':'#fee2e2');
+  charts[id]=new Chart(document.getElementById(id),{
+    type:'bar',
+    data:{labels,datasets:[{data:values,backgroundColor:bgColors,borderColor:colors,borderWidth:2,borderRadius:8,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{...TOOLTIP_STYLE}},
+      scales:{
+        y:{beginAtZero:true,ticks:{stepSize:1,font:{size:mob?10:11}},grid:{color:'#f1f5f9'}},
+        x:{ticks:{font:{size:mob?11:13,weight:700}},grid:{display:false}}
+      }
+    }
+  });
+}
+
+function creerEvolution(id, evolution) {
+  if(charts[id]) charts[id].destroy();
+  if(!evolution||!evolution.length) return;
+
+  // Construire les labels "Mois Année"
+  const ordre=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  const labels=evolution.map(e=>`${e.mois?e.mois.substring(0,3):''} ${e.annee||''}`);
+  const values=evolution.map(e=>e.cnt);
+
+  charts[id]=new Chart(document.getElementById(id),{
+    type:'line',
+    data:{labels,datasets:[{
+      label:'Interventions',
+      data:values,
+      borderColor:'#2563eb',
+      backgroundColor:'rgba(37,99,235,.1)',
+      borderWidth:2.5,
+      pointBackgroundColor:'#2563eb',
+      pointBorderColor:'#fff',
+      pointBorderWidth:2,
+      pointRadius:4,
+      fill:true,
+      tension:.4,
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{...TOOLTIP_STYLE}},
+      scales:{
+        y:{beginAtZero:true,ticks:{stepSize:1,font:{size:11}},grid:{color:'#f1f5f9'}},
+        x:{ticks:{font:{size:10},maxRotation:45},grid:{display:false}}
+      }
+    }
+  });
+}
+
+// Resize
+let resizeTimer;
+window.addEventListener('resize',()=>{
+  clearTimeout(resizeTimer);
+  resizeTimer=setTimeout(async()=>{
+    if(Object.keys(charts).length>0){
+      try{
+        const params=new URLSearchParams();
+        const f=obtenirFiltresActuels();
+        if(f.prestataire) params.append('prestataire',f.prestataire);
+        if(f.type_intervention) params.append('type_intervention',f.type_intervention);
+        if(f.mois) params.append('mois',f.mois);
+        if(f.annee) params.append('annee',f.annee);
+        if(f.site) params.append('site',f.site);
+        if(f.search) params.append('search',f.search);
+        const res=await fetch(`${API}/stats?${params}`, { headers: {'X-Auth-Token':localStorage.getItem(AUTH_KEY)||''} });
+        mettreAJourGraphiques(await res.json());
+      }catch(e){}
+    }
+  },300);
+});
+
+// ============================================================
+// SUPPRESSION
+// ============================================================
+function confirmerSuppression(id) {
+  idASupprimer=id;
+  document.getElementById('modalSuppr').classList.add('active');
+  document.getElementById('btnConfirmSuppr').onclick=()=>supprimerIntervention(id);
+}
+function fermerModal() { document.getElementById('modalSuppr').classList.remove('active'); }
+document.getElementById('modalSuppr').addEventListener('click',e=>{if(e.target===e.currentTarget)fermerModal();});
+
+async function supprimerIntervention(id) {
+  const btn=document.getElementById('btnConfirmSuppr');
+  btn.textContent='...'; btn.disabled=true;
+  try {
+    const r=await fetch(`${API}/interventions/${id}`,{method:'DELETE', headers:{'X-Auth-Token':localStorage.getItem(AUTH_KEY)||''}});
+    if(r.ok){fermerModal();afficherToast('Intervention supprimée','success');await chargerDonnees(obtenirFiltresActuels());}
+    else afficherToast('Erreur suppression','error');
+  } catch{afficherToast('Erreur connexion','error');}
+  btn.textContent='Supprimer'; btn.disabled=false;
+}
+
+// ============================================================
+// DUPLICATION
+// ============================================================
+async function dupliquer(id) {
+  try {
+    const r=await fetch(`${API}/interventions/${id}/dupliquer`,{method:'POST', headers:{'X-Auth-Token':localStorage.getItem(AUTH_KEY)||''}});
+    if(r.ok){
+      const nouveau=await r.json();
+      afficherToast('Intervention dupliquée ! Ouverture du formulaire...','success');
+      setTimeout(()=>window.location.href=`form.html?id=${nouveau.id}`,1500);
+    } else afficherToast('Erreur duplication','error');
+  } catch{afficherToast('Erreur connexion','error');}
+}
+
+// ============================================================
+// EXPORT
+// ============================================================
+async function exportCSV() {
+  try {
+    const r = await fetch(`${API}/export/csv`, { headers: {'X-Auth-Token': localStorage.getItem(AUTH_KEY)||''} });
+    if (r.status === 401) { window.location.href = 'login.html'; return; }
+    if (!r.ok) throw new Error();
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `interventions_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch { afficherToast('Erreur export CSV', 'error'); }
+}
+
+async function exportExcel() {
+  try {
+    const r = await fetch(`${API}/export/excel`, { headers: {'X-Auth-Token': localStorage.getItem(AUTH_KEY)||''} });
+    if (r.status === 401) { window.location.href = 'login.html'; return; }
+    if (!r.ok) throw new Error();
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `interventions_${new Date().toISOString().split('T')[0]}.xlsx`;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch { afficherToast('Erreur export Excel', 'error'); }
+}
+
+function toggleExportMenu() {
+  const menu=document.getElementById('exportDropdown');
+  menu.classList.toggle('open');
+}
+document.addEventListener('click',e=>{
+  if(!document.getElementById('exportMenu').contains(e.target))
+    document.getElementById('exportDropdown').classList.remove('open');
+});
+
+// ============================================================
+// IMPORT CSV
+// ============================================================
+function ouvrirImport() { document.getElementById('modalImport').classList.add('active'); }
+function fermerImport() {
+  document.getElementById('modalImport').classList.remove('active');
+  document.getElementById('fileInput').value='';
+  document.getElementById('uploadLabel').textContent='Cliquez pour sélectionner un fichier';
+  document.getElementById('btnImporter').disabled=true;
+  document.getElementById('importResult').style.display='none';
+}
+document.getElementById('modalImport').addEventListener('click',e=>{if(e.target===e.currentTarget)fermerImport();});
+
+function fichierSelectionne(input) {
+  if(input.files[0]){
+    document.getElementById('uploadLabel').textContent=input.files[0].name;
+    document.getElementById('btnImporter').disabled=false;
+  }
+}
+
+async function lancerImport() {
+  const file=document.getElementById('fileInput').files[0];
+  if(!file) return;
+  const btn=document.getElementById('btnImporter');
+  btn.textContent='Import en cours...'; btn.disabled=true;
+
+  const formData=new FormData();
+  formData.append('file',file);
+
+  try {
+    const r=await fetch(`${API}/import/csv`,{method:'POST',body:formData,headers:{'X-Auth-Token':localStorage.getItem(AUTH_KEY)||''}});
+    if(r.status===401) { window.location.href='login.html'; return; }
+    const data=await r.json();
+    const res=document.getElementById('importResult');
+    res.style.display='block';
+    if(r.ok){
+      res.innerHTML=`<div style="background:var(--success-light);border:1px solid #6ee7b7;border-radius:var(--radius);padding:12px 14px;color:#065f46;font-size:13px">
+        <strong>Import réussi !</strong><br>
+        âœ… ${data.importees} lignes importées<br>
+        ${data.erreurs>0?`⚠ ${data.erreurs} erreurs<br>`:''}
+        ${data.ignorees>0?`— ${data.ignorees} lignes vides ignorées`:''}
+      </div>`;
+      afficherToast(`${data.importees} interventions importées !`,'success');
+      setTimeout(()=>{fermerImport();chargerDonnees();},2000);
+    } else {
+      res.innerHTML=`<div style="background:var(--danger-light);border:1px solid #fca5a5;border-radius:var(--radius);padding:12px 14px;color:#991b1b;font-size:13px">${data.detail||'Erreur import'}</div>`;
+    }
+  } catch{
+    afficherToast('Erreur import','error');
+  }
+  btn.textContent='Importer'; btn.disabled=false;
+}
+
+// ============================================================
+// DARK MODE
+// ============================================================
+// ============================================================
+// RECHERCHE GLOBALE (Ctrl+K)
+// ============================================================
+let _searchTimer = null;
+let _searchIdx = -1;
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    ouvrirRecherche();
+  }
+  if (e.key === 'Escape') fermerRecherche();
+});
+
+function ouvrirRecherche() {
+  const overlay = document.getElementById('globalSearchOverlay');
+  overlay.style.display = 'flex';
+  setTimeout(() => document.getElementById('globalSearchInput').focus(), 50);
+  _searchIdx = -1;
+}
+
+function fermerRecherche(e) {
+  if (e && e.target !== document.getElementById('globalSearchOverlay')) return;
+  document.getElementById('globalSearchOverlay').style.display = 'none';
+  document.getElementById('globalSearchInput').value = '';
+  document.getElementById('globalSearchResults').innerHTML = '';
+  _searchIdx = -1;
+}
+
+function navRecherche(e) {
+  const items = document.querySelectorAll('.gs-item');
+  if (!items.length) return;
+  if (e.key === 'ArrowDown') { e.preventDefault(); _searchIdx = Math.min(_searchIdx+1, items.length-1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); _searchIdx = Math.max(_searchIdx-1, 0); }
+  else if (e.key === 'Enter') {
+    if (_searchIdx >= 0 && items[_searchIdx]) items[_searchIdx].click();
+    return;
+  }
+  items.forEach((el, i) => el.classList.toggle('gs-item-active', i === _searchIdx));
+  if (items[_searchIdx]) items[_searchIdx].scrollIntoView({ block: 'nearest' });
+}
+
+async function rechercheGlobale(q) {
+  clearTimeout(_searchTimer);
+  const el = document.getElementById('globalSearchResults');
+  if (!q || q.trim().length < 2) {
+    el.innerHTML = `<div style="padding:24px;text-align:center;color:var(--texte-doux);font-size:13px">Tapez au moins 2 caractères...</div>`;
+    return;
+  }
+  el.innerHTML = `<div style="padding:16px;text-align:center;color:var(--texte-doux);font-size:13px">Recherche...</div>`;
+  _searchTimer = setTimeout(async () => {
+    try {
+      const r = await fetch(`${API}/interventions?search=${encodeURIComponent(q.trim())}&per_page=10&page=1`, { headers: headersAuth() });
+      if (!r.ok) throw new Error();
+      const resp = await r.json();
+      const data = resp.data || resp;
+      if (!data.length) {
+        el.innerHTML = `<div style="padding:24px;text-align:center;color:var(--texte-doux);font-size:13px">Aucun résultat pour "<strong>${q}</strong>"</div>`;
+        return;
+      }
+      el.innerHTML = data.map((d, i) => {
+        const date = d.date_debut ? d.date_debut.split('-').reverse().join('/') : '—';
+        const statut = d.statut || '';
+        const statusColors = {'Terminée':'#059669','En cours':'#3b5bdb','Annulée':'#dc2626','En attente':'#d97706'};
+        const sc = statusColors[statut] || '#64748b';
+        return `<div class="gs-item" onclick="window.location.href='/detail.html?id=${d.id}'" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .1s">
+          <div style="width:32px;height:32px;border-radius:8px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--primary);font-size:11px;font-weight:700">#${d.id}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;color:var(--texte);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.prestataire||'—'} — ${d.site||'—'}</div>
+            <div style="font-size:11px;color:var(--texte-doux);margin-top:2px">${date} · ${d.type_intervention||''} ${d.travaux ? '· '+d.travaux.substring(0,40)+'…' : ''}</div>
+          </div>
+          ${statut ? `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${sc}20;color:${sc};flex-shrink:0">${statut}</span>` : ''}
+        </div>`;
+      }).join('');
+      // Add hover style
+      document.querySelectorAll('.gs-item').forEach(el => {
+        el.addEventListener('mouseenter', () => el.style.background = 'var(--gris-100)');
+        el.addEventListener('mouseleave', () => { if (!el.classList.contains('gs-item-active')) el.style.background = ''; });
+      });
+      _searchIdx = -1;
+    } catch(e) {
+      el.innerHTML = `<div style="padding:16px;text-align:center;color:var(--texte-doux);font-size:13px">Erreur de recherche.</div>`;
+    }
+  }, 300);
+}
+
+
+function toggleDark() {
+  const html=document.documentElement;
+  const isDark=html.getAttribute('data-theme')==='dark';
+  html.setAttribute('data-theme',isDark?'light':'dark');
+  localStorage.setItem('theme',isDark?'light':'dark');
+  document.getElementById('iconDark').innerHTML = isDark
+    ? `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`
+    : `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+}
+function chargerTheme() {
+  const saved=localStorage.getItem('theme')||'light';
+  document.documentElement.setAttribute('data-theme',saved);
+  if(saved==='dark') {
+    document.getElementById('iconDark').innerHTML=`<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+  }
+}
+
+// ============================================================
+// UTILITAIRES
+// ============================================================
+function normaliseType(t){if(!t)return'—';const tl=t.toLowerCase();if(tl.includes('plan'))return'Planifiée';if(tl.includes('dep')||tl.includes('dép'))return'Dépannage';return t;}
+function formatDate(d){if(!d)return'—';try{const[y,m,j]=d.split('-');return`${j}/${m}/${y}`;}catch{return d;}}
+function formatDuree(m){if(!m)return'—';const h=Math.floor(m/60),mn=m%60;return h>0?(mn>0?`${h}h${mn}min`:`${h}h`):`${mn}min`;}
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function animerNombre(id,cible,dec=0){
+  const el=document.getElementById(id);
+  const v=parseFloat(cible)||0;
+  const dur=700,t0=performance.now();
+  const tick=now=>{
+    const p=Math.min((now-t0)/dur,1);
+    const e=1-Math.pow(1-p,3);
+    el.textContent=(v*e).toFixed(dec);
+    if(p<1)requestAnimationFrame(tick);
+    else el.textContent=v.toFixed(dec);
+  };
+  requestAnimationFrame(tick);
+}
+function afficherToast(msg,type='info'){
+  const icons={success:`<polyline points="20 6 9 17 4 12"/>`,error:`<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`,info:`<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>`};
+  const titles={success:'Succès',error:'Erreur',info:'Info'};
+  const c=document.getElementById('toastContainer');
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;
+  t.innerHTML=`<div class="toast-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">${icons[type]||icons.info}</svg></div><div class="toast-left"><div class="toast-title">${titles[type]||'Info'}</div><div class="toast-message">${escHtml(msg)}</div></div>`;
+  c.appendChild(t);
+  setTimeout(()=>t.style.animation='toastIn .3s reverse',3000);
+  setTimeout(()=>t.remove(),3350);
+}
+
+// ============================================================
+// BUBBLE CHART — Comparatif prestataires
+// ============================================================
+
+/**
+ * Charge les stats prestataires et crée le bubble chart.
+ */
+async function chargerBubbleChart() {
+  try {
+    const r = await fetch(`${API}/stats/prestataires`, {
+      headers: { 'X-Auth-Token': localStorage.getItem(AUTH_KEY) || '' }
+    });
+    if (!r.ok) return;
+    const data = await r.json();
+    creerBubbleChart('chartBubble', data);
+  } catch (e) {}
+}
+
+/**
+ * Crée un bubble chart Chart.js à partir des stats prestataires.
+ * X = nb_interventions, Y = duree_moyenne, taille = duree_totale
+ */
+function creerBubbleChart(id, data) {
+  if (charts[id]) charts[id].destroy();
+  if (!data || !data.length) return;
+
+  // Trier par nb interventions décroissant, garder top 10
+  const sorted = [...data]
+    .filter(d => d.prestataire && d.prestataire.trim())
+    .sort((a, b) => b.nb_interventions - a.nb_interventions)
+    .slice(0, 10);
+
+  const labels   = sorted.map(d => d.prestataire);
+  const nbInter  = sorted.map(d => d.nb_interventions);
+  const dureeMoy = sorted.map(d => Math.round(d.duree_moyenne));
+
+  charts[id] = new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Nb interventions',
+          data: nbInter,
+          backgroundColor: PALETTE.map(c => c + 'cc'),
+          borderColor: PALETTE,
+          borderWidth: 1.5,
+          borderRadius: 6,
+          borderSkipped: false,
+          yAxisID: 'y',
+        },
+        {
+          label: 'Durée moy. (min)',
+          data: dureeMoy,
+          backgroundColor: '#818cf855',
+          borderColor: '#818cf8',
+          borderWidth: 1.5,
+          borderRadius: 6,
+          borderSkipped: false,
+          type: 'line',
+          yAxisID: 'y2',
+          tension: 0.3,
+          pointRadius: 4,
+          pointBackgroundColor: '#818cf8',
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { font: { size: 11 }, padding: 10, boxWidth: 12 } },
+        tooltip: {
+          ...TOOLTIP_STYLE,
+          callbacks: {
+            label: ctx => {
+              const d = sorted[ctx.dataIndex];
+              if (ctx.datasetIndex === 0) return ` Interventions : ${ctx.parsed.y}`;
+              const h = Math.floor(d.duree_totale / 60), m = d.duree_totale % 60;
+              return [` Durée moy. : ${ctx.parsed.y} min`, ` Total : ${h > 0 ? h+'h ' : ''}${m}min`];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { font: { size: 11 }, maxRotation: 30 },
+          grid: { display: false }
+        },
+        y: {
+          beginAtZero: true,
+          position: 'left',
+          ticks: { stepSize: 1, font: { size: 11 } },
+          grid: { color: '#f1f5f9' },
+          title: { display: true, text: 'Nb interventions', font: { size: 11, weight: 700 } }
+        },
+        y2: {
+          beginAtZero: true,
+          position: 'right',
+          ticks: { font: { size: 11 } },
+          grid: { drawOnChartArea: false },
+          title: { display: true, text: 'Durée moy. (min)', font: { size: 11, weight: 700 } }
+        }
+      }
+    }
+  });
+}
+
+// ============================================================
+// FILTRES SAUVEGARDÉS (localStorage)
+// ============================================================
+
+/**
+ * Récupère la liste des filtres sauvegardés depuis localStorage.
+ */
+function obtenirFiltresSauvegardes() {
+  try {
+    return JSON.parse(localStorage.getItem(CLE_FILTRES) || '[]');
+  } catch (e) {
+    return [];
+  }
+}
+
+/**
+ * Ouvre la modale pour nommer et sauvegarder le filtre courant.
+ */
+function ouvrirModaleSauvegarderFiltre() {
+  const filtres = obtenirFiltresSauvegardes();
+  if (filtres.length >= MAX_FILTRES) {
+    afficherToast(`Maximum ${MAX_FILTRES} filtres sauvegardés atteint. Supprimez-en un d'abord.`, 'error');
+    return;
+  }
+  document.getElementById('nomFiltreInput').value = '';
+  document.getElementById('errNomFiltre').style.display = 'none';
+  document.getElementById('modalSauvegarderFiltre').classList.add('active');
+  setTimeout(() => document.getElementById('nomFiltreInput').focus(), 100);
+}
+
+function fermerModaleSauvegarderFiltre() {
+  document.getElementById('modalSauvegarderFiltre').classList.remove('active');
+}
+
+document.getElementById('modalSauvegarderFiltre').addEventListener('click', e => {
+  if (e.target === e.currentTarget) fermerModaleSauvegarderFiltre();
+});
+
+/**
+ * Sauvegarde le filtre courant sous le nom donné dans localStorage.
+ */
+function sauvegarderFiltre() {
+  const nom = document.getElementById('nomFiltreInput').value.trim();
+  const errEl = document.getElementById('errNomFiltre');
+
+  if (!nom) {
+    errEl.textContent = 'Le nom ne peut pas être vide.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const filtres = obtenirFiltresSauvegardes();
+
+  // Vérifier unicité du nom
+  if (filtres.some(f => f.nom === nom)) {
+    errEl.textContent = 'Un filtre avec ce nom existe déjà.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  if (filtres.length >= MAX_FILTRES) {
+    errEl.textContent = `Maximum ${MAX_FILTRES} filtres atteint.`;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const filtreActuel = obtenirFiltresActuels();
+  filtres.push({ nom, filtres: filtreActuel });
+  localStorage.setItem(CLE_FILTRES, JSON.stringify(filtres));
+
+  fermerModaleSauvegarderFiltre();
+  afficherFiltresSauvegardes();
+  afficherToast(`Filtre "${nom}" sauvegardé !`, 'success');
+}
+
+/**
+ * Supprime un filtre sauvegardé par son nom.
+ */
+function supprimerFiltreSauvegarde(nom) {
+  const filtres = obtenirFiltresSauvegardes().filter(f => f.nom !== nom);
+  localStorage.setItem(CLE_FILTRES, JSON.stringify(filtres));
+  afficherFiltresSauvegardes();
+}
+
+/**
+ * Applique un filtre sauvegardé (met à jour les selects et recharge les données).
+ */
+function appliquerFiltreSauvegarde(filtreObj) {
+  const f = filtreObj.filtres;
+  document.getElementById('filterPrestataire').value = f.prestataire || '';
+  document.getElementById('filterType').value = f.type_intervention || '';
+  document.getElementById('filterSite').value = f.site || '';
+  document.getElementById('filterDateDebut').value = f.date_debut_from || '';
+  document.getElementById('filterDateFin').value   = f.date_debut_to   || '';
+  document.getElementById('searchInput').value = f.search || '';
+  majBadgeFiltres();
+  // Ouvrir le panneau si des filtres sont actifs
+  if (!_filtresPanelOuvert) toggleFiltres();
+  chargerDonnees(f);
+}
+
+/**
+ * Affiche les chips des filtres sauvegardés au-dessus de la barre de filtres.
+ * Utilise des index pour éviter les problèmes de sérialisation JSON dans les onclick.
+ */
+function afficherFiltresSauvegardes() {
+  const filtres = obtenirFiltresSauvegardes();
+  const wrap = document.getElementById('filtresSauvegardesWrap');
+  const container = document.getElementById('filtresSauvegardesChips');
+
+  if (!filtres.length) {
+    wrap.style.display = 'none';
+    return;
+  }
+
+  wrap.style.display = 'block';
+  container.innerHTML = filtres.map((f, idx) => `
+    <div style="display:inline-flex;align-items:center;gap:6px;background:var(--primary-light);
+                border:1.5px solid var(--primary-mid);border-radius:20px;padding:5px 12px 5px 14px;
+                font-size:12px;font-weight:700;color:var(--primary);cursor:pointer;transition:all .15s"
+         title="Appliquer : ${escHtml(f.nom)}">
+      <span onclick="appliquerFiltreSauvegardeParIndex(${idx})">${escHtml(f.nom)}</span>
+      <button onclick="supprimerFiltreSauvegarde('${escHtml(f.nom)}')"
+              style="background:none;border:none;cursor:pointer;color:var(--primary);padding:0;
+                     display:flex;align-items:center;line-height:1;opacity:.7;font-size:14px"
+              title="Supprimer ce filtre">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  `).join('');
+}
+
+/**
+ * Applique un filtre sauvegardé par son index dans la liste.
+ */
+function appliquerFiltreSauvegardeParIndex(idx) {
+  const filtres = obtenirFiltresSauvegardes();
+  if (idx >= 0 && idx < filtres.length) {
+    appliquerFiltreSauvegarde(filtres[idx]);
+  }
+}
+</script>
+</body>
+</html>
+
+

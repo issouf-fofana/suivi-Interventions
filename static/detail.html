@@ -1,0 +1,3238 @@
+<!DOCTYPE html>
+
+<html lang="fr" data-theme="light">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Détail Intervention — Suivi</title>
+
+  <link rel="stylesheet" href="/static/style.css">
+
+  <style>
+
+    /* ======================================================
+
+       PAGE DÉTAIL — Design premium
+
+       ====================================================== */
+
+
+
+    .detail-page {
+      max-width: 100%;
+      width: 100%;
+      margin: 0 auto;
+      padding: 32px 24px 60px;
+    }
+
+
+    /* --- Hero banner de la carte --- */
+
+    .detail-hero {
+
+      background: #1e2d5a;
+
+      border-radius: 20px;
+
+      padding: 36px 40px;
+
+      color: #fff;
+
+      margin-bottom: 24px;
+
+      position: relative;
+
+      overflow: hidden;
+
+      box-shadow: 0 20px 40px rgba(59,91,219,.35);
+
+    }
+
+
+
+    .detail-hero::before {
+
+      content: '';
+
+      position: absolute;
+
+      top: -60px; right: -60px;
+
+      width: 240px; height: 240px;
+
+      background: rgba(255,255,255,.06);
+
+      border-radius: 50%;
+
+    }
+
+    .detail-hero::after {
+
+      content: '';
+
+      position: absolute;
+
+      bottom: -80px; right: 80px;
+
+      width: 180px; height: 180px;
+
+      background: rgba(255,255,255,.04);
+
+      border-radius: 50%;
+
+    }
+
+
+
+    .detail-hero-top {
+
+      display: flex;
+
+      align-items: flex-start;
+
+      justify-content: space-between;
+
+      gap: 16px;
+
+      flex-wrap: wrap;
+
+    }
+
+
+
+    .detail-hero-id {
+
+      font-size: 13px;
+
+      font-weight: 600;
+
+      opacity: .65;
+
+      letter-spacing: .5px;
+
+      text-transform: uppercase;
+
+      margin-bottom: 8px;
+
+    }
+
+
+
+    .detail-hero-title {
+
+      font-size: 2rem;
+
+      font-weight: 900;
+
+      letter-spacing: -1px;
+
+      line-height: 1.1;
+
+      margin-bottom: 6px;
+
+    }
+
+
+
+    .detail-hero-sub {
+
+      font-size: 14px;
+
+      opacity: .75;
+
+      font-weight: 500;
+
+    }
+
+
+
+    .detail-hero-badge {
+
+      flex-shrink: 0;
+
+    }
+
+
+
+    .badge-hero {
+
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 7px;
+
+      padding: 8px 18px;
+
+      border-radius: 30px;
+
+      font-size: 13px;
+
+      font-weight: 800;
+
+      letter-spacing: .4px;
+
+      backdrop-filter: blur(8px);
+
+    }
+
+    .badge-hero-planifiee {
+
+      background: rgba(5,150,105,.25);
+
+      border: 1.5px solid rgba(110,231,183,.5);
+
+      color: #6ee7b7;
+
+    }
+
+    .badge-hero-depannage {
+
+      background: rgba(220,38,38,.25);
+
+      border: 1.5px solid rgba(252,165,165,.5);
+
+      color: #fca5a5;
+
+    }
+
+
+
+    .badge-hero-dot {
+
+      width: 8px; height: 8px;
+
+      border-radius: 50%;
+
+      animation: pulse 2s infinite;
+
+    }
+
+    .badge-hero-planifiee .badge-hero-dot { background: #34d399; }
+
+    .badge-hero-depannage .badge-hero-dot { background: #f87171; }
+
+
+
+    @keyframes pulse {
+
+      0%, 100% { opacity: 1; transform: scale(1); }
+
+      50%       { opacity: .6; transform: scale(.8); }
+
+    }
+
+
+
+    /* Métriques hero */
+
+    .detail-hero-metrics {
+
+      display: grid;
+
+      grid-template-columns: repeat(4, 1fr);
+
+      gap: 16px;
+
+      margin-top: 28px;
+
+      padding-top: 24px;
+
+      border-top: 1px solid rgba(255,255,255,.15);
+
+    }
+
+
+
+    .hero-metric {
+
+      background: rgba(255,255,255,.1);
+
+      border: 1px solid rgba(255,255,255,.12);
+
+      border-radius: 14px;
+
+      padding: 16px 18px;
+
+      backdrop-filter: blur(4px);
+
+    }
+
+
+
+    .hero-metric-label {
+
+      font-size: 11px;
+
+      font-weight: 600;
+
+      opacity: .6;
+
+      text-transform: uppercase;
+
+      letter-spacing: .5px;
+
+      margin-bottom: 6px;
+
+    }
+
+
+
+    .hero-metric-value {
+
+      font-size: 1.35rem;
+
+      font-weight: 800;
+
+      letter-spacing: -.5px;
+
+      line-height: 1.1;
+
+    }
+
+
+
+    .hero-metric-sub {
+
+      font-size: 11px;
+
+      opacity: .6;
+
+      margin-top: 3px;
+
+    }
+
+
+
+    /* --- Boutons d'action principaux --- */
+
+    .detail-actions {
+
+      display: flex;
+
+      gap: 12px;
+
+      margin-bottom: 24px;
+
+      flex-wrap: wrap;
+
+    }
+
+
+
+    .btn-detail-modifier {
+
+      background: #3b5bdb;
+
+      color: #fff;
+
+      border: none;
+
+      padding: 12px 24px;
+
+      border-radius: 12px;
+
+      font-size: 14px;
+
+      font-weight: 700;
+
+      cursor: pointer;
+
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 8px;
+
+      text-decoration: none;
+
+      transition: all .2s;
+
+      box-shadow: 0 4px 14px rgba(59,91,219,.45);
+
+    }
+
+    .btn-detail-modifier:hover {
+
+      background: #1e40af;
+
+      transform: translateY(-2px);
+
+      box-shadow: 0 8px 20px rgba(59,91,219,.55);
+
+    }
+
+
+
+    .btn-detail-dupliquer {
+
+      background: #fff;
+
+      color: #3b5bdb;
+
+      border: 2px solid #3b5bdb;
+
+      padding: 12px 24px;
+
+      border-radius: 12px;
+
+      font-size: 14px;
+
+      font-weight: 700;
+
+      cursor: pointer;
+
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 8px;
+
+      transition: all .2s;
+
+    }
+
+    .btn-detail-dupliquer:hover {
+
+      background: #eff6ff;
+
+      transform: translateY(-2px);
+
+      box-shadow: 0 4px 12px rgba(59,91,219,.2);
+
+    }
+
+
+
+    .btn-detail-supprimer {
+
+      background: #fff;
+
+      color: #dc2626;
+
+      border: 2px solid #dc2626;
+
+      padding: 12px 24px;
+
+      border-radius: 12px;
+
+      font-size: 14px;
+
+      font-weight: 700;
+
+      cursor: pointer;
+
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 8px;
+
+      transition: all .2s;
+
+    }
+
+    .btn-detail-supprimer:hover {
+
+      background: #fee2e2;
+
+      transform: translateY(-2px);
+
+      box-shadow: 0 4px 12px rgba(220,38,38,.2);
+
+    }
+
+
+
+    /* --- Grille info --- */
+
+    .detail-grid {
+
+      display: grid;
+
+      grid-template-columns: 1fr 1fr;
+
+      gap: 20px;
+
+      margin-bottom: 20px;
+
+    }
+
+
+
+    .detail-card {
+
+      background: var(--blanc);
+
+      border: 1px solid var(--bordure);
+
+      border-radius: 16px;
+
+      overflow: hidden;
+
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+
+      transition: box-shadow .2s, transform .2s;
+
+    }
+
+    .detail-card:hover {
+
+      box-shadow: 0 8px 24px rgba(59,91,219,.1);
+
+      transform: translateY(-2px);
+
+    }
+
+
+
+    .detail-card-header {
+
+      background: linear-gradient(90deg, #eff6ff 0%, #f8fafc 100%);
+
+      border-bottom: 1px solid var(--bordure);
+
+      padding: 14px 20px;
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 10px;
+
+      font-size: 12px;
+
+      font-weight: 800;
+
+      color: #3b5bdb;
+
+      text-transform: uppercase;
+
+      letter-spacing: .6px;
+
+    }
+
+
+
+    .detail-card-header svg {
+
+      color: #3b5bdb;
+
+    }
+
+
+
+    .detail-card-body {
+
+      padding: 20px;
+
+    }
+
+
+
+    .info-row {
+
+      display: grid;
+
+      grid-template-columns: 1fr 1fr;
+
+      gap: 20px;
+
+    }
+
+
+
+    .info-field {
+
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 4px;
+
+    }
+
+
+
+    .info-label {
+
+      font-size: 11px;
+
+      font-weight: 700;
+
+      color: var(--texte-doux);
+
+      text-transform: uppercase;
+
+      letter-spacing: .5px;
+
+    }
+
+
+
+    .info-value {
+
+      font-size: 15px;
+
+      font-weight: 700;
+
+      color: var(--texte);
+
+      line-height: 1.3;
+
+    }
+
+
+
+    .info-value.big {
+
+      font-size: 1.4rem;
+
+      font-weight: 800;
+
+      color: #3b5bdb;
+
+      letter-spacing: -.5px;
+
+    }
+
+
+
+    .info-value.warning {
+
+      color: #dc2626;
+
+    }
+
+
+
+    /* --- Bloc texte (travaux/notes) --- */
+
+    .detail-texte-card {
+
+      background: var(--blanc);
+
+      border: 1px solid var(--bordure);
+
+      border-radius: 16px;
+
+      overflow: hidden;
+
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+
+      margin-bottom: 20px;
+
+    }
+
+
+
+    .detail-texte-card .detail-card-header {
+
+      border-bottom: 1px solid var(--bordure);
+
+    }
+
+
+
+    .texte-content {
+
+      padding: 20px;
+
+      font-size: 14px;
+
+      line-height: 1.8;
+
+      color: var(--texte);
+
+      white-space: pre-wrap;
+
+      background: var(--gris-50);
+
+      min-height: 60px;
+
+    }
+
+
+
+    .notes-content {
+
+      padding: 20px;
+
+      font-size: 14px;
+
+      line-height: 1.8;
+
+      color: #78350f;
+
+      white-space: pre-wrap;
+
+      background: #fffbeb;
+
+      min-height: 60px;
+
+    }
+
+
+
+    /* --- Timeline dates --- */
+
+    .timeline {
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 0;
+
+      background: var(--blanc);
+
+      border: 1px solid var(--bordure);
+
+      border-radius: 16px;
+
+      overflow: hidden;
+
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+
+      margin-bottom: 20px;
+
+    }
+
+
+
+    .timeline-step {
+
+      flex: 1;
+
+      padding: 20px 22px;
+
+      position: relative;
+
+    }
+
+
+
+    .timeline-step:not(:last-child)::after {
+
+      content: '';
+
+      position: absolute;
+
+      right: 0; top: 50%;
+
+      transform: translateY(-50%);
+
+      width: 1px;
+
+      height: 60%;
+
+      background: var(--bordure);
+
+    }
+
+
+
+    .timeline-step-icon {
+
+      width: 36px; height: 36px;
+
+      border-radius: 10px;
+
+      display: flex; align-items: center; justify-content: center;
+
+      margin-bottom: 10px;
+
+    }
+
+    .timeline-step-icon.start {
+
+      background: #eff6ff;
+
+      color: #3b5bdb;
+
+    }
+
+    .timeline-step-icon.end {
+
+      background: #f0fdf4;
+
+      color: #059669;
+
+    }
+
+
+
+    .timeline-arrow {
+
+      padding: 0 4px;
+
+      color: var(--texte-doux);
+
+      flex-shrink: 0;
+
+    }
+
+
+
+    .timeline-date {
+
+      font-size: 1.1rem;
+
+      font-weight: 800;
+
+      color: var(--texte);
+
+      letter-spacing: -.3px;
+
+    }
+
+
+
+    .timeline-heure {
+
+      font-size: 1.4rem;
+
+      font-weight: 900;
+
+      color: #3b5bdb;
+
+      letter-spacing: -.5px;
+
+      margin-top: 2px;
+
+    }
+
+
+
+    .timeline-label {
+
+      font-size: 11px;
+
+      font-weight: 700;
+
+      color: var(--texte-doux);
+
+      text-transform: uppercase;
+
+      letter-spacing: .5px;
+
+      margin-bottom: 8px;
+
+    }
+
+
+
+    /* --- Durée grande --- */
+
+    .duree-grande {
+
+      background: #1e2d5a;
+
+      border-radius: 16px;
+
+      padding: 24px 28px;
+
+      color: #fff;
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 20px;
+
+      margin-bottom: 20px;
+
+      box-shadow: 0 8px 24px rgba(59,91,219,.3);
+
+    }
+
+
+
+    .duree-icon {
+
+      width: 56px; height: 56px;
+
+      background: rgba(255,255,255,.15);
+
+      border-radius: 14px;
+
+      display: flex; align-items: center; justify-content: center;
+
+      flex-shrink: 0;
+
+    }
+
+
+
+    .duree-valeur {
+
+      font-size: 2.2rem;
+
+      font-weight: 900;
+
+      letter-spacing: -1px;
+
+      line-height: 1;
+
+    }
+
+
+
+    .duree-label {
+
+      font-size: 12px;
+
+      opacity: .7;
+
+      font-weight: 600;
+
+      text-transform: uppercase;
+
+      letter-spacing: .5px;
+
+      margin-top: 4px;
+
+    }
+
+
+
+    .duree-minutes-badge {
+
+      margin-left: auto;
+
+      background: rgba(255,255,255,.15);
+
+      border: 1px solid rgba(255,255,255,.2);
+
+      border-radius: 10px;
+
+      padding: 8px 14px;
+
+      font-size: 13px;
+
+      font-weight: 700;
+
+      text-align: center;
+
+    }
+
+
+
+    .duree-warning {
+
+      background: linear-gradient(135deg, #991b1b 0%, #dc2626 100%);
+
+      box-shadow: 0 8px 24px rgba(220,38,38,.3);
+
+    }
+
+
+
+    /* --- Prochaine intervention card --- */
+
+    .prochaine-card {
+
+      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+
+      border: 1px solid #fcd34d;
+
+      border-radius: 16px;
+
+      padding: 20px 24px;
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 16px;
+
+      margin-bottom: 20px;
+
+    }
+
+
+
+    .prochaine-card-icon {
+
+      width: 48px; height: 48px;
+
+      background: #fef3c7;
+
+      border: 2px solid #fcd34d;
+
+      border-radius: 12px;
+
+      display: flex; align-items: center; justify-content: center;
+
+      color: #92400e;
+
+      flex-shrink: 0;
+
+    }
+
+
+
+    .prochaine-card-date {
+
+      font-size: 1.3rem;
+
+      font-weight: 800;
+
+      color: #92400e;
+
+      letter-spacing: -.3px;
+
+    }
+
+
+
+    .prochaine-card-label {
+
+      font-size: 12px;
+
+      font-weight: 600;
+
+      color: #b45309;
+
+      text-transform: uppercase;
+
+      letter-spacing: .4px;
+
+      margin-bottom: 4px;
+
+    }
+
+
+
+    .prochaine-jours {
+
+      margin-left: auto;
+
+      background: #92400e;
+
+      color: #fef3c7;
+
+      border-radius: 10px;
+
+      padding: 8px 14px;
+
+      font-size: 13px;
+
+      font-weight: 800;
+
+      text-align: center;
+
+    }
+
+
+
+    /* --- Alerte longue --- */
+
+    .alerte-longue-banner {
+
+      background: linear-gradient(90deg, #fef3c7 0%, #fffbeb 100%);
+
+      border: 1.5px solid #f59e0b;
+
+      border-radius: 14px;
+
+      padding: 16px 20px;
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 12px;
+
+      margin-bottom: 20px;
+
+      color: #78350f;
+
+      font-weight: 600;
+
+      font-size: 14px;
+
+    }
+
+
+
+    .alerte-longue-banner svg { color: #f59e0b; flex-shrink: 0; }
+
+
+
+    /* --- Meta footer --- */
+
+    .detail-meta {
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 20px;
+
+      padding: 16px 22px;
+
+      background: var(--gris-50);
+
+      border: 1px solid var(--bordure);
+
+      border-radius: 14px;
+
+      font-size: 12px;
+
+      color: var(--texte-doux);
+
+      flex-wrap: wrap;
+
+    }
+
+
+
+    .detail-meta-item {
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 6px;
+
+      font-weight: 600;
+
+    }
+
+
+
+    /* --- Modale suppression --- */
+
+    .modale-overlay {
+
+      position: fixed; inset: 0;
+
+      background: rgba(15,23,42,.6);
+
+      display: flex; align-items: center; justify-content: center;
+
+      z-index: 1000;
+
+      opacity: 0; pointer-events: none;
+
+      transition: opacity .25s;
+
+      backdrop-filter: blur(4px);
+
+      padding: 20px;
+
+    }
+
+    .modale-overlay.active { opacity: 1; pointer-events: all; }
+
+
+
+    .modale {
+
+      background: var(--blanc);
+
+      border-radius: 20px;
+
+      padding: 32px;
+
+      max-width: 420px; width: 100%;
+
+      box-shadow: 0 25px 50px rgba(0,0,0,.2);
+
+      transform: scale(.92) translateY(12px);
+
+      transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+
+      border: 1px solid var(--bordure);
+
+      text-align: center;
+
+    }
+
+    .modale-overlay.active .modale { transform: scale(1) translateY(0); }
+
+
+
+    .modale-icon-wrap {
+
+      width: 64px; height: 64px;
+
+      background: #fee2e2;
+
+      border-radius: 50%;
+
+      display: flex; align-items: center; justify-content: center;
+
+      margin: 0 auto 16px;
+
+      color: #dc2626;
+
+    }
+
+
+
+    .modale h3 { font-size: 18px; font-weight: 800; color: var(--texte); margin-bottom: 8px; }
+
+    .modale p  { color: var(--texte-doux); font-size: 14px; margin-bottom: 24px; line-height: 1.6; }
+
+
+
+    .modale-actions { display: flex; gap: 10px; justify-content: center; }
+
+
+
+    /* Dark mode adaptations */
+
+    [data-theme="dark"] .detail-card-header {
+
+      background: linear-gradient(90deg, rgba(59,91,219,.15) 0%, var(--gris-100) 100%);
+
+    }
+
+    [data-theme="dark"] .duree-grande { box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+
+    [data-theme="dark"] .prochaine-card {
+
+      background: rgba(217,119,6,.1);
+
+      border-color: rgba(252,211,77,.3);
+
+    }
+
+    [data-theme="dark"] .notes-content { background: rgba(217,119,6,.08); color: #fcd34d; }
+
+    [data-theme="dark"] .btn-detail-dupliquer {
+
+      background: transparent;
+
+      color: #60a5fa;
+
+      border-color: #60a5fa;
+
+    }
+
+    [data-theme="dark"] .btn-detail-dupliquer:hover { background: rgba(96,165,250,.1); }
+
+    [data-theme="dark"] .btn-detail-supprimer {
+
+      background: transparent;
+
+      color: #f87171;
+
+      border-color: #f87171;
+
+    }
+
+    [data-theme="dark"] .btn-detail-supprimer:hover { background: rgba(248,113,113,.1); }
+
+
+
+    /* ======================================================
+
+       HISTORIQUE DES MODIFICATIONS
+
+       ====================================================== */
+
+    /* Statut badges */
+    .badge-statut {
+      display: inline-block; padding: 3px 12px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
+    }
+    .statut-en-cours    { background: #dbeafe; color: #1d4ed8; }
+    .statut-terminée    { background: #d1fae5; color: #065f46; }
+    .statut-annulée     { background: #fee2e2; color: #991b1b; }
+    .statut-en-attente  { background: #fef3c7; color: #92400e; }
+
+    /* Commentaire item */
+    .comment-item {
+      border-bottom: 1px solid var(--bordure); padding: 12px 0;
+    }
+    .comment-item:last-child { border-bottom: none; }
+    .comment-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .comment-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--primary); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; flex-shrink: 0;
+    }
+    .comment-author { font-size: 13px; font-weight: 600; color: var(--texte); }
+    .comment-date { font-size: 11px; color: var(--texte-doux); margin-left: auto; }
+    .comment-text { font-size: 13px; color: var(--texte); line-height: 1.5; padding-left: 36px; }
+    .comment-del { background: none; border: none; color: var(--texte-doux); cursor: pointer; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+    .comment-del:hover { color: var(--danger); background: var(--danger-light); }
+
+    /* PJ item */
+    .pj-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 0; border-bottom: 1px solid var(--bordure);
+    }
+    .pj-item:last-child { border-bottom: none; }
+    .pj-icon { width: 32px; height: 32px; background: var(--primary-light); border-radius: 8px;
+               display: flex; align-items: center; justify-content: center; color: var(--primary); flex-shrink: 0; }
+    .pj-name { font-size: 13px; font-weight: 500; color: var(--texte); }
+    .pj-size { font-size: 11px; color: var(--texte-doux); }
+    .pj-dl { margin-left: auto; padding: 5px 10px; border-radius: 6px; border: 1px solid var(--bordure);
+             background: var(--blanc); color: var(--primary); font-size: 12px; font-weight: 600;
+             cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+    .pj-dl:hover { background: var(--primary-light); }
+    .pj-del { padding: 5px 8px; border-radius: 6px; border: 1px solid var(--bordure);
+              background: var(--blanc); color: var(--danger); font-size: 12px; cursor: pointer; }
+    .pj-del:hover { background: var(--danger-light); }
+
+    .historique-section {
+
+      background: var(--blanc);
+
+      border: 1px solid var(--bordure);
+
+      border-radius: 16px;
+
+      overflow: hidden;
+
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+
+      margin-bottom: 20px;
+
+    }
+
+
+
+    .badge-historique {
+
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 5px;
+
+      padding: 3px 10px;
+
+      border-radius: 20px;
+
+      font-size: 11px;
+
+      font-weight: 800;
+
+      text-transform: uppercase;
+
+      letter-spacing: .4px;
+
+    }
+
+    .badge-creation    { background: #d1fae5; color: #065f46; }
+
+    .badge-modification { background: #dbeafe; color: #3b5bdb; }
+
+    .badge-suppression { background: #fee2e2; color: #991b1b; }
+
+
+
+    /* ======================================================
+
+       IMPRESSION PDF (@media print)
+
+       ====================================================== */
+
+    @media print {
+
+      /* Masquer tout sauf le contenu de la page */
+
+      .sidebar,
+
+      .sidebar-toggle,
+
+      .sidebar-overlay,
+
+      .header,
+
+      .detail-actions,
+
+      .modale-overlay,
+
+      .toast-container,
+
+      .alerte-longue-banner,
+
+      .historique-section,
+
+      .detail-meta a,
+
+      button { display: none !important; }
+
+
+
+      /* Réinitialiser la mise en page sidebar+content */
+
+      .app-layout { display: block !important; }
+
+      .page-content { margin-left: 0 !important; padding: 0 !important; width: 100% !important; }
+
+
+
+      body { background: #fff !important; font-size: 11pt; }
+
+      .detail-page { max-width: 100%; padding: 0; }
+
+
+
+      /* Titre du rapport */
+
+      .print-titre {
+
+        display: block !important;
+
+        font-size: 20pt;
+
+        font-weight: 900;
+
+        color: #1e2d5a;
+
+        margin-bottom: 8pt;
+
+        padding-bottom: 8pt;
+
+        border-bottom: 2px solid #1e2d5a;
+
+      }
+
+
+
+      /* Hero en noir/blanc propre */
+
+      .detail-hero {
+
+        background: #1e2d5a !important;
+
+        print-color-adjust: exact;
+
+        -webkit-print-color-adjust: exact;
+
+        border-radius: 8px !important;
+
+        box-shadow: none !important;
+
+        page-break-inside: avoid;
+
+      }
+
+
+
+      .detail-card,
+
+      .detail-texte-card,
+
+      .timeline,
+
+      .prochaine-card {
+
+        box-shadow: none !important;
+
+        border: 1px solid #cbd5e1 !important;
+
+        page-break-inside: avoid;
+
+      }
+
+
+
+      /* Footer de génération */
+
+      .print-footer {
+
+        display: block !important;
+
+        text-align: center;
+
+        font-size: 9pt;
+
+        color: #64748b;
+
+        margin-top: 20pt;
+
+        padding-top: 8pt;
+
+        border-top: 1px solid #cbd5e1;
+
+      }
+
+
+
+      /* Forcer l'affichage des sections cachées en print */
+
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+    }
+
+
+
+    /* Éléments de print masqués hors impression */
+
+    .print-titre,
+
+    .print-footer { display: none; }
+
+
+
+    /* Responsive */
+
+    @media (max-width: 768px) {
+
+      .detail-page { padding: 16px 14px 40px; }
+
+      .detail-hero { padding: 24px 20px; border-radius: 16px; }
+
+      .detail-hero-title { font-size: 1.5rem; }
+
+      .detail-hero-metrics { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px; padding-top: 18px; }
+
+      .detail-grid { grid-template-columns: 1fr; }
+
+      .info-row { grid-template-columns: 1fr; gap: 14px; }
+
+      .timeline { flex-direction: column; }
+
+      .timeline-step { width: 100%; }
+
+      .timeline-step::after { display: none; }
+
+      .duree-grande { flex-wrap: wrap; }
+
+      .duree-minutes-badge { margin-left: 0; }
+
+      .detail-actions { gap: 8px; }
+
+      .btn-detail-modifier,
+
+      .btn-detail-dupliquer,
+
+      .btn-detail-supprimer { padding: 10px 18px; font-size: 13px; }
+
+    }
+
+
+
+    @media (max-width: 480px) {
+
+      .detail-hero-metrics { grid-template-columns: 1fr 1fr; }
+
+      .hero-metric { padding: 12px 14px; }
+
+      .hero-metric-value { font-size: 1.1rem; }
+
+    }
+
+</style>
+
+</head>
+
+<body>
+
+
+
+<!-- ===== SIDEBAR TOGGLE (mobile) ===== -->
+
+<button class="sidebar-toggle" onclick="toggleSidebar()" id="sidebarToggle" aria-label="Menu">
+
+  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+
+    <line x1="3" y1="6" x2="21" y2="6"/>
+
+    <line x1="3" y1="12" x2="21" y2="12"/>
+
+    <line x1="3" y1="18" x2="21" y2="18"/>
+
+  </svg>
+
+</button>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+
+
+<div class="app-layout">
+
+<!-- ===== SIDEBAR ===== -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+
+    <div class="sidebar-logo">
+
+      <svg width="20" height="20" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+
+        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+
+      </svg>
+
+    </div>
+
+    <div class="sidebar-brand-text">
+
+      <div class="sidebar-brand-title">Suivi Interventions</div>
+
+      <div class="sidebar-brand-sub">Détails</div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="sidebar-nav">
+
+    <div class="sidebar-section-label">Navigation</div>
+
+    <a href="index.html" class="sidebar-link">
+
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+
+      Tableau de bord
+
+    </a>
+
+    <a href="calendar.html" class="sidebar-link">
+
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+
+      Calendrier
+
+    </a>
+
+    <a href="form.html" class="sidebar-link">
+
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+
+      Nouvelle intervention
+
+    </a>
+
+    <div class="sidebar-divider"></div>
+
+    <a href="admin.html" class="sidebar-link" id="btnAdmin" style="display:none">
+
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+
+      Administration
+
+    </a>
+
+    <button class="sidebar-link" onclick="toggleDark()" id="btnDark">
+
+      <svg id="iconDark" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+
+      Mode sombre
+
+    </button>
+
+    <button class="sidebar-link danger" onclick="seDeconnecter()">
+
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+
+      Déconnexion
+
+    </button>
+
+  </div>
+
+
+
+  <div class="sidebar-footer">
+
+    <div class="sidebar-user">
+
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+
+      <div class="sidebar-user-info">
+
+        <div class="sidebar-username" id="sidebarUsername">—</div>
+
+        <div class="sidebar-role" id="sidebarRole">—</div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</nav>
+
+<div class="page-content">
+
+<!-- CONTENU -->
+
+<div class="detail-page">
+
+  <div id="content">
+
+    <div class="loader"><div class="spinner"></div> Chargement...</div>
+
+  </div>
+
+</div>
+
+
+
+<!-- MODALE SUPPRESSION -->
+
+<div class="modale-overlay" id="modaleSuppr">
+
+  <div class="modale">
+
+    <div class="modale-icon-wrap">
+
+      <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+
+        <polyline points="3 6 5 6 21 6"/>
+
+        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+
+        <path d="M10 11v6"/><path d="M14 11v6"/>
+
+        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+
+      </svg>
+
+    </div>
+
+    <h3>Confirmer la suppression</h3>
+
+    <p>Cette action est irréversible. L'intervention sera définitivement supprimée.</p>
+
+    <div class="modale-actions">
+
+      <button class="btn btn-ghost" onclick="fermerModale()">Annuler</button>
+
+      <button class="btn-detail-supprimer" id="btnConfirmSuppr">
+
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+
+        Supprimer
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+</div><!-- /.page-content -->
+</div><!-- /.app-layout -->
+
+
+<!-- TOASTS -->
+
+<div class="toast-container" id="toastContainer"></div>
+
+
+
+<script>
+
+const API = `${window.location.protocol}//${window.location.host}/api`;
+
+const AUTH_KEY = 'auth_token';
+
+
+
+// Helpers sidebar / thème / auth
+
+function toggleSidebar() {
+
+  const sidebar = document.getElementById('sidebar');
+
+  const overlay = document.getElementById('sidebarOverlay');
+
+  if (!sidebar || !overlay) return;
+
+  sidebar.classList.toggle('open');
+
+  overlay.classList.toggle('open');
+
+}
+
+
+
+function toggleDark() {
+
+  const html = document.documentElement;
+
+  const isDark = html.getAttribute('data-theme') === 'dark';
+
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+
+  localStorage.setItem('theme', isDark ? 'light' : 'dark');
+
+  const icon = document.getElementById('iconDark');
+
+  if (icon) {
+
+    icon.innerHTML = isDark
+
+      ? `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`
+
+      : `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+
+  }
+
+}
+
+
+
+function chargerTheme() {
+
+  const saved = localStorage.getItem('theme') || 'light';
+
+  document.documentElement.setAttribute('data-theme', saved);
+
+  if (saved === 'dark') {
+
+    const icon = document.getElementById('iconDark');
+
+    if (icon) {
+
+      icon.innerHTML = `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+
+    }
+
+  }
+
+}
+
+
+
+function verifierAuth() {
+
+  const token = localStorage.getItem(AUTH_KEY);
+
+  if (!token) { window.location.href = 'login.html'; return false; }
+
+  const role = localStorage.getItem('auth_role');
+  const username = localStorage.getItem('auth_username') || '?';
+
+  if (role === 'admin') {
+    const btnAdmin = document.getElementById('btnAdmin');
+    if (btnAdmin) btnAdmin.style.display = '';
+    const btnAdminHeader = document.getElementById('btnAdminHeader');
+    if (btnAdminHeader) btnAdminHeader.style.display = '';
+  }
+  const avatar = document.getElementById('sidebarAvatar');
+  if (avatar) avatar.textContent = username.charAt(0).toUpperCase();
+  const uname = document.getElementById('sidebarUsername');
+
+  if (uname) uname.textContent = username;
+
+  const srole = document.getElementById('sidebarRole');
+
+  if (srole) srole.textContent = role === 'admin' ? 'Administrateur' : 'Utilisateur';
+
+  return true;
+
+}
+
+
+
+/**
+
+ * Retourne les headers avec le token d'auth.
+
+ */
+
+function headersAuth() {
+
+  return { 'X-Auth-Token': localStorage.getItem(AUTH_KEY) || '' };
+
+}
+
+
+
+/**
+
+ * Déconnecte et redirige vers /static/login.html.
+
+ */
+
+async function seDeconnecter() {
+
+  try {
+
+    await fetch(`${API}/auth/logout`, { method: 'POST', headers: headersAuth() });
+
+  } catch (e) {}
+
+  localStorage.removeItem(AUTH_KEY);
+
+  localStorage.removeItem('auth_username');
+
+  localStorage.removeItem('auth_role');
+
+  window.location.href = 'login.html';
+
+}
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  if (!verifierAuth()) return;
+
+  chargerTheme();
+
+
+
+  const id = new URLSearchParams(window.location.search).get('id');
+
+  if (!id) { window.location.href = 'index.html'; return; }
+
+  charger(id);
+
+});
+
+
+
+async function charger(id) {
+
+  let res;
+
+  try {
+
+    res = await fetch(`${API}/interventions/${id}`, { headers: headersAuth() });
+
+  } catch {
+
+    document.getElementById('content').innerHTML = erreurHTML('Serveur inaccessible', 'Impossible de contacter le serveur. Vérifiez que uvicorn tourne sur le port 8000.');
+
+    return;
+
+  }
+
+  if (res.status === 401) { window.location.href = 'login.html'; return; }
+
+  if (res.status === 404) {
+
+    document.getElementById('content').innerHTML = erreurHTML('Intervention introuvable', `L'identifiant #${id} n'existe pas dans la base.`);
+
+    return;
+
+  }
+
+  if (!res.ok) {
+
+    document.getElementById('content').innerHTML = erreurHTML('Erreur serveur', `Erreur HTTP ${res.status}`);
+
+    return;
+
+  }
+
+  afficher(await res.json());
+
+  chargerHistorique(id);
+  chargerCommentaires(id);
+  chargerPiecesJointes(id);
+
+}
+
+
+
+function erreurHTML(titre, msg) {
+
+  return `<div style="text-align:center;padding:60px 20px;color:var(--texte-doux)">
+
+    <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 16px;display:block;color:#dc2626"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+
+    <strong style="font-size:18px;color:var(--texte)">${titre}</strong>
+
+    <p style="margin:8px 0 20px">${msg}</p>
+
+    <a href="/" class="btn-detail-modifier">Retour au dashboard</a>
+
+  </div>`;
+
+}
+
+
+
+function afficher(d) {
+
+  const type   = normaliseType(d.type_intervention);
+
+  const isPlan = type === 'Planifiée';
+
+
+
+  document.title = `Intervention #${d.id} — ${d.prestataire || ''}`;
+
+
+
+  const badgeHero = isPlan
+
+    ? `<div class="badge-hero badge-hero-planifiee"><span class="badge-hero-dot"></span>Planifiée</div>`
+
+    : `<div class="badge-hero badge-hero-depannage"><span class="badge-hero-dot"></span>Dépannage</div>`;
+
+
+
+  const dureeMin = d.duree_minutes || 0;
+
+  const dureeHM  = formatDuree(dureeMin);
+
+  const isLong   = dureeMin > 480;
+
+
+
+  // Calcul jours restants
+
+  let joursRestants = null;
+
+  if (d.prochaine_intervention) {
+
+    const today = new Date(); today.setHours(0,0,0,0);
+    const [py, pm, pd] = d.prochaine_intervention.split('-').map(Number);
+    const prochaine = new Date(py, pm - 1, pd);
+    const diff = Math.round((prochaine - today) / 86400000);
+
+    joursRestants = diff >= 0 ? diff : null;
+
+  }
+
+
+
+  const prochaineSection = d.prochaine_intervention ? `
+
+    <div class="prochaine-card">
+
+      <div class="prochaine-card-icon">
+
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+
+          <line x1="16" y1="2" x2="16" y2="6"/>
+
+          <line x1="8" y1="2" x2="8" y2="6"/>
+
+          <line x1="3" y1="10" x2="21" y2="10"/>
+
+        </svg>
+
+      </div>
+
+      <div>
+
+        <div class="prochaine-card-label">Prochaine intervention prévue</div>
+
+        <div class="prochaine-card-date">${formatDate(d.prochaine_intervention)}</div>
+
+      </div>
+
+      ${joursRestants !== null
+        ? joursRestants === 0
+          ? `<div class="prochaine-jours" style="background:#fef3c7;color:#92400e"><strong>Auj.</strong></div>`
+          : joursRestants === 1
+            ? `<div class="prochaine-jours" style="background:#dbeafe;color:#1e40af"><strong>Demain</strong></div>`
+            : `<div class="prochaine-jours">Dans<br><strong>${joursRestants}j</strong></div>`
+        : d.prochaine_intervention
+          ? `<div class="prochaine-jours" style="background:#fee2e2;color:#991b1b"><strong>Passé</strong></div>`
+          : ''
+      }
+
+    </div>
+
+  ` : '';
+
+
+
+  const alerteLongue = isLong ? `
+
+    <div class="alerte-longue-banner">
+
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+
+      </svg>
+
+      <div>
+
+        <strong>Durée inhabituelle détectée</strong> — Cette intervention dépasse 8 heures (${dureeHM}).
+
+        Vérifiez les heures de début et de fin.
+
+      </div>
+
+    </div>
+
+  ` : '';
+
+
+
+  const notesSection = d.notes ? `
+
+    <div class="detail-texte-card">
+
+      <div class="detail-card-header">
+
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+
+          <polyline points="14 2 14 8 20 8"/>
+
+        </svg>
+
+        Notes & commentaires
+
+      </div>
+
+      <div class="notes-content">${escHtml(d.notes)}</div>
+
+    </div>
+
+  ` : '';
+
+
+
+  document.getElementById('content').innerHTML = `
+
+
+
+    <!-- Titre visible uniquement à l'impression -->
+
+    <div class="print-titre">Rapport d'intervention #${d.id}</div>
+
+
+
+    ${alerteLongue}
+
+
+
+    <!-- HERO -->
+
+    <div class="detail-hero">
+
+      <div class="detail-hero-top">
+
+        <div>
+
+          <div class="detail-hero-id">Intervention N° ${d.id}</div>
+
+          <div class="detail-hero-title">${escHtml(d.prestataire || '—')}</div>
+
+          <div class="detail-hero-sub">
+
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="display:inline;vertical-align:middle;margin-right:4px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+
+            ${escHtml(d.site || '—')}
+
+            ${d.mois ? ` &nbsp;·&nbsp; ${capitalize(d.mois)}${d.annee ? ' ' + d.annee : ''}` : ''}
+
+          </div>
+
+        </div>
+
+        <div class="detail-hero-badge">${badgeHero}</div>
+
+      </div>
+
+
+
+      <div class="detail-hero-metrics">
+
+        <div class="hero-metric">
+
+          <div class="hero-metric-label">Durée</div>
+
+          <div class="hero-metric-value" style="${isLong?'color:#fca5a5':''}">${dureeHM || '—'}</div>
+
+          ${dureeMin ? `<div class="hero-metric-sub">${dureeMin} minutes</div>` : ''}
+
+        </div>
+
+        <div class="hero-metric">
+
+          <div class="hero-metric-label">Date début</div>
+
+          <div class="hero-metric-value">${formatDate(d.date_debut)}</div>
+
+          <div class="hero-metric-sub">${d.heure_debut || '—'}</div>
+
+        </div>
+
+        <div class="hero-metric">
+
+          <div class="hero-metric-label">Date fin</div>
+
+          <div class="hero-metric-value">${formatDate(d.date_fin)}</div>
+
+          <div class="hero-metric-sub">${d.heure_fin || '—'}</div>
+
+        </div>
+
+        <div class="hero-metric">
+
+          <div class="hero-metric-label">Prochaine</div>
+
+          <div class="hero-metric-value" style="font-size:1rem">${d.prochaine_intervention ? formatDate(d.prochaine_intervention) : '—'}</div>
+
+          ${joursRestants !== null ? `<div class="hero-metric-sub">${joursRestants === 0 ? "Aujourd'hui" : joursRestants === 1 ? 'Demain' : `Dans ${joursRestants} jours`}</div>` : joursRestants === null && d.prochaine_intervention ? '<div class="hero-metric-sub" style="color:var(--danger)">Dépassé</div>' : ''}
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- BOUTONS ACTION -->
+
+    <div class="detail-actions">
+
+      <a href="/nouvelle-intervention?id=${d.id}" class="btn-detail-modifier">
+
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+
+        </svg>
+
+        Modifier
+
+      </a>
+
+      <button class="btn-detail-dupliquer" onclick="dupliquer(${d.id})">
+
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+
+          <rect x="9" y="9" width="13" height="13" rx="2"/>
+
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+
+        </svg>
+
+        Dupliquer
+
+      </button>
+
+      <button class="btn-detail-supprimer" onclick="ouvrirModale(${d.id})">
+
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+
+          <polyline points="3 6 5 6 21 6"/>
+
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+
+          <path d="M10 11v6"/><path d="M14 11v6"/>
+
+        </svg>
+
+        Supprimer
+
+      </button>
+
+      <!-- Impression locale (print) -->
+      <button class="btn-detail-dupliquer" onclick="exporterPDF()" style="border-color:#7c3aed;color:#7c3aed" id="btnPDF">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <line x1="9" y1="15" x2="15" y2="15"/>
+        </svg>
+        Rapport PDF
+      </button>
+
+    </div>
+
+
+
+    <!-- TIMELINE DATES -->
+
+    <div class="timeline">
+
+      <div class="timeline-step">
+
+        <div class="timeline-label">Début d'intervention</div>
+
+        <div class="timeline-step-icon start">
+
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+
+        </div>
+
+        <div class="timeline-date">${formatDate(d.date_debut)}</div>
+
+        <div class="timeline-heure">${d.heure_debut || '—'}</div>
+
+      </div>
+
+
+
+      <div class="timeline-arrow">
+
+        <svg width="28" height="28" fill="none" stroke="var(--gris-300)" stroke-width="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+
+      </div>
+
+
+
+      <div class="timeline-step" style="text-align:center;flex:0 0 auto;padding:20px 28px">
+
+        <div class="timeline-label">Durée totale</div>
+
+        <div style="font-size:1.6rem;font-weight:900;color:${isLong?'#dc2626':'#3b5bdb'};letter-spacing:-.5px;margin-top:8px">
+
+          ${dureeHM || '—'}
+
+        </div>
+
+        ${dureeMin ? `<div style="font-size:11px;color:var(--texte-doux);font-weight:600;margin-top:3px">${dureeMin} minutes</div>` : ''}
+
+      </div>
+
+
+
+      <div class="timeline-arrow">
+
+        <svg width="28" height="28" fill="none" stroke="var(--gris-300)" stroke-width="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+
+      </div>
+
+
+
+      <div class="timeline-step" style="text-align:right">
+
+        <div class="timeline-label">Fin d'intervention</div>
+
+        <div class="timeline-step-icon end" style="margin-left:auto">
+
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+
+        </div>
+
+        <div class="timeline-date">${formatDate(d.date_fin)}</div>
+
+        <div class="timeline-heure" style="color:#059669">${d.heure_fin || '—'}</div>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- GRILLE INFO -->
+
+    <div class="detail-grid">
+
+      <!-- Informations générales -->
+
+      <div class="detail-card">
+
+        <div class="detail-card-header">
+
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+
+          Informations générales
+
+        </div>
+
+        <div class="detail-card-body">
+
+          <div class="info-row">
+
+            <div class="info-field">
+
+              <div class="info-label">Prestataire</div>
+
+              <div class="info-value">${escHtml(d.prestataire || '—')}</div>
+
+            </div>
+
+            <div class="info-field">
+
+              <div class="info-label">Type</div>
+
+              <div class="info-value">
+
+                ${isPlan
+
+                  ? `<span class="badge badge-planifiee"><span class="badge-dot"></span>Planifiée</span>`
+
+                  : `<span class="badge badge-depannage"><span class="badge-dot"></span>Dépannage</span>`}
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="info-row" style="margin-top:18px">
+
+            <div class="info-field">
+
+              <div class="info-label">Site</div>
+
+              <div class="info-value">${escHtml(d.site || '—')}</div>
+
+            </div>
+
+            <div class="info-field">
+
+              <div class="info-label">Période</div>
+
+              <div class="info-value">${d.mois ? capitalize(d.mois) : '—'}${d.annee ? ' ' + d.annee : ''}</div>
+
+            </div>
+
+          </div>
+
+          <div class="info-row" style="margin-top:18px">
+            <div class="info-field">
+              <div class="info-label">Statut</div>
+              <div class="info-value">
+                ${d.statut ? `<span class="badge-statut statut-${(d.statut||'').toLowerCase().replace(/\s/g,'-')}">${escHtml(d.statut)}</span>` : '—'}
+              </div>
+            </div>
+            <div class="info-field">
+              <div class="info-label">Technicien</div>
+              <div class="info-value">${escHtml(d.technicien || '—')}</div>
+            </div>
+          </div>
+
+          <div class="info-row" style="margin-top:18px">
+
+            <div class="info-field">
+
+              <div class="info-label">ID Intervention</div>
+
+              <div class="info-value" style="color:var(--texte-doux);font-size:13px">#${d.id}</div>
+
+            </div>
+
+            <div class="info-field">
+
+              <div class="info-label">Créé le</div>
+
+              <div class="info-value" style="color:var(--texte-doux);font-size:13px">
+
+                ${d.created_at ? d.created_at.replace('T',' ').substring(0,16) : '—'}
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- Métriques temps -->
+
+      <div class="detail-card">
+
+        <div class="detail-card-header">
+
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+
+          Métriques temporelles
+
+        </div>
+
+        <div class="detail-card-body">
+
+          <div class="info-row">
+
+            <div class="info-field">
+
+              <div class="info-label">Date de début</div>
+
+              <div class="info-value">${formatDate(d.date_debut)}</div>
+
+            </div>
+
+            <div class="info-field">
+
+              <div class="info-label">Heure de début</div>
+
+              <div class="info-value big">${d.heure_debut || '—'}</div>
+
+            </div>
+
+          </div>
+
+          <div class="info-row" style="margin-top:18px">
+
+            <div class="info-field">
+
+              <div class="info-label">Date de fin</div>
+
+              <div class="info-value">${formatDate(d.date_fin)}</div>
+
+            </div>
+
+            <div class="info-field">
+
+              <div class="info-label">Heure de fin</div>
+
+              <div class="info-value big" style="color:#059669">${d.heure_fin || '—'}</div>
+
+            </div>
+
+          </div>
+
+          <div class="info-row" style="margin-top:18px">
+
+            <div class="info-field">
+
+              <div class="info-label">Durée totale</div>
+
+              <div class="info-value big ${isLong?'warning':''}">${dureeHM || '—'}</div>
+
+            </div>
+
+            <div class="info-field">
+
+              <div class="info-label">En minutes</div>
+
+              <div class="info-value" style="color:var(--texte-doux)">${dureeMin || '—'} min</div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- TRAVAUX -->
+
+    ${d.travaux ? `
+
+    <div class="detail-texte-card">
+
+      <div class="detail-card-header">
+
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+
+        </svg>
+
+        Travaux effectués
+
+      </div>
+
+      <div class="texte-content">${escHtml(d.travaux)}</div>
+
+    </div>
+
+    ` : ''}
+
+
+
+    <!-- PROCHAINE INTERVENTION -->
+
+    ${prochaineSection}
+
+
+
+    <!-- NOTES -->
+
+    ${notesSection}
+
+
+
+    <!-- META -->
+
+    <div class="detail-meta">
+
+      <div class="detail-meta-item">
+
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+
+        Créé le ${d.created_at ? d.created_at.replace('T',' ').substring(0,16) : '—'}
+
+      </div>
+
+      <div class="detail-meta-item">
+
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg>
+
+        ID #${d.id}
+
+      </div>
+
+      <div class="detail-meta-item" style="margin-left:auto">
+
+        <a href="/" style="color:var(--primary);font-weight:700;text-decoration:none;font-size:12px">â† Retour au dashboard</a>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- Footer visible uniquement à l'impression -->
+
+    <div class="print-footer">
+
+      Rapport généré le ${new Date().toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric'})}
+
+      à ${new Date().toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'})}
+
+      — Suivi des Interventions
+
+    </div>
+
+
+
+    <!-- SECTION COMMENTAIRES -->
+    <div id="sectionCommentaires" class="historique-section" style="margin-top:20px">
+      <div class="detail-card-header">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Commentaires
+      </div>
+      <div id="commentairesBody" style="padding:16px 20px"></div>
+      <div class="no-print" style="padding:0 20px 16px;display:flex;gap:8px">
+        <textarea id="nouveauCommentaire" placeholder="Ajouter un commentaire..." style="flex:1;padding:10px 14px;border:1.5px solid var(--bordure);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;min-height:56px;background:var(--blanc);color:var(--texte)"></textarea>
+        <button onclick="ajouterCommentaire()" class="btn btn-primary" style="align-self:flex-end;white-space:nowrap">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Envoyer
+        </button>
+      </div>
+    </div>
+
+    <!-- SECTION PIÈCES JOINTES -->
+    <div id="sectionPJ" class="historique-section" style="margin-top:20px">
+      <div class="detail-card-header">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+        Pièces jointes
+      </div>
+      <div id="pjBody" style="padding:16px 20px"></div>
+      <div class="no-print" style="padding:0 20px 16px">
+        <label style="display:inline-flex;align-items:center;gap:8px;padding:9px 16px;background:var(--primary);color:#fff;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+          Ajouter un fichier
+          <input type="file" id="inputPJ" style="display:none" onchange="uploaderFichier(this)" accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xls,.xlsx,.txt,.zip">
+        </label>
+        <span style="font-size:11px;color:var(--texte-doux);margin-left:10px">PDF, images, Word, Excel, ZIP — max 10 Mo</span>
+      </div>
+    </div>
+
+    <!-- SECTION HISTORIQUE (chargée après le rendu) -->
+
+    <div id="sectionHistorique" class="historique-section" style="margin-top:20px">
+
+      <div class="detail-card-header">
+
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+
+          <circle cx="12" cy="12" r="10"/>
+
+          <polyline points="12 6 12 12 16 14"/>
+
+        </svg>
+
+        Historique des modifications
+
+      </div>
+
+      <div id="historiqueBody" style="padding:20px">
+
+        <div class="loader"><div class="spinner"></div> Chargement...</div>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+
+
+// === Modale suppression ===
+
+let idCourant = null;
+
+
+
+function ouvrirModale(id) {
+
+  idCourant = id;
+
+  document.getElementById('modaleSuppr').classList.add('active');
+
+  document.getElementById('btnConfirmSuppr').onclick = () => supprimerConfirme(id);
+
+}
+
+
+
+function fermerModale() {
+
+  document.getElementById('modaleSuppr').classList.remove('active');
+
+}
+
+
+
+document.getElementById('modaleSuppr').addEventListener('click', e => {
+
+  if (e.target === e.currentTarget) fermerModale();
+
+});
+
+
+
+async function supprimerConfirme(id) {
+
+  const btn = document.getElementById('btnConfirmSuppr');
+
+  btn.textContent = 'Suppression...';
+
+  btn.disabled = true;
+
+  try {
+
+    const r = await fetch(`${API}/interventions/${id}`, { method: 'DELETE', headers: headersAuth() });
+
+    if (r.ok) {
+
+      toast('Intervention supprimée !', 'success');
+
+      fermerModale();
+
+      setTimeout(() => window.location.href = 'index.html', 1200);
+
+    } else {
+
+      toast('Erreur lors de la suppression', 'error');
+
+    }
+
+  } catch {
+
+    toast('Erreur de connexion', 'error');
+
+  }
+
+  btn.textContent = 'Supprimer';
+
+  btn.disabled = false;
+
+}
+
+
+
+async function dupliquer(id) {
+
+  try {
+
+    const r = await fetch(`${API}/interventions/${id}/dupliquer`, { method: 'POST', headers: headersAuth() });
+
+    if (r.ok) {
+
+      const n = await r.json();
+
+      toast('Intervention dupliquée ! Ouverture...', 'success');
+
+      setTimeout(() => window.location.href = `form.html?id=${n.id}`, 1500);
+
+    } else {
+
+      toast('Erreur duplication', 'error');
+
+    }
+
+  } catch { toast('Erreur connexion', 'error'); }
+
+}
+
+
+
+// ============================================================
+
+// EXPORT PDF via window.print()
+
+// ============================================================
+
+
+
+/**
+
+ * Déclenche l'impression du navigateur pour générer un PDF.
+
+ * Le @media print masque les éléments non nécessaires.
+
+ */
+
+function exporterPDF() {
+  window.print();
+}
+
+// Impression locale (window.print)
+function exporterPDFServeur() {
+  // anciennement export via serveur; on imprime directement la page actuelle.
+  exporterPDF();
+}
+
+// ============================================================
+// COMMENTAIRES
+// ============================================================
+
+async function chargerCommentaires(id) {
+  try {
+    const r = await fetch(`${API}/interventions/${id}/commentaires`, { headers: headersAuth() });
+    if (!r.ok) return;
+    afficherCommentaires(await r.json(), id);
+  } catch(e) {}
+}
+
+function afficherCommentaires(liste, id) {
+  const el = document.getElementById('commentairesBody');
+  if (!el) return;
+  const meUser = localStorage.getItem('auth_username');
+  const meRole = localStorage.getItem('auth_role');
+  if (!liste.length) {
+    el.innerHTML = `<p style="color:var(--texte-doux);font-size:13px;padding:4px 0">Aucun commentaire pour l'instant.</p>`;
+    return;
+  }
+  el.innerHTML = liste.map(c => {
+    const dt = (c.created_at||'').substring(0,16).replace('T',' ');
+    const canDel = (c.username === meUser || meRole === 'admin');
+    return `<div class="comment-item">
+      <div class="comment-header">
+        <div class="comment-avatar">${(c.username||'?')[0].toUpperCase()}</div>
+        <span class="comment-author">${escHtml(c.username||'?')}</span>
+        <span class="comment-date">${dt}</span>
+        ${canDel ? `<button class="comment-del" onclick="supprimerCommentaire(${c.id},${id})" title="Supprimer">✕</button>` : ''}
+      </div>
+      <div class="comment-text">${escHtml(c.contenu)}</div>
+    </div>`;
+  }).join('');
+}
+
+async function ajouterCommentaire() {
+  const id = new URLSearchParams(location.search).get('id');
+  const ta = document.getElementById('nouveauCommentaire');
+  const txt = (ta.value||'').trim();
+  if (!txt || !id) return;
+  try {
+    const r = await fetch(`${API}/interventions/${id}/commentaires`, {
+      method: 'POST',
+      headers: { ...headersAuth(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contenu: txt })
+    });
+    if (!r.ok) { const e = await r.json().catch(()=>({})); alert(e.detail||'Erreur lors de la sauvegarde'); return; }
+    ta.value = '';
+    chargerCommentaires(id);
+  } catch(e) { alert('Erreur réseau'); }
+}
+
+async function supprimerCommentaire(cid, id) {
+  if (!confirm('Supprimer ce commentaire ?')) return;
+  try {
+    await fetch(`${API}/commentaires/${cid}`, { method: 'DELETE', headers: headersAuth() });
+    chargerCommentaires(id);
+  } catch(e) {}
+}
+
+// ============================================================
+// PIÈCES JOINTES
+// ============================================================
+
+async function chargerPiecesJointes(id) {
+  try {
+    const r = await fetch(`${API}/interventions/${id}/pieces-jointes`, { headers: headersAuth() });
+    if (!r.ok) return;
+    afficherPJ(await r.json(), id);
+  } catch(e) {}
+}
+
+function afficherPJ(liste, id) {
+  const el = document.getElementById('pjBody');
+  if (!el) return;
+  const meRole = localStorage.getItem('auth_role');
+  const meId = localStorage.getItem('auth_user_id');
+  if (!liste.length) {
+    el.innerHTML = `<p style="color:var(--texte-doux);font-size:13px;padding:4px 0">Aucun fichier joint.</p>`;
+    return;
+  }
+  el.innerHTML = liste.map(pj => {
+    const size = pj.taille ? (pj.taille > 1024*1024 ? (pj.taille/1024/1024).toFixed(1)+' Mo' : Math.round(pj.taille/1024)+' Ko') : '';
+    const ext = pj.nom_original.split('.').pop().toLowerCase();
+    const iconColor = {pdf:'#dc2626',jpg:'#059669',jpeg:'#059669',png:'#059669',xls:'#16a34a',xlsx:'#16a34a',doc:'#1d4ed8',docx:'#1d4ed8'}[ext] || '#6366f1';
+    return `<div class="pj-item">
+      <div class="pj-icon" style="color:${iconColor}">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div>
+        <div class="pj-name">${escHtml(pj.nom_original)}</div>
+        <div class="pj-size">${size} · ${(pj.created_at||'').substring(0,10)}</div>
+      </div>
+      <a href="${API}/pieces-jointes/${pj.id}/telecharger?token=${localStorage.getItem('auth_token')}" class="pj-dl" download="${escHtml(pj.nom_original)}">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Télécharger
+      </a>
+      <button class="pj-del" onclick="supprimerPJ(${pj.id},${id})" title="Supprimer">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+}
+
+async function uploaderFichier(input) {
+  const id = new URLSearchParams(location.search).get('id');
+  if (!input.files.length || !id) return;
+  const formData = new FormData();
+  formData.append('fichier', input.files[0]);
+  try {
+    const r = await fetch(`${API}/interventions/${id}/pieces-jointes`, {
+      method: 'POST',
+      headers: { 'X-Auth-Token': localStorage.getItem('auth_token') || '' },
+      body: formData
+    });
+    if (!r.ok) { const e = await r.json(); alert(e.detail||'Erreur upload'); return; }
+    input.value = '';
+    chargerPiecesJointes(id);
+  } catch(e) { alert('Erreur réseau'); }
+}
+
+async function supprimerPJ(pjId, id) {
+  if (!confirm('Supprimer ce fichier ?')) return;
+  try {
+    await fetch(`${API}/pieces-jointes/${pjId}`, { method: 'DELETE', headers: headersAuth() });
+    chargerPiecesJointes(id);
+  } catch(e) {}
+}
+
+// ============================================================
+// HISTORIQUE DES MODIFICATIONS
+// ============================================================
+
+
+
+/**
+
+ * Charge et affiche l'historique des modifications d'une intervention.
+
+ */
+
+async function chargerHistorique(id) {
+
+  const container = document.getElementById('historiqueBody');
+
+  if (!container) return;
+
+
+
+  try {
+
+    const r = await fetch(`${API}/interventions/${id}/historique`, { headers: headersAuth() });
+
+    if (!r.ok) throw new Error();
+
+    const historique = await r.json();
+
+    afficherHistorique(historique);
+
+  } catch (e) {
+
+    if (container) {
+
+      container.innerHTML = `<p style="color:var(--texte-doux);font-size:13px">Impossible de charger l'historique.</p>`;
+
+    }
+
+  }
+
+}
+
+
+
+/**
+
+ * Affiche le tableau d'historique dans la section dédiée.
+
+ */
+
+function afficherHistorique(historique) {
+
+  const container = document.getElementById('historiqueBody');
+
+  if (!container) return;
+
+
+
+  if (!historique || !historique.length) {
+
+    container.innerHTML = `
+
+      <div class="empty-state" style="padding:24px 0">
+
+        <div class="empty-state-icon">
+
+          <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+
+            <circle cx="12" cy="12" r="10"/>
+
+            <polyline points="12 6 12 12 16 14"/>
+
+          </svg>
+
+        </div>
+
+        <strong>Aucun historique disponible</strong>
+
+        <p>Les modifications futures apparaîtront ici</p>
+
+      </div>`;
+
+    return;
+
+  }
+
+
+
+  // Libellés lisibles pour les noms de champs
+
+  const LIBELLES_CHAMPS = {
+
+    prestataire: 'Prestataire',
+
+    type_intervention: 'Type',
+
+    mois: 'Mois',
+
+    annee: 'Année',
+
+    date_debut: 'Date début',
+
+    heure_debut: 'Heure début',
+
+    date_fin: 'Date fin',
+
+    heure_fin: 'Heure fin',
+
+    duree_minutes: 'Durée (min)',
+
+    site: 'Site',
+
+    travaux: 'Travaux',
+
+    prochaine_intervention: 'Prochaine intervention',
+
+    notes: 'Notes',
+
+    source: 'Source',
+
+  };
+
+
+
+  const lignes = historique.map(h => {
+
+    // Formater la date
+
+    const dateStr = h.created_at
+
+      ? h.created_at.replace('T', ' ').substring(0, 16)
+
+      : '—';
+
+
+
+    // Badge action coloré
+
+    let badgeClass = 'badge-modification';
+
+    let badgeLabel = 'Modification';
+
+    if (h.action === 'creation') { badgeClass = 'badge-creation'; badgeLabel = 'Création'; }
+
+    else if (h.action === 'suppression') { badgeClass = 'badge-suppression'; badgeLabel = 'Suppression'; }
+
+
+
+    const badge = `<span class="badge-historique ${badgeClass}">${badgeLabel}</span>`;
+
+
+
+    // Champ modifié
+
+    const champ = h.champ_modifie
+
+      ? escHtml(LIBELLES_CHAMPS[h.champ_modifie] || h.champ_modifie)
+
+      : '—';
+
+
+
+    // Tronquer les valeurs longues
+
+    const tronquer = (v, max=60) => {
+
+      if (!v) return '<span style="color:var(--texte-doux)">—</span>';
+
+      const s = String(v);
+
+      return escHtml(s.length > max ? s.substring(0, max) + '"¦' : s);
+
+    };
+
+
+
+    return `<tr>
+
+      <td style="white-space:nowrap;color:var(--texte-doux);font-size:12px">${dateStr}</td>
+
+      <td>${badge}</td>
+
+      <td style="font-weight:600;font-size:13px">${champ}</td>
+
+      <td style="font-size:12px;color:#dc2626">${tronquer(h.ancienne_valeur)}</td>
+
+      <td style="font-size:12px;color:#059669">${tronquer(h.nouvelle_valeur)}</td>
+
+    </tr>`;
+
+  }).join('');
+
+
+
+  container.innerHTML = `
+
+    <div class="table-wrapper" style="margin:0">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>Date / Heure</th>
+
+            <th>Action</th>
+
+            <th>Champ</th>
+
+            <th>Ancienne valeur</th>
+
+            <th>Nouvelle valeur</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>${lignes}</tbody>
+
+      </table>
+
+    </div>`;
+
+}
+
+
+
+// === Helpers ===
+
+function normaliseType(t) {
+
+  if (!t) return '—';
+
+  const tl = t.toLowerCase();
+
+  if (tl.includes('plan')) return 'Planifiée';
+
+  if (tl.includes('dep') || tl.includes('dép')) return 'Dépannage';
+
+  return t;
+
+}
+
+function formatDate(d) {
+
+  if (!d) return '—';
+
+  try { const [y,m,j] = d.split('-'); return `${j}/${m}/${y}`; } catch { return d; }
+
+}
+
+function formatDuree(m) {
+
+  if (!m) return '—';
+
+  const h = Math.floor(m / 60), mn = m % 60;
+
+  return h > 0 ? (mn > 0 ? `${h}h ${mn}min` : `${h}h`) : `${mn}min`;
+
+}
+
+function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+
+function escHtml(s) {
+
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+}
+
+function toast(msg, type = 'info') {
+
+  const icons = {
+
+    success: `<polyline points="20 6 9 17 4 12"/>`,
+
+    error:   `<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`,
+
+  };
+
+  const titles = { success: 'Succès', error: 'Erreur', info: 'Info' };
+
+  const c = document.getElementById('toastContainer');
+
+  const t = document.createElement('div');
+
+  t.className = `toast ${type}`;
+
+  t.innerHTML = `
+
+    <div class="toast-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">${icons[type]||''}</svg></div>
+
+    <div class="toast-left">
+
+      <div class="toast-title">${titles[type]||'Info'}</div>
+
+      <div class="toast-message">${escHtml(msg)}</div>
+
+    </div>`;
+
+  c.appendChild(t);
+
+  setTimeout(() => t.remove(), 3500);
+
+}
+
+</script>
+
+</body>
+
+</html>
+
+
+

@@ -1,0 +1,2109 @@
+<!DOCTYPE html>
+
+<html lang="fr" data-theme="light">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Calendrier — Suivi des Interventions</title>
+
+  <link rel="stylesheet" href="/static/style.css">
+
+  <style>
+
+    /* ============================================================
+
+       PAGE CALENDRIER — Vue mensuelle des interventions
+
+       ============================================================ */
+
+
+
+    .calendar-layout {
+
+      display: flex;
+
+      gap: 24px;
+
+      align-items: flex-start;
+
+    }
+
+
+
+    /* === Calendrier principal === */
+
+    .calendar-main {
+
+      flex: 1;
+
+      min-width: 0;
+
+    }
+
+
+
+    .calendar-controls {
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      margin-bottom: 20px;
+
+      gap: 12px;
+
+      flex-wrap: wrap;
+
+    }
+
+
+
+    .calendar-nav {
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 12px;
+
+    }
+
+
+
+    .btn-nav {
+
+      width: 40px;
+
+      height: 40px;
+
+      border: 2px solid var(--bordure);
+
+      border-radius: 10px;
+
+      background: var(--blanc);
+
+      color: var(--texte);
+
+      cursor: pointer;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      transition: all .2s;
+
+      font-size: 18px;
+
+    }
+
+    .btn-nav:hover {
+
+      border-color: var(--primary);
+
+      color: var(--primary);
+
+      background: var(--primary-light);
+
+    }
+
+
+
+    .calendar-titre {
+
+      font-size: 1.4rem;
+
+      font-weight: 900;
+
+      color: var(--texte);
+
+      letter-spacing: -.5px;
+
+      min-width: 200px;
+
+      text-align: center;
+
+    }
+
+
+
+    .calendar-selectors {
+
+      display: flex;
+
+      gap: 8px;
+
+      align-items: center;
+
+    }
+
+
+
+    .calendar-selectors select {
+
+      padding: 8px 12px;
+
+      border: 2px solid var(--bordure);
+
+      border-radius: 10px;
+
+      background: var(--blanc);
+
+      color: var(--texte);
+
+      font-size: 13px;
+
+      font-weight: 600;
+
+      cursor: pointer;
+
+    }
+
+    .calendar-selectors select:focus {
+
+      outline: none;
+
+      border-color: var(--primary);
+
+    }
+
+
+
+    .btn-today {
+
+      padding: 8px 16px;
+
+      border: 2px solid var(--primary);
+
+      border-radius: 10px;
+
+      background: var(--blanc);
+
+      color: var(--primary);
+
+      font-size: 13px;
+
+      font-weight: 700;
+
+      cursor: pointer;
+
+      transition: all .2s;
+
+    }
+
+    .btn-today:hover {
+
+      background: var(--primary);
+
+      color: #fff;
+
+    }
+
+
+
+    /* === Grille calendrier === */
+
+    .calendar-grid-wrap {
+
+      background: var(--blanc);
+
+      border: 1px solid var(--bordure);
+
+      border-radius: 16px;
+
+      overflow: hidden;
+
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+
+    }
+
+
+
+    .calendar-header-row {
+
+      display: grid;
+
+      grid-template-columns: repeat(7, 1fr);
+
+      background: linear-gradient(135deg, #1e2d5a 0%, #3b5bdb 100%);
+
+    }
+
+
+
+    .calendar-day-name {
+
+      padding: 12px 4px;
+
+      text-align: center;
+
+      font-size: 11px;
+
+      font-weight: 800;
+
+      color: rgba(255,255,255,.85);
+
+      text-transform: uppercase;
+
+      letter-spacing: .5px;
+
+    }
+
+
+
+    .calendar-grid {
+
+      display: grid;
+
+      grid-template-columns: repeat(7, 1fr);
+
+    }
+
+
+
+    .calendar-cell {
+
+      min-height: 90px;
+
+      border-right: 1px solid var(--bordure);
+
+      border-bottom: 1px solid var(--bordure);
+
+      padding: 8px;
+
+      cursor: pointer;
+
+      transition: background .15s;
+
+      position: relative;
+
+      overflow: hidden;
+
+    }
+
+
+
+    .calendar-cell:nth-child(7n) {
+
+      border-right: none;
+
+    }
+
+
+
+    .calendar-cell:hover {
+
+      background: var(--primary-light);
+
+    }
+
+
+
+    .calendar-cell.autre-mois {
+
+      background: var(--gris-50);
+
+      opacity: .5;
+
+      cursor: default;
+
+    }
+
+    .calendar-cell.autre-mois:hover {
+
+      background: var(--gris-50);
+
+    }
+
+
+
+    .calendar-cell.aujourd-hui {
+
+      background: #eff6ff;
+
+      border: 2px solid var(--primary);
+
+    }
+
+    .calendar-cell.selectionne {
+
+      background: var(--primary-light);
+
+      border: 2px solid var(--primary);
+
+    }
+
+
+
+    .cell-numero {
+
+      font-size: 13px;
+
+      font-weight: 800;
+
+      color: var(--texte);
+
+      margin-bottom: 4px;
+
+      width: 26px;
+
+      height: 26px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      border-radius: 50%;
+
+    }
+
+
+
+    .calendar-cell.aujourd-hui .cell-numero {
+
+      background: var(--primary);
+
+      color: #fff;
+
+    }
+
+
+
+    .cell-badges {
+
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 2px;
+
+    }
+
+
+
+    /* Badge compact affiché dans chaque cellule */
+
+    .cell-badge {
+
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 4px;
+
+      padding: 2px 6px;
+
+      border-radius: 6px;
+
+      font-size: 10px;
+
+      font-weight: 700;
+
+      max-width: 100%;
+
+      overflow: hidden;
+
+      text-overflow: ellipsis;
+
+      white-space: nowrap;
+
+    }
+
+    .cell-badge-planifiee { background: #d1fae5; color: #065f46; }
+
+    .cell-badge-depannage { background: #fee2e2; color: #991b1b; }
+
+    .cell-badge-more {
+
+      background: var(--gris-200);
+
+      color: var(--texte-doux);
+
+      font-size: 10px;
+
+    }
+
+
+
+    /* Étoile pour prochaine intervention planifiée */
+
+    .cell-star {
+
+      position: absolute;
+
+      top: 6px;
+
+      right: 6px;
+
+      color: #f59e0b;
+
+      font-size: 14px;
+
+      line-height: 1;
+
+    }
+
+
+
+    /* === Panneau latéral === */
+
+    .calendar-panel {
+
+      width: 340px;
+
+      flex-shrink: 0;
+
+    }
+
+
+
+    .panel-card {
+
+      background: var(--blanc);
+
+      border: 1px solid var(--bordure);
+
+      border-radius: 16px;
+
+      overflow: hidden;
+
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+
+      position: sticky;
+
+      top: 24px;
+
+    }
+
+
+
+    .panel-header {
+
+      background: linear-gradient(135deg, #1e2d5a 0%, #3b5bdb 100%);
+
+      padding: 18px 20px;
+
+      color: #fff;
+
+    }
+
+
+
+    .panel-date {
+
+      font-size: 1.2rem;
+
+      font-weight: 900;
+
+      letter-spacing: -.3px;
+
+      margin-bottom: 4px;
+
+    }
+
+
+
+    .panel-count {
+
+      font-size: 12px;
+
+      opacity: .75;
+
+      font-weight: 600;
+
+    }
+
+
+
+    .panel-empty {
+
+      padding: 40px 20px;
+
+      text-align: center;
+
+      color: var(--texte-doux);
+
+      font-size: 13px;
+
+    }
+
+
+
+    .panel-empty svg {
+
+      display: block;
+
+      margin: 0 auto 12px;
+
+      color: var(--gris-300);
+
+    }
+
+
+
+    .panel-inter-list {
+
+      padding: 12px;
+
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 10px;
+
+      max-height: 500px;
+
+      overflow-y: auto;
+
+    }
+
+
+
+    .panel-inter-item {
+
+      background: var(--gris-50);
+
+      border: 1px solid var(--bordure);
+
+      border-radius: 12px;
+
+      padding: 12px 14px;
+
+      text-decoration: none;
+
+      color: inherit;
+
+      display: block;
+
+      transition: all .15s;
+
+    }
+
+    .panel-inter-item:hover {
+
+      border-color: var(--primary);
+
+      background: var(--primary-light);
+
+      transform: translateY(-1px);
+
+      box-shadow: 0 4px 12px rgba(59,91,219,.12);
+
+    }
+
+
+
+    .panel-inter-badge {
+
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 5px;
+
+      padding: 3px 10px;
+
+      border-radius: 20px;
+
+      font-size: 11px;
+
+      font-weight: 800;
+
+      margin-bottom: 6px;
+
+    }
+
+    .panel-badge-planifiee { background: #d1fae5; color: #065f46; }
+
+    .panel-badge-depannage { background: #fee2e2; color: #991b1b; }
+
+
+
+    .panel-inter-prestataire {
+
+      font-size: 14px;
+
+      font-weight: 800;
+
+      color: var(--texte);
+
+      margin-bottom: 3px;
+
+    }
+
+
+
+    .panel-inter-site {
+
+      font-size: 12px;
+
+      color: var(--texte-doux);
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 4px;
+
+    }
+
+
+
+    .panel-inter-heure {
+
+      font-size: 11px;
+
+      color: var(--primary);
+
+      font-weight: 700;
+
+      margin-top: 4px;
+
+    }
+
+
+
+    /* === Légende === */
+
+    .calendar-legende {
+
+      display: flex;
+
+      gap: 16px;
+
+      flex-wrap: wrap;
+
+      font-size: 12px;
+
+      color: var(--texte-doux);
+
+      margin-top: 12px;
+
+      align-items: center;
+
+    }
+
+
+
+    .legende-item {
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 6px;
+
+      font-weight: 600;
+
+    }
+
+
+
+    .legende-dot {
+
+      width: 12px;
+
+      height: 12px;
+
+      border-radius: 4px;
+
+    }
+
+
+
+    /* Responsive */
+
+    @media (max-width: 900px) {
+
+      .calendar-layout { flex-direction: column; }
+
+      .calendar-panel { width: 100%; }
+
+      .panel-card { position: static; }
+
+    }
+
+
+
+    @media (max-width: 600px) {
+
+      .calendar-cell { min-height: 60px; padding: 4px; }
+
+      .cell-badge { display: none; }
+
+      .calendar-titre { font-size: 1.1rem; min-width: 140px; }
+
+      .calendar-controls { gap: 8px; }
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+
+
+<!-- ===== SIDEBAR TOGGLE (mobile) ===== -->
+
+<button class="sidebar-toggle" onclick="toggleSidebar()" id="sidebarToggle" aria-label="Menu">
+
+  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+
+    <line x1="3" y1="6" x2="21" y2="6"/>
+
+    <line x1="3" y1="12" x2="21" y2="12"/>
+
+    <line x1="3" y1="18" x2="21" y2="18"/>
+
+  </svg>
+
+</button>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+
+
+<div class="app-layout">
+
+<!-- ===== SIDEBAR ===== -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+
+    <div class="sidebar-logo">
+
+      <svg width="20" height="20" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+
+        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+
+      </svg>
+
+    </div>
+
+    <div class="sidebar-brand-text">
+
+      <div class="sidebar-brand-title">Suivi Interventions</div>
+
+      <div class="sidebar-brand-sub">Navigation</div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="sidebar-nav">
+
+    <div class="sidebar-section-label">Navigation</div>
+
+    <a href="index.html" class="sidebar-link">
+
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+
+      Tableau de bord
+
+    </a>
+
+    <a href="calendar.html" class="sidebar-link active">
+
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+
+      Calendrier
+
+    </a>
+
+    <a href="form.html" class="sidebar-link">
+
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+
+      Nouvelle intervention
+
+    </a>
+
+    <div class="sidebar-divider"></div>
+
+    <a href="admin.html" class="sidebar-link" id="btnAdmin" style="display:none">
+
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+
+      Administration
+
+    </a>
+
+    <button class="sidebar-link" onclick="toggleDark()" id="btnDark">
+
+      <svg id="iconDark" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+
+      Mode sombre
+
+    </button>
+
+    <button class="sidebar-link danger" onclick="seDeconnecter()">
+
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+
+      Déconnexion
+
+    </button>
+
+  </div>
+
+
+
+  <div class="sidebar-footer">
+
+    <div class="sidebar-user">
+
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+
+      <div class="sidebar-user-info">
+
+        <div class="sidebar-username" id="sidebarUsername">—</div>
+
+        <div class="sidebar-role" id="sidebarRole">—</div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</nav>
+
+<div class="page-content">
+
+<!-- CALENDRIER -->
+<div style="display:none"><!-- HEADER REMOVED --></div>
+
+<div style="display:none"><header>
+
+  <div class="header-inner">
+
+    <div class="header-brand">
+
+      <div class="header-logo">
+
+        <svg width="20" height="20" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+
+        </svg>
+
+      </div>
+
+      <div>
+
+        <h1>Suivi des Interventions</h1>
+
+        <div class="header-subtitle">Vue calendrier</div>
+
+      </div>
+
+    </div>
+
+    <div class="header-actions">
+
+      <a href="/" class="btn-header">
+
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+
+        <span>Dashboard</span>
+
+      </a>
+
+      <a href="/nouvelle-intervention" class="btn-header">
+
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+
+        <span>Nouvelle</span>
+
+      </a>
+
+      <a href="/admin" class="btn-header" id="btnAdminHeader" style="display:none">
+
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+
+        <span>Admin</span>
+
+      </a>
+
+      <button class="btn-header danger" onclick="seDeconnecter()">
+
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+
+        <span>Déconnexion</span>
+
+      </button>
+
+    </div>
+
+  </div>
+
+  <!--
+
+  <nav class="mobile-nav" id="mobileNav">
+
+    <a href="/">
+
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+
+      Dashboard
+
+    </a>
+
+    <a href="/nouvelle-intervention">
+
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+
+      Nouvelle intervention
+
+    </a>
+
+    <a href="/admin" id="btnAdminMobile" style="display:none">
+
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+
+      Administration
+
+    </a>
+
+    <div class="mobile-nav-divider"></div>
+
+    <button class="btn-danger-mobile" onclick="seDeconnecter()">
+
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+
+      Déconnexion
+
+    </button>
+
+  </nav>
+
+  -->
+
+</header></div>
+
+<main class="main">
+
+  <div class="container">
+
+
+
+    <!-- Contrôles de navigation -->
+
+    <div class="calendar-controls">
+
+      <div class="calendar-nav">
+
+        <button class="btn-nav" onclick="naviguerMois(-1)" title="Mois précédent">
+
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+
+        </button>
+
+        <div class="calendar-titre" id="calTitre">Chargement...</div>
+
+        <button class="btn-nav" onclick="naviguerMois(1)" title="Mois suivant">
+
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+
+        </button>
+
+      </div>
+
+
+
+      <div class="calendar-selectors">
+
+        <select id="selMois" onchange="changerMoisAnnee()">
+
+          <option value="0">Janvier</option><option value="1">Février</option>
+
+          <option value="2">Mars</option><option value="3">Avril</option>
+
+          <option value="4">Mai</option><option value="5">Juin</option>
+
+          <option value="6">Juillet</option><option value="7">Août</option>
+
+          <option value="8">Septembre</option><option value="9">Octobre</option>
+
+          <option value="10">Novembre</option><option value="11">Décembre</option>
+
+        </select>
+
+        <select id="selAnnee" onchange="changerMoisAnnee()"></select>
+
+        <button class="btn-today" onclick="allerAujourdhui()">Aujourd'hui</button>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- Layout calendrier + panneau -->
+
+    <div class="calendar-layout">
+
+
+
+      <!-- Calendrier -->
+
+      <div class="calendar-main">
+
+        <div class="calendar-grid-wrap">
+
+          <!-- En-tête jours de la semaine -->
+
+          <div class="calendar-header-row">
+
+            <div class="calendar-day-name">Lun</div>
+
+            <div class="calendar-day-name">Mar</div>
+
+            <div class="calendar-day-name">Mer</div>
+
+            <div class="calendar-day-name">Jeu</div>
+
+            <div class="calendar-day-name">Ven</div>
+
+            <div class="calendar-day-name">Sam</div>
+
+            <div class="calendar-day-name">Dim</div>
+
+          </div>
+
+          <!-- Grille des jours (remplie par JS) -->
+
+          <div class="calendar-grid" id="calGrid">
+
+            <div style="grid-column:span 7;padding:40px;text-align:center;color:var(--texte-doux)">
+
+              <div class="spinner" style="margin:0 auto 12px"></div>
+
+              Chargement des interventions...
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- Légende -->
+
+        <div class="calendar-legende">
+
+          <div class="legende-item">
+
+            <div class="legende-dot" style="background:#d1fae5;border:1px solid #6ee7b7"></div>
+
+            Planifiée
+
+          </div>
+
+          <div class="legende-item">
+
+            <div class="legende-dot" style="background:#fee2e2;border:1px solid #fca5a5"></div>
+
+            Dépannage
+
+          </div>
+
+          <div class="legende-item">
+
+            <span style="color:#f59e0b;font-size:16px">â˜…</span>
+
+            Prochaine intervention planifiée
+
+          </div>
+
+          <div class="legende-item">
+
+            <div class="legende-dot" style="background:var(--primary);border-radius:50%"></div>
+
+            Aujourd'hui
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- Panneau latéral -->
+
+      <div class="calendar-panel">
+
+        <div class="panel-card">
+
+          <div class="panel-header">
+
+            <div class="panel-date" id="panelDate">Sélectionnez un jour</div>
+
+            <div class="panel-count" id="panelCount"></div>
+
+          </div>
+
+          <div id="panelContent">
+
+            <div class="panel-empty">
+
+              <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+
+                <line x1="16" y1="2" x2="16" y2="6"/>
+
+                <line x1="8" y1="2" x2="8" y2="6"/>
+
+                <line x1="3" y1="10" x2="21" y2="10"/>
+
+              </svg>
+
+              Cliquez sur un jour pour voir les interventions
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+
+    </div>
+
+  </div>
+
+</main>
+
+</div><!-- /.page-content -->
+</div><!-- /.app-layout -->
+
+
+<!-- Toasts -->
+
+<div class="toast-container" id="toastContainer"></div>
+
+
+
+<script>
+
+// ============================================================
+
+// Vue Calendrier — Suivi des Interventions
+
+// ============================================================
+
+const API = `${window.location.protocol}//${window.location.host}/api`;
+
+const AUTH_KEY = 'auth_token';
+
+
+
+// Date courante de navigation
+
+let anneeAffichee = new Date().getFullYear();
+
+let moisAffiche   = new Date().getMonth(); // 0-based
+
+
+
+// Toutes les interventions chargées
+
+let toutesInterventions = [];
+
+
+
+// Jour sélectionné (string YYYY-MM-DD)
+
+let jourSelectionne = null;
+
+
+
+// Noms des mois en français
+
+const NOMS_MOIS = [
+
+  'Janvier','Février','Mars','Avril','Mai','Juin',
+
+  'Juillet','Août','Septembre','Octobre','Novembre','Décembre'
+
+];
+
+
+
+// Helpers sidebar / thème / auth
+
+function toggleSidebar() {
+
+  const sidebar = document.getElementById('sidebar');
+
+  const overlay = document.getElementById('sidebarOverlay');
+
+  if (!sidebar || !overlay) return;
+
+  sidebar.classList.toggle('open');
+
+  overlay.classList.toggle('open');
+
+}
+
+
+
+function toggleDark() {
+
+  const html = document.documentElement;
+
+  const isDark = html.getAttribute('data-theme') === 'dark';
+
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+
+  localStorage.setItem('theme', isDark ? 'light' : 'dark');
+
+  const icon = document.getElementById('iconDark');
+
+  if (icon) {
+
+    icon.innerHTML = isDark
+
+      ? `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`
+
+      : `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+
+  }
+
+}
+
+
+
+function chargerTheme() {
+
+  const saved = localStorage.getItem('theme') || 'light';
+
+  document.documentElement.setAttribute('data-theme', saved);
+
+  if (saved === 'dark') {
+
+    const icon = document.getElementById('iconDark');
+
+    if (icon) {
+
+      icon.innerHTML = `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+
+    }
+
+  }
+
+}
+
+
+
+function verifierAuth() {
+
+  const token = localStorage.getItem(AUTH_KEY);
+
+  if (!token) { window.location.href = 'login.html'; return false; }
+
+  const role = localStorage.getItem('auth_role');
+
+  const username = localStorage.getItem('auth_username') || '?';
+
+
+
+  if (role === 'admin') {
+
+    const btnAdmin = document.getElementById('btnAdmin');
+
+    if (btnAdmin) btnAdmin.style.display = '';
+
+    const btnAdminHeader = document.getElementById('btnAdminHeader');
+
+    if (btnAdminHeader) btnAdminHeader.style.display = '';
+
+  }
+
+  const avatar = document.getElementById('sidebarAvatar');
+
+  if (avatar) avatar.textContent = username.charAt(0).toUpperCase();
+
+  const uname = document.getElementById('sidebarUsername');
+
+  if (uname) uname.textContent = username;
+
+  const srole = document.getElementById('sidebarRole');
+
+  if (srole) srole.textContent = role === 'admin' ? 'Administrateur' : 'Utilisateur';
+
+  return true;
+
+}
+
+
+
+/**
+
+ * Retourne les headers avec le token d'auth.
+
+ */
+
+function headersAuth() {
+
+  return { 'X-Auth-Token': localStorage.getItem(AUTH_KEY) || '' };
+
+}
+
+
+
+/**
+
+ * Déconnecte et redirige vers /static/login.html.
+
+ */
+
+async function seDeconnecter() {
+
+  try {
+
+    await fetch(`${API}/auth/logout`, { method: 'POST', headers: headersAuth() });
+
+  } catch (e) {}
+
+  localStorage.removeItem(AUTH_KEY);
+
+  localStorage.removeItem('auth_username');
+
+  localStorage.removeItem('auth_role');
+
+  window.location.href = 'login.html';
+
+}
+
+
+
+document.addEventListener('DOMContentLoaded', async () => {
+
+  if (!verifierAuth()) return;
+
+  chargerTheme();
+
+
+
+  // Remplir le sélecteur d'années
+
+  const anneeNow = new Date().getFullYear();
+
+  const selAnnee = document.getElementById('selAnnee');
+
+  for (let a = anneeNow - 3; a <= anneeNow + 2; a++) {
+
+    const o = document.createElement('option');
+
+    o.value = a; o.textContent = a;
+
+    if (a === anneeNow) o.selected = true;
+
+    selAnnee.appendChild(o);
+
+  }
+
+
+
+  // Synchroniser les sélecteurs avec le mois courant
+
+  document.getElementById('selMois').value = moisAffiche;
+
+
+
+  // Charger toutes les interventions
+
+  await chargerInterventions();
+
+});
+
+
+
+/**
+
+ * Charge toutes les interventions depuis l'API.
+
+ */
+
+async function chargerInterventions() {
+
+  try {
+
+    const r = await fetch(`${API}/interventions`, { headers: headersAuth() });
+
+    if (r.status === 401) { window.location.href = 'login.html'; return; }
+
+    if (!r.ok) throw new Error();
+
+    toutesInterventions = await r.json();
+
+    rendreCalendrier();
+
+  } catch (e) {
+
+    afficherToast('Erreur de chargement des interventions', 'error');
+
+    document.getElementById('calGrid').innerHTML =
+
+      `<div style="grid-column:span 7;padding:40px;text-align:center;color:var(--texte-doux)">
+
+        Impossible de charger les données. Vérifiez la connexion au serveur.
+
+       </div>`;
+
+  }
+
+}
+
+
+
+/**
+
+ * Normalise le type d'intervention.
+
+ */
+
+function normaliseType(t) {
+
+  if (!t) return 'Dépannage';
+
+  const tl = t.toLowerCase();
+
+  if (tl.includes('plan')) return 'Planifiée';
+
+  if (tl.includes('dep') || tl.includes('dép')) return 'Dépannage';
+
+  return t;
+
+}
+
+
+
+/**
+
+ * Formate une date YYYY-MM-DD en JJ/MM/YYYY.
+
+ */
+
+function formatDate(d) {
+
+  if (!d) return '—';
+
+  try { const [y,m,j] = d.split('-'); return `${j}/${m}/${y}`; } catch { return d; }
+
+}
+
+
+
+/**
+
+ * Retourne la date sous forme YYYY-MM-DD pour un jour/mois/année donné.
+
+ */
+
+function versDateStr(annee, mois, jour) {
+
+  return `${annee}-${String(mois + 1).padStart(2,'0')}-${String(jour).padStart(2,'0')}`;
+
+}
+
+
+
+/**
+
+ * Regroupe les interventions par date de début (YYYY-MM-DD).
+
+ */
+
+function grouperParDate() {
+
+  const map = {};
+
+  toutesInterventions.forEach(inter => {
+
+    if (!inter.date_debut) return;
+
+    const key = inter.date_debut.substring(0, 10);
+
+    if (!map[key]) map[key] = [];
+
+    map[key].push(inter);
+
+  });
+
+  return map;
+
+}
+
+
+
+/**
+
+ * Regroupe les prochaines interventions planifiées par date.
+
+ */
+
+function grouperProchainesParDate() {
+
+  const map = {};
+
+  toutesInterventions.forEach(inter => {
+
+    if (!inter.prochaine_intervention) return;
+
+    const key = inter.prochaine_intervention.substring(0, 10);
+
+    if (!map[key]) map[key] = [];
+
+    map[key].push(inter);
+
+  });
+
+  return map;
+
+}
+
+
+
+/**
+
+ * Rend le calendrier mensuel dans la grille.
+
+ */
+
+function rendreCalendrier() {
+
+  const grid = document.getElementById('calGrid');
+
+  const titre = document.getElementById('calTitre');
+
+  titre.textContent = `${NOMS_MOIS[moisAffiche]} ${anneeAffichee}`;
+
+
+
+  // Mettre à jour les sélecteurs
+
+  document.getElementById('selMois').value = moisAffiche;
+
+  document.getElementById('selAnnee').value = anneeAffichee;
+
+
+
+  const interParDate = grouperParDate();
+
+  const prochainesParDate = grouperProchainesParDate();
+
+
+
+  const today = new Date();
+
+  today.setHours(0, 0, 0, 0);
+
+
+
+  // Calculer le 1er jour du mois (0=dimanche â†’ on convertit en lundi=0)
+
+  const premierJour = new Date(anneeAffichee, moisAffiche, 1);
+
+  let jourSemaine = premierJour.getDay(); // 0=dim, 1=lun...
+
+  jourSemaine = jourSemaine === 0 ? 6 : jourSemaine - 1; // Convertir : lundi=0, dimanche=6
+
+
+
+  // Nombre de jours dans le mois
+
+  const nbJours = new Date(anneeAffichee, moisAffiche + 1, 0).getDate();
+
+
+
+  // Jours du mois précédent à afficher
+
+  const moisPrec = moisAffiche === 0 ? 11 : moisAffiche - 1;
+
+  const anneePrec = moisAffiche === 0 ? anneeAffichee - 1 : anneeAffichee;
+
+  const nbJoursPrec = new Date(anneePrec, moisPrec + 1, 0).getDate();
+
+
+
+  let html = '';
+
+
+
+  // Jours du mois précédent (grisés)
+
+  for (let i = jourSemaine - 1; i >= 0; i--) {
+
+    const jour = nbJoursPrec - i;
+
+    const dateStr = versDateStr(anneePrec, moisPrec, jour);
+
+    html += renderCell(jour, dateStr, interParDate, prochainesParDate, today, true);
+
+  }
+
+
+
+  // Jours du mois courant
+
+  for (let j = 1; j <= nbJours; j++) {
+
+    const dateStr = versDateStr(anneeAffichee, moisAffiche, j);
+
+    html += renderCell(j, dateStr, interParDate, prochainesParDate, today, false);
+
+  }
+
+
+
+  // Compléter la grille avec les jours du mois suivant
+
+  const totalCases = jourSemaine + nbJours;
+
+  const casesRestantes = totalCases % 7 === 0 ? 0 : 7 - (totalCases % 7);
+
+  const moisSuiv = moisAffiche === 11 ? 0 : moisAffiche + 1;
+
+  const anneeSuiv = moisAffiche === 11 ? anneeAffichee + 1 : anneeAffichee;
+
+  for (let j = 1; j <= casesRestantes; j++) {
+
+    const dateStr = versDateStr(anneeSuiv, moisSuiv, j);
+
+    html += renderCell(j, dateStr, interParDate, prochainesParDate, today, true);
+
+  }
+
+
+
+  grid.innerHTML = html;
+
+}
+
+
+
+/**
+
+ * Génère le HTML d'une cellule de calendrier.
+
+ */
+
+function renderCell(jour, dateStr, interParDate, prochainesParDate, today, autreMois) {
+
+  const inters = interParDate[dateStr] || [];
+
+  const prochainesIci = prochainesParDate[dateStr] || [];
+
+
+
+  const cellDate = new Date(dateStr + 'T00:00:00');
+
+  const estAujourdHui = cellDate.getTime() === today.getTime();
+
+  const estSelectionne = dateStr === jourSelectionne;
+
+
+
+  let classes = 'calendar-cell';
+
+  if (autreMois) classes += ' autre-mois';
+
+  if (estAujourdHui) classes += ' aujourd-hui';
+
+  if (estSelectionne) classes += ' selectionne';
+
+
+
+  // Étoile si prochaine intervention planifiée ce jour
+
+  const etoile = prochainesIci.length > 0
+
+    ? `<div class="cell-star" title="Prochaine intervention planifiée">â˜…</div>`
+
+    : '';
+
+
+
+  // Badges interventions (max 2 affichés + "+N")
+
+  let badgesHtml = '';
+
+  if (inters.length > 0) {
+
+    const max = 2;
+
+    const visibles = inters.slice(0, max);
+
+    badgesHtml = '<div class="cell-badges">' + visibles.map(inter => {
+
+      const type = normaliseType(inter.type_intervention);
+
+      const classe = type === 'Planifiée' ? 'cell-badge-planifiee' : 'cell-badge-depannage';
+
+      return `<span class="cell-badge ${classe}">${escHtml(inter.prestataire || type)}</span>`;
+
+    }).join('');
+
+    if (inters.length > max) {
+
+      badgesHtml += `<span class="cell-badge cell-badge-more">+${inters.length - max}</span>`;
+
+    }
+
+    badgesHtml += '</div>';
+
+  }
+
+
+
+  // Click désactivé pour les autres mois
+
+  const onclick = autreMois ? '' : `onclick="selectionnerJour('${dateStr}', this)"`;
+
+
+
+  return `<div class="${classes}" ${onclick}>
+
+    <div class="cell-numero">${jour}</div>
+
+    ${etoile}
+
+    ${badgesHtml}
+
+  </div>`;
+
+}
+
+
+
+/**
+
+ * Sélectionne un jour et affiche les interventions dans le panneau latéral.
+
+ * @param {string} dateStr - Date YYYY-MM-DD
+
+ * @param {HTMLElement} cellEl - Élément DOM de la cellule cliquée
+
+ */
+
+function selectionnerJour(dateStr, cellEl) {
+
+  jourSelectionne = dateStr;
+
+
+
+  // Mettre à jour la sélection visuelle
+
+  document.querySelectorAll('.calendar-cell').forEach(c => c.classList.remove('selectionne'));
+
+  if (cellEl) cellEl.classList.add('selectionne');
+
+
+
+  // Trouver les interventions de ce jour
+
+  const inters = toutesInterventions.filter(inter =>
+
+    inter.date_debut && inter.date_debut.startsWith(dateStr)
+
+  );
+
+
+
+  // Trouver les prochaines interventions planifiées ce jour
+
+  const prochaines = toutesInterventions.filter(inter =>
+
+    inter.prochaine_intervention && inter.prochaine_intervention.startsWith(dateStr)
+
+  );
+
+
+
+  // Mettre à jour l'en-tête du panneau
+
+  const [y, m, j] = dateStr.split('-');
+
+  const dateAff = `${j} ${NOMS_MOIS[parseInt(m) - 1]} ${y}`;
+
+  document.getElementById('panelDate').textContent = dateAff;
+
+
+
+  const total = inters.length;
+
+  document.getElementById('panelCount').textContent =
+
+    total > 0
+
+      ? `${total} intervention${total > 1 ? 's' : ''}`
+
+      : 'Aucune intervention';
+
+
+
+  // Afficher le contenu du panneau
+
+  const panelContent = document.getElementById('panelContent');
+
+
+
+  if (!inters.length && !prochaines.length) {
+
+    panelContent.innerHTML = `
+
+      <div class="panel-empty">
+
+        <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+
+          <line x1="16" y1="2" x2="16" y2="6"/>
+
+          <line x1="8" y1="2" x2="8" y2="6"/>
+
+          <line x1="3" y1="10" x2="21" y2="10"/>
+
+        </svg>
+
+        Aucune intervention ce jour
+
+      </div>`;
+
+    return;
+
+  }
+
+
+
+  let html = '<div class="panel-inter-list">';
+
+
+
+  // Interventions du jour
+
+  inters.forEach(inter => {
+
+    const type = normaliseType(inter.type_intervention);
+
+    const estPlan = type === 'Planifiée';
+
+    const badgeClass = estPlan ? 'panel-badge-planifiee' : 'panel-badge-depannage';
+
+    const dot = `<span style="width:6px;height:6px;border-radius:50%;background:${estPlan ? '#059669' : '#dc2626'};display:inline-block"></span>`;
+
+
+
+    html += `
+
+      <a href="/detail?id=${inter.id}" class="panel-inter-item">
+
+        <div class="panel-inter-badge ${badgeClass}">${dot} ${type}</div>
+
+        <div class="panel-inter-prestataire">${escHtml(inter.prestataire || '—')}</div>
+
+        <div class="panel-inter-site">
+
+          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+
+          ${escHtml(inter.site || '—')}
+
+        </div>
+
+        ${inter.heure_debut ? `<div class="panel-inter-heure">${inter.heure_debut}${inter.heure_fin ? ' â†’ ' + inter.heure_fin : ''}</div>` : ''}
+
+      </a>`;
+
+  });
+
+
+
+  // Prochaines interventions planifiées ce jour
+
+  if (prochaines.length > 0) {
+
+    html += `<div style="font-size:11px;font-weight:800;color:#f59e0b;text-transform:uppercase;letter-spacing:.5px;padding:4px 2px">
+
+      â˜… Prochaines interventions planifiées
+
+    </div>`;
+
+    prochaines.forEach(inter => {
+
+      html += `
+
+        <a href="/detail?id=${inter.id}" class="panel-inter-item" style="border-color:#fcd34d;background:#fffbeb">
+
+          <div style="font-size:11px;font-weight:700;color:#92400e;margin-bottom:4px">Prochaine planifiée</div>
+
+          <div class="panel-inter-prestataire">${escHtml(inter.prestataire || '—')}</div>
+
+          <div class="panel-inter-site">
+
+            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+
+            ${escHtml(inter.site || '—')}
+
+          </div>
+
+        </a>`;
+
+    });
+
+  }
+
+
+
+  html += '</div>';
+
+  panelContent.innerHTML = html;
+
+}
+
+
+
+/**
+
+ * Navigue d'un mois en arrière (-1) ou en avant (+1).
+
+ */
+
+function naviguerMois(delta) {
+
+  moisAffiche += delta;
+
+  if (moisAffiche < 0) { moisAffiche = 11; anneeAffichee--; }
+
+  if (moisAffiche > 11) { moisAffiche = 0; anneeAffichee++; }
+
+  jourSelectionne = null;
+
+  rendreCalendrier();
+
+}
+
+
+
+/**
+
+ * Change le mois/année depuis les sélecteurs.
+
+ */
+
+function changerMoisAnnee() {
+
+  moisAffiche   = parseInt(document.getElementById('selMois').value);
+
+  anneeAffichee = parseInt(document.getElementById('selAnnee').value);
+
+  jourSelectionne = null;
+
+  rendreCalendrier();
+
+}
+
+
+
+/**
+
+ * Navigue vers le mois courant.
+
+ */
+
+function allerAujourdhui() {
+
+  anneeAffichee = new Date().getFullYear();
+
+  moisAffiche   = new Date().getMonth();
+
+  jourSelectionne = null;
+
+  rendreCalendrier();
+
+}
+
+
+
+// ============================================================
+
+// UTILITAIRES
+
+// ============================================================
+
+
+
+function escHtml(s) {
+
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+}
+
+
+
+function afficherToast(msg, type = 'info') {
+
+  const icons = {
+
+    success: `<polyline points="20 6 9 17 4 12"/>`,
+
+    error: `<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`,
+
+    info: `<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>`
+
+  };
+
+  const titles = { success: 'Succès', error: 'Erreur', info: 'Info' };
+
+  const c = document.getElementById('toastContainer');
+
+  const t = document.createElement('div');
+
+  t.className = `toast ${type}`;
+
+  t.innerHTML = `
+
+    <div class="toast-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">${icons[type]||icons.info}</svg></div>
+
+    <div class="toast-left">
+
+      <div class="toast-title">${titles[type]||'Info'}</div>
+
+      <div class="toast-message">${escHtml(msg)}</div>
+
+    </div>`;
+
+  c.appendChild(t);
+
+  setTimeout(() => t.style.animation = 'toastIn .3s reverse', 3000);
+
+  setTimeout(() => t.remove(), 3350);
+
+}
+
+</script>
+
+</body>
+
+</html>
+
+
+

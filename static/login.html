@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion "” Suivi des Interventions</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    /* === PAGE DE CONNEXION === */
+    body {
+      background: var(--fond);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .login-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+
+    .login-card {
+      background: var(--blanc);
+      border: 1px solid var(--bordure);
+      border-radius: 24px;
+      padding: 48px 40px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: var(--ombre-lg);
+    }
+
+    .login-logo {
+      width: 64px;
+      height: 64px;
+      background: var(--header-bg);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      box-shadow: 0 8px 24px rgba(59,91,219,.4);
+    }
+
+    .login-title {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--texte);
+      text-align: center;
+      margin-bottom: 6px;
+      letter-spacing: -.5px;
+    }
+
+    .login-subtitle {
+      font-size: 14px;
+      color: var(--texte-doux);
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .login-form-group {
+      margin-bottom: 20px;
+    }
+
+    .login-form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--texte);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+
+    .login-input-wrap {
+      position: relative;
+    }
+
+    .login-input-wrap svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--texte-doux);
+      pointer-events: none;
+    }
+
+    .login-input-wrap input {
+      width: 100%;
+      padding: 14px 14px 14px 44px;
+      border: 2px solid var(--bordure);
+      border-radius: 12px;
+      font-size: 15px;
+      background: var(--blanc);
+      color: var(--texte);
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .login-input-wrap input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59,91,219,.12);
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 15px;
+      background: var(--header-bg);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 8px;
+      transition: opacity .2s, transform .2s;
+      box-shadow: 0 6px 20px rgba(59,91,219,.4);
+    }
+
+    .login-btn:hover {
+      opacity: .9;
+      transform: translateY(-1px);
+    }
+
+    .login-btn:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .login-error {
+      background: var(--danger-light);
+      border: 1px solid #fca5a5;
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: #991b1b;
+      font-size: 13px;
+      font-weight: 600;
+      display: none;
+      margin-bottom: 16px;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .login-error.visible {
+      display: flex;
+    }
+
+    .login-hint {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--texte-doux);
+    }
+
+    .login-hint code {
+      background: var(--gris-100);
+      border: 1px solid var(--bordure);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-family: monospace;
+      font-size: 12px;
+      color: var(--primary);
+    }
+
+    @media (max-width: 480px) {
+      .login-card {
+        padding: 32px 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="header-brand">
+      <div class="header-logo">
+        <svg width="20" height="20" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Suivi des Interventions</h1>
+        <div class="header-subtitle">Authentification</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="login-container">
+  <div class="login-card">
+
+    <!-- Logo -->
+    <div class="login-logo">
+      <svg width="30" height="30" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+    </div>
+
+    <h1 class="login-title">Connexion</h1>
+    <p class="login-subtitle">Accédez au tableau de bord des interventions</p>
+
+    <!-- Erreur -->
+    <div class="login-error" id="loginError">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <span id="loginErrorMsg">Mot de passe incorrect</span>
+    </div>
+
+    <!-- Formulaire -->
+    <form id="loginForm" onsubmit="seConnecter(event)" novalidate>
+      <div class="login-form-group">
+        <label for="usernameInput">Nom d'utilisateur</label>
+        <div class="login-input-wrap">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          <input
+            type="text"
+            id="usernameInput"
+            placeholder="Entrez votre identifiant"
+            autocomplete="username"
+            autofocus
+          >
+        </div>
+      </div>
+
+      <div class="login-form-group">
+        <label for="mdpInput">Mot de passe</label>
+        <div class="login-input-wrap">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <input
+            type="password"
+            id="mdpInput"
+            placeholder="Entrez votre mot de passe"
+            autocomplete="current-password"
+          >
+        </div>
+      </div>
+
+      <button type="submit" class="login-btn" id="btnConnexion">
+        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+          <polyline points="10 17 15 12 10 7"/>
+          <line x1="15" y1="12" x2="3" y2="12"/>
+        </svg>
+        Se connecter
+      </button>
+    </form>
+
+    <!-- Indice compte par défaut -->
+    <p class="login-hint">
+    </p>
+
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Page de connexion "” Suivi des Interventions
+// ============================================================
+const API = `${window.location.protocol}//${window.location.host}/api`;
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Charger le thème sauvegardé
+  const theme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', theme);
+
+  // Si un token valide existe déjà, rediriger vers le dashboard
+  const token = localStorage.getItem('auth_token');
+  if (token) {
+    verifierTokenExistant(token);
+  }
+});
+
+async function verifierTokenExistant(token) {
+  try {
+    const r = await fetch(`${API}/auth/me`, { headers: { 'X-Auth-Token': token } });
+    if (r.ok) window.location.href = '/';
+  } catch (e) {}
+}
+
+async function seConnecter(e) {
+  e.preventDefault();
+
+  const username = document.getElementById('usernameInput').value.trim();
+  const mdp = document.getElementById('mdpInput').value;
+  const errDiv = document.getElementById('loginError');
+  const errMsg = document.getElementById('loginErrorMsg');
+  const btn = document.getElementById('btnConnexion');
+
+  errDiv.classList.remove('visible');
+
+  if (!username || !mdp) {
+    errMsg.textContent = 'Veuillez saisir votre identifiant et mot de passe';
+    errDiv.classList.add('visible');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = `<svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg> Connexion en cours...`;
+
+  try {
+    const r = await fetch(`${API}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password: mdp })
+    });
+
+    const data = await r.json();
+
+    if (r.ok && data.token) {
+      localStorage.setItem('auth_token', data.token);
+      localStorage.setItem('auth_username', data.username);
+      localStorage.setItem('auth_role', data.role);
+      window.location.href = '/';
+    } else {
+      errMsg.textContent = data.detail || 'Identifiants incorrects';
+      errDiv.classList.add('visible');
+    }
+  } catch (err) {
+    errMsg.textContent = 'Impossible de contacter le serveur. Vérifiez que uvicorn tourne sur le port 8000.';
+    errDiv.classList.add('visible');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = `<svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg> Se connecter`;
+}
+</script>
+</body>
+</html>
+
