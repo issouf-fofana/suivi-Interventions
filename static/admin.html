@@ -511,59 +511,55 @@ function appliquerInfosCompte(me) {
   document.getElementById('infoCreatedAt').textContent = me.created_at ? me.created_at.substring(0, 10) : '—';
 }
 
+function afficherSectionsRole(role) {
+  if (role === 'admin' || role === 'manager') {
+    document.getElementById('sectionUsers').style.display = 'block';
+    document.getElementById('sectionAudit').style.display = 'block';
+  }
+  if (role === 'manager') {
+    const btn = document.getElementById('btnNouvelUser');
+    if (btn) btn.style.display = 'none';
+  }
+  if (role === 'admin') {
+    document.getElementById('sectionBackup').style.display = 'block';
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   if (!verifierAuth()) return;
   chargerTheme();
 
   const token = localStorage.getItem(AUTH_KEY);
-
-  // Pré-remplir depuis localStorage immédiatement
   const cachedUsername = localStorage.getItem('auth_username');
-  const cachedRole = localStorage.getItem('auth_role');
+  const cachedRole    = localStorage.getItem('auth_role');
+
+  // Afficher immédiatement depuis le cache
   if (cachedUsername) {
     document.getElementById('currentUsername').textContent = cachedUsername;
-    document.getElementById('infoUsername').textContent = cachedUsername;
-  }
-  if (cachedRole) {
-    const roleLabels = { admin: 'Administrateur', manager: 'Manager', user: 'Utilisateur' };
-    const roleColors = { admin: '#3b5bdb', manager: '#b45309', user: '#15803d' };
-    document.getElementById('infoRole').textContent = roleLabels[cachedRole] || cachedRole;
-    document.getElementById('infoRole').style.color = roleColors[cachedRole] || 'inherit';
+    appliquerInfosCompte({ username: cachedUsername, role: cachedRole });
+    afficherSectionsRole(cachedRole);
+    if (cachedRole === 'admin' || cachedRole === 'manager') { chargerUsers(); chargerAudit(); }
+    if (cachedRole === 'admin') chargerBackups();
   }
 
-  // Charger les infos complètes depuis l'API
+  // Confirmer et rafraîchir depuis l'API
   try {
     const r = await fetch(`${API}/auth/me`, { headers: { 'X-Auth-Token': token } });
     if (r.status === 401) { window.location.href = 'login.html'; return; }
-    if (!r.ok) {
-      if (!cachedUsername) window.location.href = 'login.html';
-      return;
-    }
+    if (!r.ok) { if (!cachedUsername) window.location.href = 'login.html'; return; }
     const me = await r.json();
-    if (!me.username) {
-      if (!cachedUsername) window.location.href = 'login.html';
-      return;
-    }
+    if (!me || !me.username) { if (!cachedUsername) window.location.href = 'login.html'; return; }
 
     localStorage.setItem('auth_username', me.username);
     localStorage.setItem('auth_role', me.role);
     verifierAuth();
     appliquerInfosCompte(me);
 
-    // Afficher les sections selon le rôle
-    if (me.role === 'admin' || me.role === 'manager') {
-      document.getElementById('sectionUsers').style.display = 'block';
-      document.getElementById('sectionAudit').style.display = 'block';
-      chargerUsers();
-      chargerAudit();
-    }
-    if (me.role === 'manager') {
-      const btn = document.getElementById('btnNouvelUser');
-      if (btn) btn.style.display = 'none';
-    }
-    if (me.role === 'admin') {
-      document.getElementById('sectionBackup').style.display = 'block';
-      chargerBackups();
+    // Si le rôle a changé depuis le cache, recharger les sections
+    if (me.role !== cachedRole) {
+      afficherSectionsRole(me.role);
+      if (me.role === 'admin' || me.role === 'manager') { chargerUsers(); chargerAudit(); }
+      if (me.role === 'admin') chargerBackups();
     }
   } catch (e) {
     console.error('Erreur chargement compte:', e);
