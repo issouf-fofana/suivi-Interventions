@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rapport Prestataire — Suivi</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="/static/sidebar.js" defer></script>
+  <style>
+    /* ======================================================
+       RAPPORT PRESTATAIRE — Design premium identique à detail
+       ====================================================== */
+
+    .rapport-page {
+      max-width: 100%;
+      width: 100%;
+      margin: 0 auto;
+      padding: 32px 24px 60px;
+    }
+
+    /* --- Formulaire de sélection --- */
+    .rapport-filter-card {
+      background: var(--card-bg, #fff);
+      border-radius: 18px;
+      padding: 28px 32px;
+      border: 1px solid var(--border-color, #e2e8f0);
+      box-shadow: 0 4px 20px rgba(59,91,219,.07);
+      margin-bottom: 28px;
+    }
+
+    .rapport-filter-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #1e2d5a;
+      letter-spacing: -.3px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .rapport-filter-title svg {
+      color: #3b5bdb;
+    }
+
+    .rapport-filter-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 16px;
+      align-items: end;
+    }
+
+    @media (max-width: 860px) {
+      .rapport-filter-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 560px) {
+      .rapport-filter-grid { grid-template-columns: 1fr; }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: #64748b;
+    }
+
+    .form-group select,
+    .form-group input[type="date"] {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border-color, #e2e8f0);
+      background: var(--input-bg, #f8fafc);
+      font-size: 14px;
+      color: var(--text-color, #1e293b);
+      font-family: inherit;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .form-group select:focus,
+    .form-group input[type="date"]:focus {
+      border-color: #3b5bdb;
+    }
+
+    .btn-generate {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 22px;
+      background: #3b5bdb;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+      white-space: nowrap;
+    }
+
+    .btn-generate:hover { background: #2f4ac7; }
+    .btn-generate:active { transform: scale(.97); }
+
+    /* --- Hero banner résumé prestataire --- */
+    .detail-hero {
+      background: #1e2d5a;
+      border-radius: 20px;
+      padding: 36px 40px;
+      color: #fff;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(59,91,219,.35);
+    }
+
+    .detail-hero::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 240px; height: 240px;
+      background: rgba(255,255,255,.06);
+      border-radius: 50%;
+    }
+
+    .detail-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; right: 80px;
+      width: 180px; height: 180px;
+      background: rgba(255,255,255,.04);
+      border-radius: 50%;
+    }
+
+    .detail-hero-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .detail-hero-id {
+      font-size: 13px;
+      font-weight: 600;
+      opacity: .65;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .detail-hero-title {
+      font-size: 2rem;
+      font-weight: 900;
+      letter-spacing: -1px;
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+
+    .detail-hero-sub {
+      font-size: 14px;
+      opacity: .75;
+      font-weight: 500;
+    }
+
+    .detail-hero-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255,255,255,.15);
+    }
+
+    @media (max-width: 700px) {
+      .detail-hero-metrics { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .hero-metric {
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      padding: 16px 18px;
+      backdrop-filter: blur(4px);
+    }
+
+    .hero-metric-label {
+      font-size: 11px;
+      font-weight: 600;
+      opacity: .6;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 6px;
+    }
+
+    .hero-metric-value {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -.5px;
+      line-height: 1.1;
+    }
+
+    .hero-metric-sub {
+      font-size: 11px;
+      opacity: .55;
+      margin-top: 3px;
+    }
+
+    /* --- Boutons d'action --- */
+    .action-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all .2s;
+    }
+
+    .btn-action:active { transform: scale(.97); }
+
+    .btn-pdf {
+      background: #1e2d5a;
+      color: #fff;
+    }
+    .btn-pdf:hover { background: #162347; }
+
+    /* --- Section par intervention --- */
+    .interventions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .inter-card {
+      background: var(--card-bg, #fff);
+      border-radius: 18px;
+      border: 1px solid var(--border-color, #e2e8f0);
+      box-shadow: 0 4px 16px rgba(0,0,0,.05);
+      overflow: hidden;
+    }
+
+    .inter-card-header {
+      background: linear-gradient(135deg, #1e2d5a 0%, #2d4a8a 100%);
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .inter-card-header-left {
+      color: #fff;
+    }
+
+    .inter-card-num {
+      font-size: 11px;
+      font-weight: 600;
+      opacity: .65;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 2px;
+    }
+
+    .inter-card-site {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .inter-card-period {
+      font-size: 12px;
+      opacity: .7;
+      margin-top: 2px;
+    }
+
+    .badge-statut {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .3px;
+    }
+
+    .badge-terminee   { background: rgba(5,150,105,.2);  color: #34d399; border: 1px solid rgba(52,211,153,.3); }
+    .badge-en-cours   { background: rgba(59,91,219,.2);  color: #93c5fd; border: 1px solid rgba(147,197,253,.3); }
+    .badge-planifiee  { background: rgba(217,119,6,.2);  color: #fcd34d; border: 1px solid rgba(252,211,77,.3); }
+    .badge-annulee    { background: rgba(220,38,38,.2);  color: #fca5a5; border: 1px solid rgba(252,165,165,.3); }
+
+    /* KPI mini dans la carte */
+    .inter-card-kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      border-bottom: 1px solid var(--border-color, #e2e8f0);
+    }
+
+    @media (max-width: 700px) {
+      .inter-card-kpis { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .inter-kpi {
+      padding: 14px 20px;
+      border-right: 1px solid var(--border-color, #e2e8f0);
+    }
+
+    .inter-kpi:last-child { border-right: none; }
+
+    .inter-kpi-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: #94a3b8;
+      margin-bottom: 4px;
+    }
+
+    .inter-kpi-value {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--text-color, #1e293b);
+    }
+
+    .inter-kpi-value.red  { color: #dc2626; }
+    .inter-kpi-value.blue { color: #3b5bdb; }
+    .inter-kpi-value.green { color: #059669; }
+
+    .inter-kpi-sub {
+      font-size: 10px;
+      color: #94a3b8;
+      margin-top: 1px;
+    }
+
+    /* Body de la carte */
+    .inter-card-body {
+      padding: 20px 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 700px) {
+      .inter-card-body { grid-template-columns: 1fr; }
+    }
+
+    .info-section-title {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: #3b5bdb;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 6px 14px;
+    }
+
+    .info-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+      padding-top: 1px;
+    }
+
+    .info-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-color, #1e293b);
+    }
+
+    .travaux-block {
+      padding: 20px 24px;
+      border-top: 1px solid var(--border-color, #e2e8f0);
+      background: var(--bg-light, #f8fafc);
+    }
+
+    .travaux-text {
+      font-size: 13px;
+      color: var(--text-color, #1e293b);
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    /* Timeline mini */
+    .timeline-mini {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      background: var(--bg-light, #f8fafc);
+      border-bottom: 1px solid var(--border-color, #e2e8f0);
+    }
+
+    .timeline-block {
+      flex: 1;
+    }
+
+    .timeline-block-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #94a3b8;
+      letter-spacing: .5px;
+    }
+
+    .timeline-block-date {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-color, #1e293b);
+    }
+
+    .timeline-block-time {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .timeline-block-time.blue { color: #3b5bdb; }
+    .timeline-block-time.green { color: #059669; }
+
+    .timeline-sep {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      color: #cbd5e1;
+    }
+
+    .timeline-dur-label {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #94a3b8;
+      letter-spacing: .4px;
+      text-align: center;
+    }
+
+    .timeline-dur-val {
+      font-size: 14px;
+      font-weight: 900;
+      color: #dc2626;
+    }
+
+    /* Empty / loading states */
+    .rapport-empty {
+      text-align: center;
+      padding: 60px 24px;
+      color: #94a3b8;
+    }
+
+    .rapport-empty svg {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 16px;
+      display: block;
+      opacity: .3;
+    }
+
+    .rapport-empty-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text-color, #1e293b);
+      opacity: .5;
+    }
+
+    .rapport-empty-sub {
+      font-size: 13px;
+    }
+
+    .rapport-loading {
+      text-align: center;
+      padding: 48px 24px;
+      color: #3b5bdb;
+      font-weight: 600;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 32px; height: 32px;
+      border: 3px solid rgba(59,91,219,.2);
+      border-top-color: #3b5bdb;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin-bottom: 12px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Section résultats */
+    #rapport-results { display: none; }
+
+    /* --- Section graphiques --- */
+    .charts-section {
+      margin-bottom: 28px;
+    }
+
+    .charts-section-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #1e2d5a;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    [data-theme="dark"] .charts-section-title { color: #e2e8f0; }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 860px) {
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+
+    .chart-card {
+      background: var(--card-bg, #fff);
+      border-radius: 16px;
+      border: 1px solid var(--border-color, #e2e8f0);
+      box-shadow: 0 4px 16px rgba(0,0,0,.05);
+      padding: 20px 22px 16px;
+    }
+
+    .chart-card-title {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: #64748b;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .chart-card-title svg { color: #3b5bdb; flex-shrink: 0; }
+
+    .chart-wrap {
+      position: relative;
+      height: 220px;
+    }
+
+    /* Dark mode */
+    [data-theme="dark"] .chart-card {
+      background: var(--card-bg, #1e293b);
+      border-color: var(--border-color, #334155);
+    }
+
+    /* Dark mode */
+    [data-theme="dark"] .rapport-filter-card,
+    [data-theme="dark"] .inter-card {
+      background: var(--card-bg, #1e293b);
+      border-color: var(--border-color, #334155);
+    }
+
+    [data-theme="dark"] .form-group select,
+    [data-theme="dark"] .form-group input[type="date"] {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-color: #334155;
+    }
+
+    [data-theme="dark"] .travaux-block,
+    [data-theme="dark"] .timeline-mini {
+      background: rgba(255,255,255,.03);
+    }
+
+    /* Print */
+    @media print {
+      .sidebar, .sidebar-toggle, .sidebar-overlay, .rapport-filter-card,
+      .action-bar, .btn-generate { display: none !important; }
+      .page-content { margin-left: 0 !important; width: 100% !important; }
+    }
+  </style>
+</head>
+
+<body data-sidebar-page="rapport" data-sidebar-subtitle="Rapport Prestataire">
+
+<div class="page-content">
+  <div class="rapport-page">
+
+    <!-- Formulaire de sélection -->
+    <div class="rapport-filter-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;">
+        <div class="rapport-filter-title" style="margin-bottom:0;">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          Rapport cumulatif par prestataire
+        </div>
+        <button class="btn-generate" onclick="genererRapport()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          Générer
+        </button>
+      </div>
+      <div class="rapport-filter-grid">
+        <div class="form-group">
+          <label>Prestataire</label>
+          <select id="sel-prestataire">
+            <option value="">— Sélectionner —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Date début (période)</label>
+          <input type="date" id="date-from">
+        </div>
+        <div class="form-group">
+          <label>Date fin (période)</label>
+          <input type="date" id="date-to">
+        </div>
+      </div>
+    </div>
+
+    <!-- Résultats (cachés jusqu'à génération) -->
+    <div id="rapport-results">
+
+      <!-- Hero résumé -->
+      <div class="detail-hero" id="hero-section">
+        <div class="detail-hero-top">
+          <div>
+            <div class="detail-hero-id" id="hero-periode">Période —</div>
+            <div class="detail-hero-title" id="hero-prestataire">—</div>
+            <div class="detail-hero-sub" id="hero-sub">Rapport cumulatif</div>
+          </div>
+        </div>
+        <div class="detail-hero-metrics">
+          <div class="hero-metric">
+            <div class="hero-metric-label">Total interventions</div>
+            <div class="hero-metric-value" id="kpi-total">—</div>
+          </div>
+          <div class="hero-metric">
+            <div class="hero-metric-label">Durée totale</div>
+            <div class="hero-metric-value" id="kpi-duree">—</div>
+            <div class="hero-metric-sub" id="kpi-duree-min">—</div>
+          </div>
+          <div class="hero-metric">
+            <div class="hero-metric-label">Durée moyenne</div>
+            <div class="hero-metric-value" id="kpi-moyenne">—</div>
+          </div>
+          <div class="hero-metric">
+            <div class="hero-metric-label">Sites couverts</div>
+            <div class="hero-metric-value" id="kpi-sites">—</div>
+          </div>
+        </div>
+        
+      </div>
+        <!-- Barre d'action -->
+      <div class="action-bar">
+        <button class="btn-action btn-pdf" onclick="telechargerPDF()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="12" y1="18" x2="12" y2="12"></line>
+            <line x1="9" y1="15" x2="12" y2="18"></line>
+            <line x1="15" y1="15" x2="12" y2="18"></line>
+          </svg>
+          Télécharger rapport PDF
+        </button>
+      </div>
+      <!-- Graphiques analytiques -->
+      <div class="charts-section" id="charts-section">
+        <div class="charts-section-title">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+          Analyse graphique
+        </div>
+        <div class="charts-grid">
+
+          <!-- Durée par intervention -->
+          <div class="chart-card">
+            <div class="chart-card-title">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                <path d="M3 9h18M9 21V9"></path>
+              </svg>
+              Durée par intervention (min)
+            </div>
+            <div class="chart-wrap"><canvas id="chart-duree"></canvas></div>
+          </div>
+
+          <!-- Répartition par statut -->
+          <div class="chart-card">
+            <div class="chart-card-title">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+                <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+              </svg>
+              Répartition par statut
+            </div>
+            <div class="chart-wrap"><canvas id="chart-statut"></canvas></div>
+          </div>
+
+          <!-- Évolution mensuelle -->
+          <div class="chart-card">
+            <div class="chart-card-title">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+              Évolution mensuelle (nb interventions)
+            </div>
+            <div class="chart-wrap"><canvas id="chart-mois"></canvas></div>
+          </div>
+
+          <!-- Durée cumulée par site -->
+          <div class="chart-card">
+            <div class="chart-card-title">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              Durée totale par site (h)
+            </div>
+            <div class="chart-wrap"><canvas id="chart-site"></canvas></div>
+          </div>
+
+        </div>
+      </div>
+
+    
+
+      <!-- Liste des interventions -->
+      <div id="loading-state" class="rapport-loading" style="display:none">
+        <div class="spinner"></div>
+        <div>Chargement des données…</div>
+      </div>
+      <div id="empty-state" class="rapport-empty" style="display:none">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path d="M9 12h6m-3-3v6M12 3C6.48 3 2 7.48 2 12s4.48 9 10 9 10-4.48 10-9S17.52 3 12 3z"/>
+        </svg>
+        <div class="rapport-empty-title">Aucune intervention trouvée</div>
+        <div class="rapport-empty-sub">Modifiez les filtres et réessayez.</div>
+      </div>
+      <div class="interventions-list" id="interventions-list"></div>
+
+    </div>
+  </div>
+</div><!-- /.page-content -->
+
+<script>
+  const TOKEN = localStorage.getItem("auth_token") || "";
+  const HEADERS = { "X-Auth-Token": TOKEN };
+
+  // ── Charger la liste des prestataires ──────────────────────────
+  async function chargerPrestataires() {
+    try {
+      const res = await fetch("/api/stats/prestataires", { headers: HEADERS });
+      if (!res.ok) return;
+      const data = await res.json();
+      const sel = document.getElementById("sel-prestataire");
+      data.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.prestataire;
+        opt.textContent = p.prestataire;
+        sel.appendChild(opt);
+      });
+    } catch (e) {
+      console.error(e);
+    }
+    // Restaurer les filtres depuis sessionStorage et re-générer si disponible
+    const savedPrest = sessionStorage.getItem("rapport_prest");
+    if (savedPrest) {
+      const sel = document.getElementById("sel-prestataire");
+      if ([...sel.options].some(o => o.value === savedPrest)) {
+        sel.value = savedPrest;
+      }
+      const savedFrom = sessionStorage.getItem("rapport_from") || "";
+      const savedTo   = sessionStorage.getItem("rapport_to")   || "";
+      document.getElementById("date-from").value = savedFrom;
+      document.getElementById("date-to").value   = savedTo;
+      genererRapport();
+    }
+  }
+
+  // ── Utilitaires ────────────────────────────────────────────────
+  function fmtDate(d) {
+    if (!d) return "—";
+    const p = d.split("-");
+    return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : d;
+  }
+
+  function fmtDuree(dm) {
+    if (!dm) return "—";
+    const h = Math.floor(dm / 60), m = dm % 60;
+    return m ? `${h}h${String(m).padStart(2, "0")}min` : `${h}h`;
+  }
+
+  function badgeStatut(statut) {
+    const map = {
+      "Terminée":   "badge-terminee",
+      "En cours":   "badge-en-cours",
+      "Planifiée":  "badge-planifiee",
+      "En attente": "badge-planifiee",
+      "Annulée":    "badge-annulee",
+    };
+    const cls = map[statut] || "badge-en-cours";
+    return `<span class="badge-statut ${cls}">${statut || "—"}</span>`;
+  }
+
+  function kpiClass(dm) {
+    if (!dm) return "";
+    if (dm > 480) return " red";
+    return "";
+  }
+
+  // ── Générer le rapport ─────────────────────────────────────────
+  async function genererRapport() {
+    const prest = document.getElementById("sel-prestataire").value;
+    const from  = document.getElementById("date-from").value;
+    const to    = document.getElementById("date-to").value;
+
+    if (!prest) {
+      alert("Veuillez sélectionner un prestataire.");
+      return;
+    }
+
+    // Afficher les résultats
+    document.getElementById("rapport-results").style.display = "block";
+    document.getElementById("loading-state").style.display = "block";
+    document.getElementById("empty-state").style.display = "none";
+    document.getElementById("interventions-list").innerHTML = "";
+    document.getElementById("charts-section").style.display = "none";
+    detruireCharts();
+
+    // Construire l'URL avec filtres
+    const params = new URLSearchParams({ prestataire: prest });
+    if (from) params.set("date_debut_from", from);
+    if (to)   params.set("date_debut_to", to);
+
+    try {
+      const res = await fetch(`/api/interventions?${params}`, { headers: HEADERS });
+      if (!res.ok) throw new Error("Erreur API");
+      const interventions = await res.json();
+
+      document.getElementById("loading-state").style.display = "none";
+
+      const list = Array.isArray(interventions) ? interventions :
+                   (interventions.data || []);
+
+      if (!list.length) {
+        document.getElementById("empty-state").style.display = "block";
+        mettreAJourHero(prest, from, to, []);
+        return;
+      }
+
+      // Sauvegarder les filtres pour persistance au refresh
+      sessionStorage.setItem("rapport_prest", prest);
+      sessionStorage.setItem("rapport_from", from);
+      sessionStorage.setItem("rapport_to", to);
+
+      mettreAJourHero(prest, from, to, list);
+      document.getElementById("charts-section").style.display = "block";
+      construireCharts(list);
+      afficherInterventions(list);
+
+    } catch (e) {
+      document.getElementById("loading-state").style.display = "none";
+      document.getElementById("empty-state").style.display = "block";
+      console.error(e);
+    }
+  }
+
+  // ── Mettre à jour le hero avec les stats ───────────────────────
+  function mettreAJourHero(prest, from, to, list) {
+    document.getElementById("hero-prestataire").textContent = prest;
+
+    let periodeStr = "Toutes périodes";
+    if (from && to)   periodeStr = `${fmtDate(from)} → ${fmtDate(to)}`;
+    else if (from)    periodeStr = `À partir du ${fmtDate(from)}`;
+    else if (to)      periodeStr = `Jusqu'au ${fmtDate(to)}`;
+    document.getElementById("hero-periode").textContent = periodeStr;
+
+    const total = list.length;
+    const dureeTotal = list.reduce((s, i) => s + (i.duree_minutes || 0), 0);
+    const withDuree  = list.filter(i => i.duree_minutes > 0);
+    const dureeAvg   = withDuree.length
+      ? Math.round(withDuree.reduce((s, i) => s + i.duree_minutes, 0) / withDuree.length)
+      : 0;
+    const sites = new Set(list.map(i => i.site).filter(Boolean)).size;
+
+    document.getElementById("kpi-total").textContent  = total;
+    document.getElementById("kpi-duree").textContent  = fmtDuree(dureeTotal);
+    document.getElementById("kpi-duree-min").textContent = dureeTotal ? `${dureeTotal} minutes` : "";
+    document.getElementById("kpi-moyenne").textContent = fmtDuree(dureeAvg);
+    document.getElementById("kpi-sites").textContent   = sites || "—";
+
+    const types = [...new Set(list.map(i => i.type_intervention).filter(Boolean))];
+    document.getElementById("hero-sub").textContent =
+      `${total} intervention${total > 1 ? "s" : ""} · ${types.join(", ") || ""}`;
+  }
+
+  // ── Afficher la liste ──────────────────────────────────────────
+  function afficherInterventions(list) {
+    const container = document.getElementById("interventions-list");
+    container.innerHTML = "";
+
+    list.forEach((inter, idx) => {
+      const dm = inter.duree_minutes || 0;
+      const card = document.createElement("div");
+      card.className = "inter-card";
+
+      card.innerHTML = `
+        <!-- En-tête carte -->
+        <div class="inter-card-header">
+          <div class="inter-card-header-left">
+            <div class="inter-card-num">Intervention #${inter.id} · ${idx + 1}/${list.length}</div>
+            <div class="inter-card-site">${inter.site || "—"}</div>
+            <div class="inter-card-period">${(inter.mois || "").charAt(0).toUpperCase() + (inter.mois || "").slice(1)} ${inter.annee || ""}</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            ${badgeStatut(inter.statut)}
+            <span style="font-size:11px;opacity:.55;color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:.3px;">${inter.type_intervention || ""}</span>
+          </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="timeline-mini">
+          <div class="timeline-block">
+            <div class="timeline-block-label">Début</div>
+            <div class="timeline-block-date">${fmtDate(inter.date_debut)}</div>
+            <div class="timeline-block-time blue">${inter.heure_debut || "—"}</div>
+          </div>
+          <div class="timeline-sep">
+            <svg width="20" height="20" fill="none" stroke="#cbd5e1" stroke-width="2" viewBox="0 0 24 24">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+            <div class="timeline-dur-label">Durée</div>
+            <div class="timeline-dur-val">${fmtDuree(dm)}</div>
+            <div class="timeline-dur-label">${dm ? dm + " min" : ""}</div>
+          </div>
+          <div class="timeline-block" style="text-align:right">
+            <div class="timeline-block-label">Fin</div>
+            <div class="timeline-block-date">${fmtDate(inter.date_fin)}</div>
+            <div class="timeline-block-time green">${inter.heure_fin || "—"}</div>
+          </div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="inter-card-kpis">
+          <div class="inter-kpi">
+            <div class="inter-kpi-label">Durée</div>
+            <div class="inter-kpi-value${kpiClass(dm)}">${fmtDuree(dm)}</div>
+            <div class="inter-kpi-sub">${dm ? dm + " min" : "—"}</div>
+          </div>
+          <div class="inter-kpi">
+            <div class="inter-kpi-label">Date début</div>
+            <div class="inter-kpi-value blue">${fmtDate(inter.date_debut)}</div>
+            <div class="inter-kpi-sub">${inter.heure_debut || "—"}</div>
+          </div>
+          <div class="inter-kpi">
+            <div class="inter-kpi-label">Date fin</div>
+            <div class="inter-kpi-value green">${fmtDate(inter.date_fin)}</div>
+            <div class="inter-kpi-sub">${inter.heure_fin || "—"}</div>
+          </div>
+          <div class="inter-kpi">
+            <div class="inter-kpi-label">Prochaine</div>
+            <div class="inter-kpi-value">${fmtDate(inter.prochaine_intervention)}</div>
+          </div>
+        </div>
+
+        <!-- Informations générales -->
+        <div class="inter-card-body">
+          <div>
+            <div class="info-section-title">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              Informations générales
+            </div>
+            <div class="info-grid">
+              <span class="info-label">Type</span>
+              <span class="info-value">${inter.type_intervention || "—"}</span>
+              <span class="info-label">Site</span>
+              <span class="info-value">${inter.site || "—"}</span>
+              <span class="info-label">Superviseur</span>
+              <span class="info-value">${inter.superviseur || inter.technicien || "—"}</span>
+              <span class="info-label">Équipe</span>
+              <span class="info-value">${inter.equipe || "—"}</span>
+              <span class="info-label">Statut</span>
+              <span class="info-value">${inter.statut || "—"}</span>
+            </div>
+          </div>
+          <div>
+            <div class="info-section-title">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              Métriques temporelles
+            </div>
+            <div class="info-grid">
+              <span class="info-label">Date début</span>
+              <span class="info-value">${fmtDate(inter.date_debut)}</span>
+              <span class="info-label">Heure début</span>
+              <span class="info-value" style="color:#3b5bdb">${inter.heure_debut || "—"}</span>
+              <span class="info-label">Date fin</span>
+              <span class="info-value">${fmtDate(inter.date_fin)}</span>
+              <span class="info-label">Heure fin</span>
+              <span class="info-value" style="color:#059669">${inter.heure_fin || "—"}</span>
+              <span class="info-label">Durée totale</span>
+              <span class="info-value" style="color:#dc2626">${fmtDuree(dm)}</span>
+            </div>
+          </div>
+        </div>
+
+        ${inter.travaux ? `
+        <div class="travaux-block">
+          <div class="info-section-title" style="margin-bottom:8px;">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+            </svg>
+            Travaux effectués
+          </div>
+          <div class="travaux-text">${escapeHtml(inter.travaux)}</div>
+        </div>` : ""}
+
+        ${inter.notes ? `
+        <div class="travaux-block" style="border-top:1px solid var(--border-color,#e2e8f0)">
+          <div class="info-section-title" style="margin-bottom:8px;color:#d97706;">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            Notes internes
+          </div>
+          <div class="travaux-text">${escapeHtml(inter.notes)}</div>
+        </div>` : ""}
+      `;
+
+      container.appendChild(card);
+    });
+  }
+
+  // ── Graphiques ─────────────────────────────────────────────────
+  let _charts = {};
+
+  function detruireCharts() {
+    Object.values(_charts).forEach(c => c && c.destroy());
+    _charts = {};
+  }
+
+  function isDark() {
+    return document.documentElement.getAttribute("data-theme") === "dark";
+  }
+
+  function couleurTexte() { return isDark() ? "#94a3b8" : "#64748b"; }
+  function couleurGrille() { return isDark() ? "rgba(255,255,255,.06)" : "rgba(0,0,0,.05)"; }
+
+  const PALETTE = [
+    "#3b5bdb","#059669","#d97706","#dc2626",
+    "#7c3aed","#0891b2","#be185d","#65a30d",
+  ];
+
+  function construireCharts(list) {
+    detruireCharts();
+
+    const dark = isDark();
+    const txtColor = couleurTexte();
+    const gridColor = couleurGrille();
+
+    const baseOpts = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: txtColor, font: { size: 11, weight: "600" }, boxWidth: 12 } },
+        tooltip: { callbacks: {} },
+      },
+      scales: {},
+    };
+
+    // ── 1. Durée par intervention (barres) ────────────────────────
+    const labelsInter = list.map((i, idx) => `#${i.id}`);
+    const dataDuree   = list.map(i => i.duree_minutes || 0);
+    const bgDuree     = dataDuree.map(d => d > 480 ? "rgba(220,38,38,.75)" : "rgba(59,91,219,.75)");
+    const bdDuree     = dataDuree.map(d => d > 480 ? "#dc2626" : "#3b5bdb");
+
+    _charts.duree = new Chart(document.getElementById("chart-duree"), {
+      type: "bar",
+      data: {
+        labels: labelsInter,
+        datasets: [{
+          label: "Durée (min)",
+          data: dataDuree,
+          backgroundColor: bgDuree,
+          borderColor: bdDuree,
+          borderWidth: 1.5,
+          borderRadius: 6,
+        }],
+      },
+      options: {
+        ...baseOpts,
+        plugins: {
+          ...baseOpts.plugins,
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const dm = ctx.parsed.y;
+                const h = Math.floor(dm / 60), m = dm % 60;
+                return ` ${dm} min (${h}h${m > 0 ? m + "min" : ""})`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { ticks: { color: txtColor, font: { size: 10 } }, grid: { color: gridColor } },
+          y: {
+            ticks: { color: txtColor, font: { size: 10 } },
+            grid: { color: gridColor },
+            title: { display: true, text: "minutes", color: txtColor, font: { size: 10 } },
+          },
+        },
+      },
+    });
+
+    // ── 2. Répartition par statut (donut) ─────────────────────────
+    const statutCount = {};
+    list.forEach(i => { const s = i.statut || "—"; statutCount[s] = (statutCount[s] || 0) + 1; });
+    const statutColors = {
+      "Terminée":   "#059669",
+      "En cours":   "#3b5bdb",
+      "En attente": "#d97706",
+      "Planifiée":  "#7c3aed",
+      "Annulée":    "#dc2626",
+    };
+
+    _charts.statut = new Chart(document.getElementById("chart-statut"), {
+      type: "doughnut",
+      data: {
+        labels: Object.keys(statutCount),
+        datasets: [{
+          data: Object.values(statutCount),
+          backgroundColor: Object.keys(statutCount).map(s => statutColors[s] || "#64748b"),
+          borderWidth: 0,
+          hoverOffset: 8,
+        }],
+      },
+      options: {
+        ...baseOpts,
+        cutout: "65%",
+        plugins: {
+          ...baseOpts.plugins,
+          legend: {
+            position: "right",
+            labels: { color: txtColor, font: { size: 11, weight: "600" }, boxWidth: 12, padding: 14 },
+          },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.label} : ${ctx.parsed} intervention${ctx.parsed > 1 ? "s" : ""}`,
+            }
+          }
+        },
+      },
+    });
+
+    // ── 3. Évolution mensuelle (ligne) ────────────────────────────
+    const moisCount = {};
+    list.forEach(i => {
+      if (!i.date_debut) return;
+      const key = i.date_debut.slice(0, 7); // "YYYY-MM"
+      moisCount[key] = (moisCount[key] || 0) + 1;
+    });
+    const moisKeys = Object.keys(moisCount).sort();
+    const MOIS_FR = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Aoû","Sep","Oct","Nov","Déc"];
+    const moisLabels = moisKeys.map(k => {
+      const [y, m] = k.split("-");
+      return `${MOIS_FR[parseInt(m,10)-1]} ${y}`;
+    });
+
+    _charts.mois = new Chart(document.getElementById("chart-mois"), {
+      type: "line",
+      data: {
+        labels: moisLabels,
+        datasets: [{
+          label: "Interventions",
+          data: moisKeys.map(k => moisCount[k]),
+          borderColor: "#3b5bdb",
+          backgroundColor: "rgba(59,91,219,.12)",
+          borderWidth: 2.5,
+          pointBackgroundColor: "#3b5bdb",
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          fill: true,
+          tension: 0.35,
+        }],
+      },
+      options: {
+        ...baseOpts,
+        plugins: {
+          ...baseOpts.plugins,
+          legend: { display: false },
+        },
+        scales: {
+          x: {
+            ticks: { color: txtColor, font: { size: 10 } },
+            grid: { color: gridColor },
+          },
+          y: {
+            ticks: { color: txtColor, font: { size: 10 }, stepSize: 1 },
+            grid: { color: gridColor },
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+
+    // ── 4. Durée cumulée par site (barres horizontales) ───────────
+    const siteMap = {};
+    list.forEach(i => {
+      const s = i.site || "—";
+      siteMap[s] = (siteMap[s] || 0) + (i.duree_minutes || 0);
+    });
+    const siteSorted = Object.entries(siteMap).sort((a, b) => b[1] - a[1]);
+    const siteLabels = siteSorted.map(([s]) => s);
+    const siteData   = siteSorted.map(([, v]) => Math.round(v / 60 * 10) / 10);
+
+    _charts.site = new Chart(document.getElementById("chart-site"), {
+      type: "bar",
+      data: {
+        labels: siteLabels,
+        datasets: [{
+          label: "Durée (h)",
+          data: siteData,
+          backgroundColor: siteLabels.map((_, i) => PALETTE[i % PALETTE.length] + "cc"),
+          borderColor:     siteLabels.map((_, i) => PALETTE[i % PALETTE.length]),
+          borderWidth: 1.5,
+          borderRadius: 6,
+        }],
+      },
+      options: {
+        ...baseOpts,
+        indexAxis: "y",
+        plugins: {
+          ...baseOpts.plugins,
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.parsed.x} h`,
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: txtColor, font: { size: 10 } },
+            grid: { color: gridColor },
+            title: { display: true, text: "heures", color: txtColor, font: { size: 10 } },
+          },
+          y: {
+            ticks: { color: txtColor, font: { size: 10 } },
+            grid: { display: false },
+          },
+        },
+      },
+    });
+  }
+
+  function escapeHtml(str) {
+    return String(str || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  // ── Télécharger PDF ────────────────────────────────────────────
+  function telechargerPDF() {
+    const prest = document.getElementById("sel-prestataire").value;
+    const from  = document.getElementById("date-from").value;
+    const to    = document.getElementById("date-to").value;
+
+    if (!prest) {
+      alert("Veuillez sélectionner un prestataire.");
+      return;
+    }
+
+    const params = new URLSearchParams({ prestataire: prest });
+    if (from) params.set("date_from", from);
+    if (to)   params.set("date_to", to);
+    params.set("token", TOKEN);
+
+    window.open(`/api/rapport/prestataire/pdf?${params}`, "_blank");
+  }
+
+  // ── Init ────────────────────────────────────────────────────────
+
+  // Thème
+  (function () {
+    const saved = localStorage.getItem("theme") || "light";
+    document.documentElement.setAttribute("data-theme", saved);
+  })();
+
+  window.toggleDark = function () {
+    const html = document.documentElement;
+    const isDark = html.getAttribute("data-theme") === "dark";
+    html.setAttribute("data-theme", isDark ? "light" : "dark");
+    localStorage.setItem("theme", isDark ? "light" : "dark");
+  };
+
+  window.seDeconnecter = async function () {
+    try { await fetch("/api/auth/logout", { method: "POST", headers: HEADERS }); } catch (e) {}
+    ["auth_token","auth_role","auth_username","user_role","username"].forEach(k => localStorage.removeItem(k));
+    window.location.href = "/connexion";
+  };
+
+  // Sidebar user info
+  window.addEventListener("DOMContentLoaded", () => {
+    const role     = localStorage.getItem("auth_role") || localStorage.getItem("user_role") || "";
+    const username = localStorage.getItem("auth_username") || localStorage.getItem("username") || "—";
+
+    const btnAdmin  = document.getElementById("btnAdmin");
+    const btnProfil = document.getElementById("btnProfil");
+    if (role === "admin") {
+      if (btnAdmin)  btnAdmin.style.display  = "";
+    } else if (role === "manager") {
+      if (btnAdmin)  btnAdmin.style.display  = "";
+    } else {
+      if (btnProfil) btnProfil.style.display = "";
+    }
+
+    const sidebarAvatar   = document.getElementById("sidebarAvatar");
+    const sidebarUsername = document.getElementById("sidebarUsername");
+    const sidebarRole     = document.getElementById("sidebarRole");
+    if (sidebarAvatar)   sidebarAvatar.textContent   = username.charAt(0).toUpperCase();
+    if (sidebarUsername) sidebarUsername.textContent = username;
+    if (sidebarRole)     sidebarRole.textContent     =
+      role === "admin" ? "Administrateur" : role === "manager" ? "Manager" : "Utilisateur";
+  });
+
+  chargerPrestataires();
+</script>
+</body>
+</html>

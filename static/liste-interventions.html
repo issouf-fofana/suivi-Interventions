@@ -5,79 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Liste des interventions — Suivi des Interventions</title>
   <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/sidebar.js" defer></script>
 </head>
-<body>
-
-<button class="sidebar-toggle" onclick="toggleSidebar()" id="sidebarToggle" aria-label="Menu">
-  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-    <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-  </svg>
-</button>
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-
-<nav class="sidebar" id="sidebar">
-  <div class="sidebar-brand">
-    <div class="sidebar-logo">
-      <svg width="20" height="20" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
-        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-      </svg>
-    </div>
-    <div class="sidebar-brand-text">
-      <div class="sidebar-brand-title">Suivi Interventions</div>
-      <div class="sidebar-brand-sub">Liste des interventions</div>
-    </div>
-  </div>
-
-  <div class="sidebar-nav">
-    <div class="sidebar-section-label">Navigation</div>
-    <a href="/" class="sidebar-link">
-      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-      Tableau de bord
-    </a>
-    <a href="/interventions" class="sidebar-link active">
-      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg>
-      Liste des interventions
-    </a>
-    <a href="/calendar" class="sidebar-link">
-      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Calendrier
-    </a>
-    <a href="/form" class="sidebar-link">
-      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Nouvelle intervention
-    </a>
-
-    <div class="sidebar-divider"></div>
-
-    <a href="/admin" class="sidebar-link" id="btnAdmin" style="display:none">
-      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Administration
-    </a>
-    <a href="/admin" class="sidebar-link" id="btnProfil" style="display:none">
-      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-      Mon profil
-    </a>
-    <button class="sidebar-link" onclick="toggleDark()" id="btnDark">
-      <svg id="iconDark" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      Mode sombre
-    </button>
-    <button class="sidebar-link danger" onclick="seDeconnecter()">
-      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      Déconnexion
-    </button>
-  </div>
-
-  <div class="sidebar-footer">
-    <div class="sidebar-user">
-      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
-      <div class="sidebar-user-info">
-        <div class="sidebar-username" id="sidebarUsername">—</div>
-        <div class="sidebar-role" id="sidebarRole">—</div>
-      </div>
-    </div>
-  </div>
-</nav>
-
+<body data-sidebar-page="interventions" data-sidebar-subtitle="Navigation">
 <div class="app-layout">
 <div class="page-content">
 <main class="main">

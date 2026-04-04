@@ -149,7 +149,9 @@ async def middleware_auth(request: Request, call_next):
     if path in routes_publiques or not path.startswith("/api/"):
         return await call_next(request)
 
-    token = request.headers.get("X-Auth-Token") or request.cookies.get("auth_token")
+    token = (request.headers.get("X-Auth-Token")
+             or request.cookies.get("auth_token")
+             or request.query_params.get("token"))
 
     if not verifier_token(token):
         return JSONResponse(
@@ -370,6 +372,13 @@ async def alias_login(): return serve("login.html")
 @app.get("/404.html", include_in_schema=False)
 async def alias_404(): return serve("404.html")
 
+@app.get("/rapport-prestataire", include_in_schema=False)
+async def page_rapport_prestataire():
+    return serve("rapport-prestataire.html")
+
+@app.get("/rapport-prestataire.html", include_in_schema=False)
+async def alias_rapport_prestataire(): return serve("rapport-prestataire.html")
+
 # ============================================================
 # METRICS (minimal placeholder)
 # ============================================================
@@ -524,8 +533,11 @@ def enregistrer_historique(conn, intervention_id: int, action: str,
 
 
 def audit(conn, user: Optional[dict], action: str, ressource: str = None,
-          ressource_id: int = None, detail: str = None, ip: str = None):
+          ressource_id: int = None, detail: str = None, ip: str = None,
+          request: Request = None):
     """Enregistre une action dans le journal d'audit."""
+    if ip is None and request is not None and request.client:
+        ip = request.client.host
     conn.execute("""
         INSERT INTO audit_logs (user_id, username, action, ressource, ressource_id, detail, ip)
         VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -591,7 +603,7 @@ def logout(request: Request):
         user = get_current_user(request)
         conn.execute("DELETE FROM sessions WHERE token=?", (token,))
         if user:
-            audit(conn, user, "logout")
+            audit(conn, user, "logout", request=request)
         conn.commit()
         conn.close()
     return {"message": "Déconnecté"}
@@ -637,7 +649,7 @@ def change_password(data: ChangePasswordRequest, request: Request):
 
 @app.get("/api/users")
 def liste_users(request: Request):
-    require_admin_or_manager(request)
+    require_admin(request)
     conn = get_db()
     rows = conn.execute("SELECT id, username, role, actif, created_at FROM users ORDER BY id").fetchall()
     conn.close()
@@ -661,34 +673,44 @@ def creer_user(data: UserCreate, request: Request):
         "INSERT INTO users (username, password_hash, role, actif) VALUES (?,?,?,1)",
         (data.username, pw_hash, data.role)
     )
-    conn.commit()
     user_id = cur.lastrowid
-    audit(conn, user, "create_user", "user", user_id, detail=f"role={data.role}")
+    audit(conn, user, "create_user", "user", user_id, detail=f"role={data.role}", request=request)
+    conn.commit()
     conn.close()
     return {"id": user_id, "username": data.username, "role": data.role, "actif": 1}
 
 
 @app.put("/api/users/{user_id}")
 def modifier_user(user_id: int, data: UserUpdate, request: Request):
-    current_admin = require_admin_or_manager(request)
+    current_user = require_admin_or_manager(request)
     conn = get_db()
     user = conn.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()
     if not user:
         conn.close()
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
 
-    if current_admin["role"] == "manager":
-        if current_admin["id"] != user_id:
+    if current_user["role"] == "manager":
+        if current_user["id"] != user_id:
             conn.close()
             raise HTTPException(status_code=403, detail="Un manager ne peut modifier que son propre compte")
+        if data.role is not None and data.role != user["role"]:
+            conn.close()
+            raise HTTPException(status_code=403, detail="Un manager ne peut pas modifier son rôle")
+        if data.actif is not None and data.actif != user["actif"]:
+            conn.close()
+            raise HTTPException(status_code=403, detail="Un manager ne peut pas modifier le statut du compte")
 
-    if data.actif == 0 and current_admin["id"] == user_id:
+    if data.actif == 0 and current_user["id"] == user_id:
         conn.close()
         raise HTTPException(status_code=400, detail="Vous ne pouvez pas désactiver votre propre compte")
 
     username = data.username or user["username"]
-    role = data.role if data.role in ("admin", "manager", "user") else user["role"]
-    actif = data.actif if data.actif is not None else user["actif"]
+    if current_user["role"] == "manager":
+        role = user["role"]
+        actif = user["actif"]
+    else:
+        role = data.role if data.role in ("admin", "manager", "user") else user["role"]
+        actif = data.actif if data.actif is not None else user["actif"]
     pw_hash = hash_password(data.password) if data.password else user["password_hash"]
 
     if data.password and len(data.password) < 4:
@@ -706,9 +728,9 @@ def modifier_user(user_id: int, data: UserUpdate, request: Request):
         "UPDATE users SET username=?, password_hash=?, role=?, actif=? WHERE id=?",
         (username, pw_hash, role, actif, user_id)
     )
+    audit(conn, current_user, "modify_user", "user", user_id,
+          detail=f"username={username},role={role},actif={actif}", request=request)
     conn.commit()
-    audit(conn, current_admin, "modify_user", "user", user_id,
-          detail=f"username={username},role={role},actif={actif}")
     conn.close()
     new_token = hashlib.sha256(f"{username}:{pw_hash}".encode()).hexdigest()
     return {"id": user_id, "username": username, "role": role, "actif": actif, "new_token": new_token}
@@ -725,8 +747,8 @@ def supprimer_user(user_id: int, request: Request):
         conn.close()
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
     conn.execute("DELETE FROM users WHERE id=?", (user_id,))
+    audit(conn, current_admin, "delete_user", "user", user_id, detail=f"username={user['username']}", request=request)
     conn.commit()
-    audit(conn, current_admin, "delete_user", "user", user_id, detail=f"username={user['username']}")
     conn.close()
     return Response(status_code=204)
 
@@ -808,7 +830,7 @@ def creer_intervention(data: InterventionCreate, request: Request):
 
     enregistrer_historique(conn, new_id, "creation", user_id=user["id"] if user else None)
     audit(conn, user, "create_intervention", "intervention", new_id,
-          detail=f"{data.prestataire} - {data.site}")
+          detail=f"{data.prestataire} - {data.site}", request=request)
 
     conn.commit()
     row = conn.execute("SELECT * FROM interventions WHERE id=?", (new_id,)).fetchone()
@@ -877,7 +899,7 @@ def modifier_intervention(intervention_id: int, data: InterventionUpdate, reques
                 nouvelle=str(nouvelle_val) if nouvelle_val is not None else None,
                 user_id=uid)
 
-    audit(conn, user, "update_intervention", "intervention", intervention_id)
+    audit(conn, user, "update_intervention", "intervention", intervention_id, request=request)
     conn.commit()
     row = conn.execute("SELECT * FROM interventions WHERE id=?", (intervention_id,)).fetchone()
     conn.close()
@@ -901,7 +923,7 @@ def supprimer_intervention(intervention_id: int, request: Request):
     enregistrer_historique(conn, intervention_id, "suppression",
                            ancienne=snapshot, user_id=user["id"] if user else None)
     audit(conn, user, "delete_intervention", "intervention", intervention_id,
-          detail=f"{row['prestataire']} - {row['site']}")
+          detail=f"{row['prestataire']} - {row['site']}", request=request)
 
     # Supprimer les fichiers joints physiques
     pjs = conn.execute("SELECT nom_stockage FROM pieces_jointes WHERE intervention_id=?",
@@ -961,7 +983,7 @@ def ajouter_commentaire(intervention_id: int, data: CommentaireCreate, request: 
         "INSERT INTO commentaires (intervention_id, user_id, username, contenu) VALUES (?,?,?,?)",
         (intervention_id, user["id"], user["username"], data.contenu.strip())
     )
-    audit(conn, user, "add_comment", "intervention", intervention_id)
+    audit(conn, user, "add_comment", "intervention", intervention_id, request=request)
     conn.commit()
     new = conn.execute("SELECT * FROM commentaires WHERE id=?", (cur.lastrowid,)).fetchone()
     conn.close()
@@ -985,7 +1007,7 @@ def supprimer_commentaire(comment_id: int, request: Request):
         conn.close()
         raise HTTPException(status_code=403, detail="Non autorisé")
     conn.execute("DELETE FROM commentaires WHERE id=?", (comment_id,))
-    audit(conn, user, "delete_comment", "commentaire", comment_id)
+    audit(conn, user, "delete_comment", "commentaire", comment_id, request=request)
     conn.commit()
     conn.close()
     return Response(status_code=204)
@@ -1044,7 +1066,7 @@ async def uploader_piece_jointe(intervention_id: int, fichier: UploadFile = File
            VALUES (?,?,?,?,?,?)""",
         (intervention_id, user["id"], fichier.filename, nom_stockage, len(content), fichier.content_type)
     )
-    audit(conn, user, "upload_file", "intervention", intervention_id, detail=fichier.filename)
+    audit(conn, user, "upload_file", "intervention", intervention_id, detail=fichier.filename, request=request)
     conn.commit()
     new = conn.execute("SELECT * FROM pieces_jointes WHERE id=?", (cur.lastrowid,)).fetchone()
     conn.close()
@@ -1087,7 +1109,7 @@ def supprimer_piece_jointe(pj_id: int, request: Request):
     except Exception:
         pass
     conn.execute("DELETE FROM pieces_jointes WHERE id=?", (pj_id,))
-    audit(conn, user, "delete_file", "piece_jointe", pj_id, detail=pj["nom_original"])
+    audit(conn, user, "delete_file", "piece_jointe", pj_id, detail=pj["nom_original"], request=request)
     conn.commit()
     conn.close()
     return Response(status_code=204)
@@ -1105,7 +1127,7 @@ def liste_audit_logs(
     username: Optional[str] = Query(None),
     action: Optional[str] = Query(None),
 ):
-    require_admin_or_manager(request)
+    require_admin(request)
     conn = get_db()
     where = "WHERE 1=1"
     params = []
@@ -1463,6 +1485,649 @@ def export_pdf_intervention(intervention_id: int, request: Request):
 
 
 # ============================================================
+# RAPPORT CUMULATIF PAR PRESTATAIRE
+# ============================================================
+
+@app.get("/api/rapport/prestataire/pdf")
+def rapport_prestataire_pdf(
+    prestataire: str = Query(...),
+    date_from: Optional[str] = Query(None),
+    date_to: Optional[str] = Query(None),
+    request: Request = None,
+):
+    """Génère un rapport PDF cumulatif pour un prestataire sur une période."""
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Non authentifié")
+    try:
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib import colors
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import cm
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, PageBreak
+        from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
+        from reportlab.graphics.shapes import Drawing, Rect, String as GStr, Line
+        from reportlab.graphics.charts.barcharts import VerticalBarChart, HorizontalBarChart
+        from reportlab.graphics.charts.piecharts import Pie
+    except ImportError:
+        raise HTTPException(status_code=500, detail="reportlab non installé. Lancez: pip install reportlab")
+
+    # ── Données ──────────────────────────────────────────────────
+    conn = get_db()
+    where = "WHERE LOWER(prestataire) = LOWER(?)"
+    params_q = [prestataire]
+    if date_from:
+        where += " AND date_debut >= ?"
+        params_q.append(date_from)
+    if date_to:
+        where += " AND date_debut <= ?"
+        params_q.append(date_to)
+    rows = conn.execute(
+        f"SELECT * FROM interventions {where} ORDER BY date_debut ASC, id ASC",
+        params_q
+    ).fetchall()
+    interventions = [row_to_dict(r) for r in rows]
+    if not interventions:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Aucune intervention trouvée.")
+    audit(conn, user, "generate_pdf", "rapport", detail=f"{prestataire} | {date_from or '—'} → {date_to or '—'}", request=request)
+    conn.commit()
+    conn.close()
+
+    # ── Stats ─────────────────────────────────────────────────────
+    total        = len(interventions)
+    duree_totale = sum(i.get("duree_minutes") or 0 for i in interventions)
+    with_dur     = [i for i in interventions if (i.get("duree_minutes") or 0) > 0]
+    duree_moy    = round(sum(i["duree_minutes"] for i in with_dur) / len(with_dur)) if with_dur else 0
+    sites_list   = list(dict.fromkeys(i.get("site") or "—" for i in interventions))
+    terminées    = sum(1 for i in interventions if i.get("statut") == "Terminée")
+
+    # ── Config ────────────────────────────────────────────────────
+    buf = io.BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=A4,
+                            topMargin=1.2*cm, bottomMargin=1.8*cm,
+                            leftMargin=1.8*cm, rightMargin=1.8*cm)
+    styles = getSampleStyleSheet()
+    W = 17.4 * cm
+
+    # Palette couleurs
+    DARK_BLUE  = colors.HexColor("#1e2d5a")
+    PRIMARY    = colors.HexColor("#3b5bdb")
+    LIGHT_GRAY = colors.HexColor("#f1f5f9")
+    MID_GRAY   = colors.HexColor("#e2e8f0")
+    GREEN      = colors.HexColor("#059669")
+    GREEN_BG   = colors.HexColor("#dcfce7")
+    RED        = colors.HexColor("#dc2626")
+    RED_BG     = colors.HexColor("#fee2e2")
+    ORANGE     = colors.HexColor("#d97706")
+    ORANGE_BG  = colors.HexColor("#fef9c3")
+    BLUE_BG    = colors.HexColor("#dbeafe")
+    SLATE      = colors.HexColor("#64748b")
+    TEXT       = colors.HexColor("#1e293b")
+    PURPLE     = colors.HexColor("#7c3aed")
+    CHART_PAL  = [PRIMARY, GREEN, ORANGE, PURPLE, RED,
+                  colors.HexColor("#0891b2"), colors.HexColor("#be185d")]
+
+    _sc = [0]
+    def S(**kw):
+        _sc[0] += 1
+        return ParagraphStyle(f"_s{_sc[0]}", parent=styles["Normal"], **kw)
+
+    # Styles texte réutilisables
+    label_s  = S(fontSize=8,  fontName="Helvetica-Bold", textColor=SLATE)
+    value_sm = S(fontSize=10, fontName="Helvetica",      textColor=TEXT, leading=14)
+    sec_s    = S(fontSize=10, fontName="Helvetica-Bold", textColor=colors.white)
+    body_s   = S(fontSize=9,  fontName="Helvetica",      textColor=TEXT, leading=13)
+    small_s  = S(fontSize=8,  fontName="Helvetica",      textColor=SLATE)
+    foot_s   = S(fontSize=7,  fontName="Helvetica",      textColor=SLATE, alignment=TA_CENTER)
+    it_s     = S(fontSize=13, fontName="Helvetica-Bold", textColor=colors.white)
+    is_s     = S(fontSize=9,  fontName="Helvetica",      textColor=colors.HexColor("#c5d0fc"))
+
+    # ── Helpers ───────────────────────────────────────────────────
+    def fmt_date(d):
+        if not d: return "—"
+        try:
+            p = d.split("-"); return f"{p[2]}/{p[1]}/{p[0]}" if len(p)==3 else d
+        except: return d or "—"
+
+    def fmt_dur(dm):
+        if not dm: return "—"
+        h, m = dm//60, dm%60
+        return f"{h}h{m:02d}min" if m else f"{h}h"
+
+    def row2(lbl, val):
+        return [Paragraph(lbl, label_s), Paragraph(str(val) if val else "—", value_sm)]
+
+    def sec_bar(title):
+        t = Table([[Paragraph(title, sec_s)]], colWidths=[W])
+        t.setStyle(TableStyle([
+            ("BACKGROUND",    (0,0),(-1,-1), DARK_BLUE),
+            ("TOPPADDING",    (0,0),(-1,-1), 7), ("BOTTOMPADDING",(0,0),(-1,-1),7),
+            ("LEFTPADDING",   (0,0),(-1,-1),12), ("RIGHTPADDING", (0,0),(-1,-1),12),
+        ]))
+        return t
+
+    def kpi_box(lbl, val, sub="", vc=None):
+        vc = vc or TEXT
+        rows_k = [
+            [Paragraph(f'<font color="#94a3b8" size="7">{lbl}</font>', S(fontSize=7, fontName="Helvetica-Bold", textColor=SLATE))],
+            [Paragraph(val, S(fontSize=17, fontName="Helvetica-Bold", textColor=vc))],
+        ]
+        if sub:
+            rows_k.append([Paragraph(sub, S(fontSize=7, fontName="Helvetica", textColor=SLATE))])
+        t = Table(rows_k, colWidths=[W/4 - 0.3*cm])
+        t.setStyle(TableStyle([
+            ("BACKGROUND",    (0,0),(-1,-1), LIGHT_GRAY),
+            ("BOX",           (0,0),(-1,-1), 0.5, MID_GRAY),
+            ("TOPPADDING",    (0,0),(-1,-1),10), ("BOTTOMPADDING",(0,0),(-1,-1),10),
+            ("LEFTPADDING",   (0,0),(-1,-1),10), ("RIGHTPADDING", (0,0),(-1,-1),10),
+        ]))
+        return t
+
+    # ── Graphiques ReportLab ──────────────────────────────────────
+    DW = W/2 - 0.4*cm   # largeur par graphique ≈ 228pt
+    DH = 5.5*cm          # hauteur ≈ 156pt
+
+    SC_COLORS = {"Terminée": GREEN, "En cours": PRIMARY,
+                 "En attente": ORANGE, "Planifiée": PURPLE, "Annulée": RED}
+
+    def _cht_title(d, title):
+        d.add(Rect(0, DH-16, DW, 16, fillColor=DARK_BLUE, strokeColor=None))
+        d.add(GStr(DW/2, DH-10, title, fontSize=7, fontName="Helvetica-Bold",
+                   fillColor=colors.white, textAnchor="middle"))
+
+    def _no_data(d):
+        d.add(GStr(DW/2, DH/2, "Pas de données", fontSize=8,
+                   fontName="Helvetica", fillColor=SLATE, textAnchor="middle"))
+
+    def _axis_style(axis, is_value=True):
+        axis.labels.fontSize = 6
+        axis.labels.fontName = "Helvetica"
+        axis.labels.fillColor = SLATE
+        axis.strokeColor = MID_GRAY
+        axis.strokeWidth = 0.5
+        if is_value:
+            axis.gridStrokeColor = MID_GRAY
+            axis.gridStrokeWidth = 0.3
+            axis.tickLeft = 3
+        else:
+            axis.tickDown = 3
+
+    def chart_duree_inter():
+        d = Drawing(DW, DH)
+        _cht_title(d, "DURÉE PAR INTERVENTION (min)")
+        vals = [i.get("duree_minutes") or 0 for i in interventions]
+        lbls = [f"#{i['id']}" for i in interventions]
+        if not any(vals):
+            _no_data(d); return d
+        bc = VerticalBarChart()
+        bc.x, bc.y = 34, 22
+        bc.height = DH - 46
+        bc.width  = DW - 42
+        bc.data   = [vals]
+        bc.strokeColor = None; bc.fillColor = None
+        for i2, v in enumerate(vals):
+            bc.bars[(0, i2)].fillColor   = RED if v > 480 else PRIMARY
+            bc.bars[(0, i2)].strokeColor = None
+        mx = max(vals) * 1.42 if max(vals) > 0 else 100
+        bc.valueAxis.valueMin = 0
+        bc.valueAxis.valueMax = mx
+        _axis_style(bc.valueAxis, True)
+        bc.categoryAxis.categoryNames = lbls
+        _axis_style(bc.categoryAxis, False)
+        if len(lbls) > 6:
+            bc.categoryAxis.labels.angle = 30
+            bc.categoryAxis.labels.boxAnchor = 'ne'
+        bc.barWidth = min(16, (bc.width / max(len(vals), 1)) * 0.6)
+        bc.barLabelFormat = '%d'
+        bc.barLabels.nudge = 5
+        bc.barLabels.fontSize = 6
+        bc.barLabels.fontName = 'Helvetica-Bold'
+        bc.barLabels.fillColor = TEXT
+        bc.barLabels.boxAnchor = 's'
+        d.add(bc)
+        # Ligne rouge seuil 480min
+        if max(vals) > 0:
+            ratio = min(480 / (mx if mx else 1), 1.0)
+            y_seuil = bc.y + ratio * bc.height
+            if 0 < ratio < 1:
+                d.add(Line(bc.x, y_seuil, bc.x + bc.width, y_seuil,
+                           strokeColor=RED, strokeWidth=0.8, strokeDashArray=[3,2]))
+                d.add(GStr(bc.x + bc.width + 2, y_seuil - 3, "8h",
+                           fontSize=5, fontName="Helvetica-Bold",
+                           fillColor=RED, textAnchor="start"))
+        return d
+
+    def chart_statuts():
+        d = Drawing(DW, DH)
+        _cht_title(d, "RÉPARTITION PAR STATUT")
+        smap = {}
+        for i2 in interventions:
+            s = i2.get("statut") or "—"
+            smap[s] = smap.get(s, 0) + 1
+        if not smap:
+            _no_data(d); return d
+        lbls_p = list(smap.keys())
+        vals_p = list(smap.values())
+        pie_sz = min(DH - 36, DW * 0.48)
+        pc = Pie()
+        pc.x = 8; pc.y = (DH - 36 - pie_sz) / 2 + 2
+        pc.width = pie_sz; pc.height = pie_sz
+        pc.data   = vals_p
+        total_p = sum(vals_p)
+        pc.labels = [""] * len(vals_p)
+        for j, lbl in enumerate(lbls_p):
+            pc.slices[j].fillColor   = SC_COLORS.get(lbl, SLATE)
+            pc.slices[j].strokeColor = colors.white
+            pc.slices[j].strokeWidth = 1.5
+            pc.slices[j].labelRadius = 0.6
+        d.add(pc)
+        lx = pie_sz + 20
+        ly = DH - 32
+        for j, lbl in enumerate(lbls_p):
+            col = SC_COLORS.get(lbl, SLATE)
+            pct = round(vals_p[j] / total_p * 100) if total_p else 0
+            yy = ly - j * 16
+            d.add(Rect(lx, yy, 9, 9, fillColor=col, strokeColor=None))
+            d.add(GStr(lx + 13, yy + 5, lbl,
+                       fontSize=6.5, fontName="Helvetica-Bold", fillColor=TEXT))
+            d.add(GStr(lx + 13, yy - 3, f"{vals_p[j]} interv. · {pct}%",
+                       fontSize=5.5, fontName="Helvetica", fillColor=SLATE))
+        return d
+
+    def chart_evolution():
+        d = Drawing(DW, DH)
+        _cht_title(d, "ÉVOLUTION MENSUELLE (nb interventions)")
+        MOIS_FR = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"]
+        mmap = {}
+        for i2 in interventions:
+            if i2.get("date_debut"):
+                k = i2["date_debut"][:7]
+                mmap[k] = mmap.get(k, 0) + 1
+        if not mmap:
+            _no_data(d); return d
+        keys = sorted(mmap.keys())
+        lbls = [f"{MOIS_FR[int(k[5:])-1]} {k[2:4]}" for k in keys]
+        vals = [mmap[k] for k in keys]
+        bc = VerticalBarChart()
+        bc.x, bc.y = 28, 22
+        bc.height = DH - 46
+        bc.width  = DW - 36
+        bc.data   = [vals]
+        bc.strokeColor = None; bc.fillColor = None
+        bc.bars[0].fillColor = PRIMARY; bc.bars[0].strokeColor = None
+        bc.valueAxis.valueMin = 0
+        bc.valueAxis.valueMax = max(vals) * 1.45 if max(vals) > 0 else 5
+        bc.valueAxis.labelTextFormat = '%d'
+        _axis_style(bc.valueAxis, True)
+        bc.categoryAxis.categoryNames = lbls
+        _axis_style(bc.categoryAxis, False)
+        if len(lbls) > 5:
+            bc.categoryAxis.labels.angle = 30
+            bc.categoryAxis.labels.boxAnchor = 'ne'
+        bc.barWidth = min(18, (bc.width / max(len(vals), 1)) * 0.65)
+        bc.barLabelFormat = '%d'
+        bc.barLabels.nudge = 5
+        bc.barLabels.fontSize = 7
+        bc.barLabels.fontName = 'Helvetica-Bold'
+        bc.barLabels.fillColor = PRIMARY
+        bc.barLabels.boxAnchor = 's'
+        d.add(bc)
+        return d
+
+    def chart_sites():
+        d = Drawing(DW, DH)
+        _cht_title(d, "DURÉE TOTALE PAR SITE (heures)")
+        smap = {}
+        for i2 in interventions:
+            s = i2.get("site") or "—"
+            smap[s] = smap.get(s, 0) + (i2.get("duree_minutes") or 0)
+        if not smap:
+            _no_data(d); return d
+        sorted_s = sorted(smap.items(), key=lambda x: x[1], reverse=True)[:6]
+        lbls = [s[0][:14] for s in sorted_s]
+        vals = [round(s[1]/60, 1) for s in sorted_s]
+        bc = HorizontalBarChart()
+        bc.x = 68; bc.y = 18
+        bc.height = DH - 40
+        bc.width  = DW - 76
+        bc.data   = [vals]
+        bc.strokeColor = None; bc.fillColor = None
+        for i2, col in enumerate(CHART_PAL[:len(vals)]):
+            bc.bars[(0, i2)].fillColor   = col
+            bc.bars[(0, i2)].strokeColor = None
+        bc.valueAxis.valueMin = 0
+        bc.valueAxis.valueMax = max(vals) * 1.45 if max(vals) > 0 else 10
+        # XValueAxis (horizontal) — pas de tickLeft
+        bc.valueAxis.labels.fontSize = 6
+        bc.valueAxis.labels.fontName = "Helvetica"
+        bc.valueAxis.labels.fillColor = SLATE
+        bc.valueAxis.strokeColor = MID_GRAY
+        bc.valueAxis.strokeWidth = 0.5
+        bc.valueAxis.gridStrokeColor = MID_GRAY
+        bc.valueAxis.gridStrokeWidth = 0.3
+        bc.valueAxis.tickDown = 3
+        # YCategoryAxis (vertical) — pas de tickDown
+        bc.categoryAxis.categoryNames = lbls
+        bc.categoryAxis.labels.fontSize = 6
+        bc.categoryAxis.labels.fontName = "Helvetica"
+        bc.categoryAxis.labels.fillColor = SLATE
+        bc.categoryAxis.strokeColor = MID_GRAY
+        bc.categoryAxis.strokeWidth = 0.5
+        bc.categoryAxis.tickLeft = 3
+        bc.categoryAxis.labels.boxAnchor = 'e'
+        bc.categoryAxis.labels.dx = -4
+        bc.barWidth = min(14, (bc.height / max(len(vals), 1)) * 0.65)
+        bc.barLabelFormat = '%.1fh'
+        bc.barLabels.nudge = 5
+        bc.barLabels.fontSize = 6
+        bc.barLabels.fontName = 'Helvetica-Bold'
+        bc.barLabels.fillColor = TEXT
+        bc.barLabels.boxAnchor = 'w'
+        d.add(bc)
+        return d
+
+    # ── Construction des éléments ─────────────────────────────────
+    elements = []
+
+    periode_str = "Toutes périodes"
+    if date_from and date_to:
+        periode_str = f"{fmt_date(date_from)} → {fmt_date(date_to)}"
+    elif date_from:
+        periode_str = f"À partir du {fmt_date(date_from)}"
+    elif date_to:
+        periode_str = f"Jusqu'au {fmt_date(date_to)}"
+
+    # ── BANDEAU HEADER ────────────────────────────────────────────
+    # Barre primaire en haut
+    top_bar = Table([[""]], colWidths=[W], rowHeights=[5])
+    top_bar.setStyle(TableStyle([
+        ("BACKGROUND", (0,0),(-1,-1), PRIMARY),
+        ("TOPPADDING", (0,0),(-1,-1),0), ("BOTTOMPADDING",(0,0),(-1,-1),0),
+        ("LEFTPADDING",(0,0),(-1,-1),0), ("RIGHTPADDING", (0,0),(-1,-1),0),
+    ]))
+    elements.append(top_bar)
+
+    hdr = Table([[
+        Table([
+            [Paragraph('<font color="#94a3b8" size="8">RAPPORT CUMULATIF — PRESTATAIRE</font>',
+                       S(fontSize=8, fontName="Helvetica-Bold", textColor=SLATE))],
+            [Paragraph(prestataire.upper(),
+                       S(fontSize=24, fontName="Helvetica-Bold", textColor=colors.white, leading=28))],
+            [Paragraph(f'<font color="#a5b4fc">&#128197;  Période : {periode_str}</font>',
+                       S(fontSize=10, fontName="Helvetica", textColor=colors.HexColor("#a5b4fc")))],
+        ], colWidths=[None]),
+        Table([
+            [Paragraph(f'Généré le <b>{date.today().strftime("%d/%m/%Y")}</b>',
+                       S(fontSize=9, fontName="Helvetica", textColor=SLATE, alignment=TA_RIGHT))],
+            [Paragraph(f'par <b>{user["username"]}</b>',
+                       S(fontSize=9, fontName="Helvetica", textColor=SLATE, alignment=TA_RIGHT))],
+            [Spacer(1, 6)],
+            [Paragraph(f'<b>{total}</b> intervention{"s" if total>1 else ""}',
+                       S(fontSize=13, fontName="Helvetica-Bold", textColor=colors.white, alignment=TA_RIGHT))],
+            [Paragraph(f'<b>{terminées}</b> terminée{"s" if terminées>1 else ""}',
+                       S(fontSize=9, fontName="Helvetica", textColor=GREEN, alignment=TA_RIGHT))],
+        ], colWidths=[None]),
+    ]], colWidths=[12*cm, 5.4*cm])
+    hdr.setStyle(TableStyle([
+        ("BACKGROUND",    (0,0),(-1,-1), DARK_BLUE),
+        ("TOPPADDING",    (0,0),(-1,-1), 22), ("BOTTOMPADDING",(0,0),(-1,-1),22),
+        ("LEFTPADDING",   (0,0),(0,-1),  22), ("RIGHTPADDING", (-1,0),(-1,-1),18),
+        ("VALIGN",        (0,0),(-1,-1), "MIDDLE"),
+        ("ALIGN",         (1,0),(1,-1),  "RIGHT"),
+    ]))
+    elements.append(hdr)
+    elements.append(Spacer(1, 0.4*cm))
+
+    # ── 4 KPI CARDS ───────────────────────────────────────────────
+    dur_col = RED if duree_totale > 2880 else TEXT
+    kpis_row = Table([[
+        kpi_box("TOTAL INTERVENTIONS", str(total),
+                f"{terminées} terminée{'s' if terminées>1 else ''}"),
+        kpi_box("DURÉE TOTALE",    fmt_dur(duree_totale),
+                f"{duree_totale} min", dur_col),
+        kpi_box("DURÉE MOYENNE",   fmt_dur(duree_moy)),
+        kpi_box("SITES COUVERTS",  str(len(sites_list)),
+                ", ".join(sites_list[:2]) + ("…" if len(sites_list)>2 else "")),
+    ]], colWidths=[W/4]*4)
+    kpis_row.setStyle(TableStyle([
+        ("TOPPADDING",  (0,0),(-1,-1),0), ("BOTTOMPADDING",(0,0),(-1,-1),0),
+        ("LEFTPADDING", (0,0),(-1,-1),3), ("RIGHTPADDING", (0,0),(-1,-1),3),
+    ]))
+    elements.append(kpis_row)
+    elements.append(Spacer(1, 0.4*cm))
+
+    # ── GRAPHIQUES ─────────────────────────────────────────────────
+    elements.append(sec_bar("ANALYSE GRAPHIQUE"))
+    elements.append(Spacer(1, 0.15*cm))
+    charts_tbl = Table([
+        [chart_duree_inter(), chart_statuts()],
+        [chart_evolution(),   chart_sites()],
+    ], colWidths=[W/2, W/2])
+    charts_tbl.setStyle(TableStyle([
+        ("TOPPADDING",    (0,0),(-1,-1), 4), ("BOTTOMPADDING",(0,0),(-1,-1),4),
+        ("LEFTPADDING",   (0,0),(-1,-1), 3), ("RIGHTPADDING", (0,0),(-1,-1),3),
+        ("BOX",           (0,0),(-1,-1), 0.5, MID_GRAY),
+        ("INNERGRID",     (0,0),(-1,-1), 0.5, MID_GRAY),
+        ("BACKGROUND",    (0,0),(-1,-1), colors.white),
+        ("ALIGN",         (0,0),(-1,-1), "CENTER"),
+        ("VALIGN",        (0,0),(-1,-1), "MIDDLE"),
+    ]))
+    elements.append(charts_tbl)
+    elements.append(Spacer(1, 0.4*cm))
+
+    # ── RÉSUMÉ GÉNÉRAL ─────────────────────────────────────────────
+    elements.append(sec_bar("RÉSUMÉ GÉNÉRAL"))
+    elements.append(Spacer(1, 0.15*cm))
+    resume_rows = [
+        row2("PRESTATAIRE",              prestataire),
+        row2("PÉRIODE",                  periode_str),
+        row2("TOTAL INTERVENTIONS",      str(total)),
+        row2("INTERVENTIONS TERMINÉES",  f"{terminées} / {total}"),
+        row2("DURÉE TOTALE",             fmt_dur(duree_totale) + (f"  ({duree_totale} min)" if duree_totale else "")),
+        row2("DURÉE MOYENNE",            fmt_dur(duree_moy)),
+        row2("SITES COUVERTS",           ", ".join(sites_list) if sites_list else "—"),
+    ]
+    resume_tbl = Table(resume_rows, colWidths=[4.5*cm, 12.9*cm])
+    resume_tbl.setStyle(TableStyle([
+        ("BACKGROUND",    (0,0),(0,-1), LIGHT_GRAY),
+        ("BOX",           (0,0),(-1,-1), 0.4, MID_GRAY),
+        ("TOPPADDING",    (0,0),(-1,-1), 7), ("BOTTOMPADDING",(0,0),(-1,-1),7),
+        ("LEFTPADDING",   (0,0),(-1,-1),10),
+        ("LINEBELOW",     (0,0),(-1,-2), 0.3, MID_GRAY),
+        ("VALIGN",        (0,0),(-1,-1), "TOP"),
+    ]))
+    elements.append(resume_tbl)
+
+    # ── TABLEAU DE SYNTHÈSE ────────────────────────────────────────
+    elements.append(Spacer(1, 0.5*cm))
+    elements.append(sec_bar("TABLEAU DE SYNTHÈSE DES INTERVENTIONS"))
+    elements.append(Spacer(1, 0.15*cm))
+
+    def sh(txt):
+        return Paragraph(txt, S(fontSize=8, fontName="Helvetica-Bold", textColor=colors.white))
+
+    synth_rows = [[sh("N°"), sh("DATE DÉBUT"), sh("DATE FIN"),
+                   sh("SITE"), sh("TYPE"), sh("DURÉE"), sh("STATUT")]]
+    for inter in interventions:
+        dm = inter.get("duree_minutes") or 0
+        st_col = {"Terminée": GREEN, "En cours": PRIMARY,
+                  "En attente": ORANGE, "Annulée": RED}.get(inter.get("statut") or "", PRIMARY)
+        synth_rows.append([
+            Paragraph(f"#{inter['id']}", small_s),
+            Paragraph(fmt_date(inter.get("date_debut")), small_s),
+            Paragraph(fmt_date(inter.get("date_fin")),   small_s),
+            Paragraph(inter.get("site") or "—",          small_s),
+            Paragraph(inter.get("type_intervention") or "—", small_s),
+            Paragraph(fmt_dur(dm), S(fontSize=8, fontName="Helvetica-Bold",
+                                     textColor=RED if dm > 480 else TEXT)),
+            Paragraph(inter.get("statut") or "—",
+                      S(fontSize=8, fontName="Helvetica-Bold", textColor=st_col)),
+        ])
+    synth_tbl = Table(synth_rows, colWidths=[1.4*cm, 2.5*cm, 2.5*cm, 3.8*cm, 2.8*cm, 2.2*cm, 2.2*cm])
+    synth_tbl.setStyle(TableStyle([
+        ("BACKGROUND",    (0,0),(-1,0),  DARK_BLUE),
+        ("ROWBACKGROUNDS",(0,1),(-1,-1), [colors.white, LIGHT_GRAY]),
+        ("TOPPADDING",    (0,0),(-1,-1), 5), ("BOTTOMPADDING",(0,0),(-1,-1),5),
+        ("LEFTPADDING",   (0,0),(-1,-1), 6), ("RIGHTPADDING", (0,0),(-1,-1),6),
+        ("LINEBELOW",     (0,0),(-1,-2), 0.3, MID_GRAY),
+        ("BOX",           (0,0),(-1,-1), 0.4, MID_GRAY),
+        ("VALIGN",        (0,0),(-1,-1), "MIDDLE"),
+    ]))
+    elements.append(synth_tbl)
+    elements.append(Spacer(1, 0.6*cm))
+
+    # ── DÉTAIL PAR INTERVENTION ────────────────────────────────────
+    elements.append(sec_bar("DÉTAIL DES INTERVENTIONS"))
+    elements.append(Spacer(1, 0.3*cm))
+
+    for idx, inter in enumerate(interventions):
+        dm     = inter.get("duree_minutes") or 0
+        dur_c  = RED if dm > 480 else TEXT
+        statut = inter.get("statut") or "—"
+        st_cfg = {"Terminée": (GREEN, GREEN_BG), "En cours": (PRIMARY, BLUE_BG),
+                  "En attente": (ORANGE, ORANGE_BG), "Annulée": (RED, RED_BG)
+                  }.get(statut, (PRIMARY, BLUE_BG))
+
+        site_txt = inter.get("site") or "—"
+        mois_txt = f"{(inter.get('mois') or '').capitalize()} {inter.get('annee') or ''}".strip()
+
+        # En-tête carte
+        card_hdr = Table([[
+            Table([
+                [Paragraph(f"INTERVENTION #{inter['id']}  ·  {idx+1}/{total}",
+                           S(fontSize=8, fontName="Helvetica-Bold",
+                             textColor=colors.HexColor("#a5b4fc")))],
+                [Paragraph(site_txt, it_s)],
+                [Paragraph(mois_txt, is_s)],
+            ]),
+            Table([[
+                Paragraph(f'<font color="#64748b" size="7">STATUT</font><br/><b>{statut}</b>',
+                          S(fontSize=10, fontName="Helvetica-Bold", textColor=st_cfg[0]))
+            ]], colWidths=[3.5*cm]),
+        ]], colWidths=[13.4*cm, 4*cm])
+        card_hdr.setStyle(TableStyle([
+            ("BACKGROUND",    (0,0),(-1,-1), DARK_BLUE),
+            ("TOPPADDING",    (0,0),(-1,-1),10), ("BOTTOMPADDING",(0,0),(-1,-1),10),
+            ("LEFTPADDING",   (0,0),(0,-1), 12), ("RIGHTPADDING", (-1,0),(-1,-1),8),
+            ("VALIGN",        (0,0),(-1,-1), "MIDDLE"),
+            ("ALIGN",         (1,0),(1,-1),  "RIGHT"),
+        ]))
+        elements.append(card_hdr)
+
+        # Timeline
+        tl = Table([[
+            Table([[Paragraph("DÉBUT", S(fontSize=7, fontName="Helvetica-Bold", textColor=SLATE))],
+                   [Paragraph(fmt_date(inter.get("date_debut")),
+                              S(fontSize=11, fontName="Helvetica-Bold", textColor=TEXT))],
+                   [Paragraph(inter.get("heure_debut") or "—",
+                              S(fontSize=10, fontName="Helvetica-Bold", textColor=PRIMARY))]]),
+            Paragraph("→", S(fontSize=14, textColor=SLATE, alignment=1)),
+            Table([[Paragraph("DURÉE", S(fontSize=7, fontName="Helvetica-Bold", textColor=SLATE, alignment=1))],
+                   [Paragraph(fmt_dur(dm), S(fontSize=14, fontName="Helvetica-Bold", textColor=dur_c, alignment=1))],
+                   [Paragraph(f"{dm} min" if dm else "—", S(fontSize=7, textColor=SLATE, alignment=1))]]),
+            Paragraph("→", S(fontSize=14, textColor=SLATE, alignment=1)),
+            Table([[Paragraph("FIN", S(fontSize=7, fontName="Helvetica-Bold", textColor=SLATE, alignment=2))],
+                   [Paragraph(fmt_date(inter.get("date_fin")),
+                              S(fontSize=11, fontName="Helvetica-Bold", textColor=TEXT, alignment=2))],
+                   [Paragraph(inter.get("heure_fin") or "—",
+                              S(fontSize=10, fontName="Helvetica-Bold", textColor=GREEN, alignment=2))]]),
+        ]], colWidths=[4.5*cm, 1.2*cm, 4*cm, 1.2*cm, 6.5*cm])
+        tl.setStyle(TableStyle([
+            ("BACKGROUND",    (0,0),(-1,-1), LIGHT_GRAY),
+            ("BOX",           (0,0),(-1,-1), 0.4, MID_GRAY),
+            ("TOPPADDING",    (0,0),(-1,-1), 8), ("BOTTOMPADDING",(0,0),(-1,-1),8),
+            ("LEFTPADDING",   (0,0),(-1,-1),10), ("RIGHTPADDING", (0,0),(-1,-1),10),
+            ("VALIGN",        (0,0),(-1,-1), "MIDDLE"),
+        ]))
+        elements.append(tl)
+
+        # Infos
+        info_rows = [
+            row2("TYPE D'INTERVENTION", inter.get("type_intervention") or "—"),
+            row2("SITE",               inter.get("site") or "—"),
+            row2("SUPERVISEUR",        inter.get("superviseur") or inter.get("technicien") or "—"),
+            row2("ÉQUIPE",             inter.get("equipe") or "—"),
+            row2("STATUT",             statut),
+        ]
+        if inter.get("prochaine_intervention"):
+            info_rows.append(row2("PROCHAINE INTERVENTION", fmt_date(inter["prochaine_intervention"])))
+        info_tbl = Table(info_rows, colWidths=[4.5*cm, 12.9*cm])
+        info_tbl.setStyle(TableStyle([
+            ("BACKGROUND",    (0,0),(0,-1), LIGHT_GRAY),
+            ("BOX",           (0,0),(-1,-1), 0.4, MID_GRAY),
+            ("TOPPADDING",    (0,0),(-1,-1), 5), ("BOTTOMPADDING",(0,0),(-1,-1),5),
+            ("LEFTPADDING",   (0,0),(-1,-1), 8),
+            ("LINEBELOW",     (0,0),(-1,-2), 0.3, MID_GRAY),
+            ("VALIGN",        (0,0),(-1,-1), "TOP"),
+        ]))
+        elements.append(info_tbl)
+
+        # Travaux
+        if inter.get("travaux"):
+            tw_hdr = Table([[Paragraph("TRAVAUX EFFECTUÉS",
+                S(fontSize=8, fontName="Helvetica-Bold", textColor=colors.white))
+            ]], colWidths=[W])
+            tw_hdr.setStyle(TableStyle([
+                ("BACKGROUND",    (0,0),(-1,-1), PRIMARY),
+                ("TOPPADDING",    (0,0),(-1,-1), 4), ("BOTTOMPADDING",(0,0),(-1,-1),4),
+                ("LEFTPADDING",   (0,0),(-1,-1),10),
+            ]))
+            elements.append(tw_hdr)
+            tw_body = Table([[Paragraph(inter["travaux"], body_s)]], colWidths=[W])
+            tw_body.setStyle(TableStyle([
+                ("BACKGROUND",    (0,0),(-1,-1), LIGHT_GRAY),
+                ("BOX",           (0,0),(-1,-1), 0.4, MID_GRAY),
+                ("TOPPADDING",    (0,0),(-1,-1), 6), ("BOTTOMPADDING",(0,0),(-1,-1),6),
+                ("LEFTPADDING",   (0,0),(-1,-1),10), ("RIGHTPADDING", (0,0),(-1,-1),10),
+            ]))
+            elements.append(tw_body)
+
+        # Notes
+        if inter.get("notes"):
+            nt_hdr = Table([[Paragraph("NOTES INTERNES",
+                S(fontSize=8, fontName="Helvetica-Bold", textColor=colors.white))
+            ]], colWidths=[W])
+            nt_hdr.setStyle(TableStyle([
+                ("BACKGROUND",    (0,0),(-1,-1), ORANGE),
+                ("TOPPADDING",    (0,0),(-1,-1), 4), ("BOTTOMPADDING",(0,0),(-1,-1),4),
+                ("LEFTPADDING",   (0,0),(-1,-1),10),
+            ]))
+            elements.append(nt_hdr)
+            nt_body = Table([[Paragraph(inter["notes"], body_s)]], colWidths=[W])
+            nt_body.setStyle(TableStyle([
+                ("BACKGROUND",    (0,0),(-1,-1), LIGHT_GRAY),
+                ("BOX",           (0,0),(-1,-1), 0.4, MID_GRAY),
+                ("TOPPADDING",    (0,0),(-1,-1), 6), ("BOTTOMPADDING",(0,0),(-1,-1),6),
+                ("LEFTPADDING",   (0,0),(-1,-1),10), ("RIGHTPADDING", (0,0),(-1,-1),10),
+            ]))
+            elements.append(nt_body)
+
+        # Séparateur
+        if idx < total - 1:
+            elements.append(Spacer(1, 0.4*cm))
+            elements.append(HRFlowable(width="100%", thickness=1, color=PRIMARY, dash=(4,3)))
+            elements.append(Spacer(1, 0.3*cm))
+
+    # ── FOOTER ────────────────────────────────────────────────────
+    elements.append(Spacer(1, 0.8*cm))
+    elements.append(HRFlowable(width="100%", thickness=0.5, color=MID_GRAY))
+    elements.append(Spacer(1, 0.2*cm))
+    elements.append(Paragraph(
+        f"Suivi des Interventions  ·  Rapport cumulatif {prestataire}  ·  {periode_str}  ·  "
+        f"Généré le {date.today().strftime('%d/%m/%Y')} par {user['username']}  ·  "
+        f"{total} intervention{'s' if total > 1 else ''}",
+        foot_s))
+
+    doc.build(elements)
+    buf.seek(0)
+    safe_name = prestataire.replace(" ", "_").replace("/", "-")
+    fname = f"rapport_{safe_name}_{date.today().strftime('%Y%m%d')}.pdf"
+    return StreamingResponse(buf, media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={fname}"})
+
+
+# ============================================================
 # BACKUP BASE DE DONNÉES
 # ============================================================
 
@@ -1478,7 +2143,7 @@ def backup_database(request: Request):
     shutil.copy2(DB_PATH, dest)
     size = os.path.getsize(dest)
     conn = get_db()
-    audit(conn, user, "backup", detail=fname)
+    audit(conn, user, "backup", detail=fname, request=request)
     conn.commit()
     conn.close()
     return {"filename": fname, "size_bytes": size, "created_at": datetime.now().isoformat()}

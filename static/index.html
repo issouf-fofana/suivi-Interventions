@@ -5,98 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Suivi des Interventions</title>
   <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/sidebar.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
-<body>
-
-<!-- ===== SIDEBAR TOGGLE (mobile) ===== -->
-<button class="sidebar-toggle" onclick="toggleSidebar()" id="sidebarToggle" aria-label="Menu">
-  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-    <line x1="3" y1="6" x2="21" y2="6"/>
-    <line x1="3" y1="12" x2="21" y2="12"/>
-    <line x1="3" y1="18" x2="21" y2="18"/>
-  </svg>
-</button>
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-
-<!-- ===== SIDEBAR ===== -->
-<nav class="sidebar" id="sidebar">
-  <div class="sidebar-brand">
-    <div class="sidebar-logo">
-      <svg width="20" height="20" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
-        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-      </svg>
-    </div>
-    <div class="sidebar-brand-text">
-      <div class="sidebar-brand-title">Suivi Interventions</div>
-      <div class="sidebar-brand-sub">Tableau de bord</div>
-    </div>
-  </div>
-
-  <div class="sidebar-nav">
-    <div class="sidebar-section-label">Navigation</div>
-    <a href="/" class="sidebar-link active">
-      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-      Tableau de bord
-    </a>
-    <a href="/interventions" class="sidebar-link">
-      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-      Liste des interventions
-    </a>
-    <a href="/calendar" class="sidebar-link">
-      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Calendrier
-    </a>
-    <a href="/form" class="sidebar-link">
-      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Nouvelle intervention
-    </a>
-
-    <div class="sidebar-section-label" style="margin-top:8px">Outils</div>
-    <button class="sidebar-link" onclick="ouvrirImport()">
-      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-      Importer CSV
-    </button>
-    <button class="sidebar-link" onclick="exportCSV()">
-      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      Exporter CSV
-    </button>
-    <button class="sidebar-link" onclick="exportExcel()">
-      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
-      Exporter Excel
-    </button>
-
-    <div class="sidebar-divider"></div>
-
-    <a href="/admin" class="sidebar-link" id="btnAdmin" style="display:none">
-      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Administration
-    </a>
-    <a href="/admin" class="sidebar-link" id="btnProfil" style="display:none">
-      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-      Mon profil
-    </a>
-    <button class="sidebar-link" onclick="toggleDark()" id="btnDark">
-      <svg id="iconDark" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      Mode sombre
-    </button>
-    <button class="sidebar-link danger" onclick="seDeconnecter()">
-      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      Déconnexion
-    </button>
-  </div>
-
-  <div class="sidebar-footer">
-    <div class="sidebar-user">
-      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
-      <div class="sidebar-user-info">
-        <div class="sidebar-username" id="sidebarUsername">—</div>
-        <div class="sidebar-role" id="sidebarRole">—</div>
-      </div>
-    </div>
-  </div>
-</nav>
-
+<body data-sidebar-page="dashboard" data-sidebar-subtitle="Navigation">
 <div class="app-layout">
 <div class="page-content">
 <main class="main">
@@ -109,6 +21,11 @@
       <button onclick="document.getElementById('alerteLongues').style.display='none'" style="margin-left:auto;background:none;border:none;cursor:pointer;color:inherit">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
+    </div>
+
+    <div class="dashboard-print-header" id="dashboardPrintHeader" aria-hidden="true">
+      <div class="dashboard-print-title">Tableau de bord — Suivi des Interventions</div>
+      <div class="dashboard-print-sub" id="dashboardPrintSub">Vue complète</div>
     </div>
 
     <!-- KPI -->
@@ -261,7 +178,7 @@
 
     <!-- Graphiques ligne 2 : Statuts + Mois -->
     <div class="charts-grid">
-      <div class="chart-card">
+      <div class="chart-card chart-card-status">
         <div class="chart-header">
           <div class="chart-icon" style="background:#ecfdf5;color:#059669"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
           <div><div class="chart-title">Statuts des interventions</div><div class="chart-sub">En cours · Terminée · En attente · Annulée</div></div>
@@ -312,7 +229,7 @@
     </div>
 
     <!-- Lien vers la liste complète -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+    <div class="dashboard-actions-row no-print" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <a href="/interventions" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;background:var(--primary);color:#fff;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 2px 8px rgba(37,99,235,.35);transition:opacity .2s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg>
         Voir la liste complète des interventions
@@ -464,8 +381,130 @@ let triSens = 'desc';
 let charts = {};
 let idASupprimer = null;
 let rechercheTimer = null;
+let dashboardStatsCourants = null;
+let prestataireStatsCourants = [];
+let modeImpressionDashboard = false;
 
 const PALETTE = ['#2563eb','#0ea5e9','#059669','#d97706','#7c3aed','#db2777','#dc2626','#0891b2','#65a30d','#9333ea'];
+const FORMAT_NOMBRE_PRINT = new Intl.NumberFormat('fr-FR');
+
+function formatValeurGraphiquePrint(dataset, value) {
+  if (!Number.isFinite(value)) return '';
+  const base = Number.isInteger(value)
+    ? FORMAT_NOMBRE_PRINT.format(value)
+    : FORMAT_NOMBRE_PRINT.format(Number(value.toFixed(1)));
+  return dataset?.label && dataset.label.toLowerCase().includes('durée') ? `${base} min` : base;
+}
+
+function dessinerEtiquettePrint(ctx, texte, x, y, options = {}) {
+  if (!texte) return;
+  const {
+    align = 'center',
+    baseline = 'middle',
+    fillStyle = '#0f172a',
+    strokeStyle = 'rgba(255,255,255,.92)',
+    font = '700 9px Inter, Segoe UI, sans-serif'
+  } = options;
+  ctx.save();
+  ctx.font = font;
+  ctx.textAlign = align;
+  ctx.textBaseline = baseline;
+  ctx.lineJoin = 'round';
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = strokeStyle;
+  ctx.strokeText(texte, x, y);
+  ctx.fillStyle = fillStyle;
+  ctx.fillText(texte, x, y);
+  ctx.restore();
+}
+
+const PRINT_VALUE_LABELS_PLUGIN = {
+  id: 'printValueLabels',
+  afterDatasetsDraw(chart) {
+    if (!modeImpressionGraphiquesActif()) return;
+
+    const { ctx, chartArea } = chart;
+    if (!ctx || !chartArea) return;
+
+    chart.data.datasets.forEach((dataset, datasetIndex) => {
+      const meta = chart.getDatasetMeta(datasetIndex);
+      if (!meta || meta.hidden || !chart.isDatasetVisible(datasetIndex)) return;
+
+      const type = dataset.type || meta.type || chart.config.type;
+      meta.data.forEach((element, dataIndex) => {
+        const raw = dataset.data[dataIndex];
+        const numericValue = Number(
+          raw && typeof raw === 'object' && raw !== null && 'y' in raw ? raw.y : raw
+        );
+        if (!Number.isFinite(numericValue)) return;
+
+        const texte = formatValeurGraphiquePrint(dataset, numericValue);
+        if (!texte) return;
+
+        if (type === 'doughnut' || type === 'pie') {
+          const angle = ((element.startAngle || 0) + (element.endAngle || 0)) / 2;
+          const circumference = Math.abs(element.circumference || 0);
+          const petitArc = circumference < 0.35;
+          const radius = petitArc
+            ? (element.outerRadius || 0) + 8
+            : ((element.innerRadius || 0) + (element.outerRadius || 0)) / 2;
+          const padding = 12;
+          const minX = chartArea.left + padding;
+          const maxX = chartArea.right - padding;
+          const minY = chartArea.top + padding;
+          const maxY = chartArea.bottom - padding;
+          const x = Math.min(maxX, Math.max(minX, element.x + Math.cos(angle) * radius));
+          const y = Math.min(maxY, Math.max(minY, element.y + Math.sin(angle) * radius));
+          dessinerEtiquettePrint(ctx, texte, x, y, {
+            align: petitArc ? (x >= element.x ? 'left' : 'right') : 'center',
+            fillStyle: petitArc ? '#0f172a' : '#ffffff',
+            strokeStyle: petitArc ? 'rgba(255,255,255,.96)' : 'rgba(15,23,42,.35)',
+            font: '700 9px Inter, Segoe UI, sans-serif'
+          });
+          return;
+        }
+
+        if (type === 'line') {
+          const x = element.x;
+          const y = Math.max(chartArea.top + 10, element.y - 12);
+          dessinerEtiquettePrint(ctx, texte, x, y, {
+            baseline: 'bottom',
+            fillStyle: dataset.borderColor || '#1d4ed8',
+            strokeStyle: 'rgba(255,255,255,.96)'
+          });
+          return;
+        }
+
+        if (type === 'bar') {
+          const horizontal = chart.options?.indexAxis === 'y' || meta.controller?.options?.indexAxis === 'y';
+          if (horizontal) {
+            const margeDroite = 8;
+            const procheBord = element.x > chartArea.right - 42;
+            const x = procheBord ? element.x - 8 : Math.min(chartArea.right - margeDroite, element.x + 8);
+            const y = element.y;
+            dessinerEtiquettePrint(ctx, texte, x, y, {
+              align: procheBord ? 'right' : 'left',
+              fillStyle: procheBord ? '#ffffff' : '#0f172a',
+              strokeStyle: procheBord ? 'rgba(15,23,42,.35)' : 'rgba(255,255,255,.96)'
+            });
+          } else {
+            const x = element.x;
+            const y = Math.max(chartArea.top + 10, element.y - 8);
+            dessinerEtiquettePrint(ctx, texte, x, y, {
+              baseline: 'bottom',
+              fillStyle: Array.isArray(dataset.borderColor) ? '#0f172a' : (dataset.borderColor || '#0f172a'),
+              strokeStyle: 'rgba(255,255,255,.96)'
+            });
+          }
+        }
+      });
+    });
+  }
+};
+
+if (window.Chart) {
+  Chart.register(PRINT_VALUE_LABELS_PLUGIN);
+}
 
 // Nombre maximum de filtres sauvegardés
 const MAX_FILTRES = 5;
@@ -577,6 +616,7 @@ async function chargerDonnees(filtres = {}) {
     toutesInterventions = await r1.json();
     const stats = await r2.json();
     interventionsFiltrees = [...toutesInterventions];
+    dashboardStatsCourants = stats;
     pageCourante = 1;
 
     // KPI
@@ -588,14 +628,20 @@ async function chargerDonnees(filtres = {}) {
     animerNombre('kpiDureeTotale', Math.round((stats.duree_totale_minutes||0)/60), 0);
 
     // Alerte interventions longues
+    const alerteLongues = document.getElementById('alerteLongues');
+    const alerteLonguesTxt = document.getElementById('alerteLonguesTxt');
+    const sectionLongues = document.getElementById('sectionLongues');
+
     if (stats.nb_interventions_longues > 0) {
-      document.getElementById('alerteLongues').style.display = 'flex';
-      document.getElementById('alerteLonguesTxt').textContent =
-        `${stats.nb_interventions_longues} intervention${stats.nb_interventions_longues>1?'s':''} dépassent 8h — durées inhabituelles détectées`;
+      if (alerteLongues) alerteLongues.style.display = 'flex';
+      if (alerteLonguesTxt) {
+        alerteLonguesTxt.textContent =
+          `${stats.nb_interventions_longues} intervention${stats.nb_interventions_longues>1?'s':''} dépassent 8h — durées inhabituelles détectées`;
+      }
       afficherLongues(stats.interventions_longues);
     } else {
-      document.getElementById('alerteLongues').style.display = 'none';
-      document.getElementById('sectionLongues').style.display = 'none';
+      if (alerteLongues) alerteLongues.style.display = 'none';
+      if (sectionLongues) sectionLongues.style.display = 'none';
     }
 
     mettreAJourGraphiques(stats);
@@ -604,7 +650,9 @@ async function chargerDonnees(filtres = {}) {
   } catch(err) {
     console.error(err);
     afficherToast('Erreur de connexion au serveur', 'error');
-    document.getElementById('tableBody').innerHTML = `<tr><td colspan="10">
+    const tableBody = document.getElementById('tableBody');
+    if (!tableBody) return;
+    tableBody.innerHTML = `<tr><td colspan="10">
       <div class="empty-state">
         <div class="empty-state-icon"><svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
         <strong>Serveur indisponible</strong>
@@ -695,6 +743,7 @@ function afficherTableau() {
   const page=sorted.slice(debut, debut+PAR_PAGE);
 
   const tbody=document.getElementById('tableBody');
+  if (!tbody) return;
 
   if(!page.length) {
     tbody.innerHTML=`<tr><td colspan="10"><div class="empty-state">
@@ -752,7 +801,10 @@ function afficherTableau() {
     }).join('');
   }
 
-  document.getElementById('tableInfo').textContent = `${total} intervention${total>1?'s':''}`;
+  const tableInfo = document.getElementById('tableInfo');
+  if (tableInfo) {
+    tableInfo.textContent = `${total} intervention${total>1?'s':''}`;
+  }
   afficherPagination(totalPages, total);
 }
 
@@ -764,6 +816,7 @@ function trierPar(col) {
 
 function afficherPagination(totalPages, total) {
   const pag=document.getElementById('pagination');
+  if (!pag) return;
   if(!total){ pag.innerHTML=''; return; }
   const debut=(pageCourante-1)*PAR_PAGE+1;
   const fin=Math.min(pageCourante*PAR_PAGE,total);
@@ -790,6 +843,7 @@ function changerPage(p) {
 // ============================================================
 function afficherProchaines(prochaines) {
   const tbody=document.getElementById('prochainesBody');
+  if (!tbody) return;
   if(!prochaines||!prochaines.length) {
     tbody.innerHTML=`<tr><td colspan="5"><div class="empty-state">
       <div class="empty-state-icon"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
@@ -819,8 +873,11 @@ function afficherProchaines(prochaines) {
 // ============================================================
 function afficherLongues(longues) {
   if(!longues||!longues.length) return;
-  document.getElementById('sectionLongues').style.display='block';
-  document.getElementById('longuesBody').innerHTML = longues.map(l => `
+  const sectionLongues = document.getElementById('sectionLongues');
+  const longuesBody = document.getElementById('longuesBody');
+  if (!sectionLongues || !longuesBody) return;
+  sectionLongues.style.display='block';
+  longuesBody.innerHTML = longues.map(l => `
     <tr>
       <td class="td-prestataire">${escHtml(l.prestataire||'—')}</td>
       <td>${escHtml(l.site||'—')}</td>
@@ -848,6 +905,19 @@ function mettreAJourGraphiques(stats) {
   creerEvolution('chartEvolution', stats.evolution);
 }
 
+function modeImpressionGraphiquesActif() {
+  return modeImpressionDashboard || document.body.classList.contains('printing-dashboard');
+}
+
+function rerendreGraphiquesDashboard() {
+  if (dashboardStatsCourants) {
+    mettreAJourGraphiques(dashboardStatsCourants);
+  }
+  if (prestataireStatsCourants && prestataireStatsCourants.length) {
+    creerBubbleChart('chartBubble', prestataireStatsCourants);
+  }
+}
+
 function creerDonut(id, data) {
   if(charts[id]) charts[id].destroy();
   // Nettoyer les labels vides
@@ -859,18 +929,20 @@ function creerDonut(id, data) {
   const labels = Object.keys(merged), values = Object.values(merged);
   if(!labels.length) return;
   const mob=isMobile();
+  const printMode = modeImpressionGraphiquesActif();
   const total = values.reduce((a,b)=>a+b, 0);
   charts[id]=new Chart(document.getElementById(id),{
     type:'doughnut',
     data:{labels,datasets:[{data:values,backgroundColor:PALETTE,borderWidth:3,borderColor:'#fff',hoverOffset:6}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+    options:{responsive:true,maintainAspectRatio:false,cutout:printMode?'64%':'60%',
       plugins:{
         legend:{
-          position:mob?'bottom':'right',
+          position:printMode?'bottom':(mob?'bottom':'right'),
+          maxHeight: printMode ? 54 : undefined,
           labels:{
-            font:{size:mob?10:11},
-            padding:mob?7:12,
-            boxWidth:mob?8:12,
+            font:{size:printMode?10:(mob?10:11)},
+            padding:printMode?8:(mob?7:12),
+            boxWidth:printMode?10:(mob?8:12),
             generateLabels: function(chart) {
               return chart.data.labels.map((label, i) => ({
                 text: `${label}  (${chart.data.datasets[0].data[i]})`,
@@ -914,15 +986,33 @@ function creerDonutStatut(id, data) {
   const colors = labels.map(l => STATUT_COLORS[l] || '#94a3b8');
   const total = values.reduce((a,b) => a+b, 0);
   const mob = isMobile();
+  const printMode = modeImpressionGraphiquesActif();
+  const chartType = 'pie';
   charts[id] = new Chart(document.getElementById(id), {
-    type: 'doughnut',
-    data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 3, borderColor: '#fff', hoverOffset: 6 }] },
-    options: { responsive: true, maintainAspectRatio: false, cutout: '62%',
+    type: chartType,
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors,
+        borderWidth: printMode ? 2 : 3,
+        borderColor: '#fff',
+        hoverOffset: printMode ? 0 : 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: 0,
+      layout: printMode ? { padding: { top: 8, right: 8, bottom: 8, left: 8 } } : undefined,
       plugins: {
         legend: {
-          position: mob ? 'bottom' : 'right',
+          position: printMode ? 'bottom' : (mob ? 'bottom' : 'right'),
+          maxHeight: printMode ? 58 : undefined,
           labels: {
-            font: { size: 11 }, padding: 12, boxWidth: 12,
+            font: { size: printMode ? 10 : 11 },
+            padding: printMode ? 8 : 12,
+            boxWidth: printMode ? 10 : 12,
             generateLabels: chart => chart.data.labels.map((label, i) => ({
               text: `${label}  (${chart.data.datasets[0].data[i]})`,
               fillStyle: colors[i], strokeStyle: '#fff', lineWidth: 1, hidden: false, index: i
@@ -1107,11 +1197,15 @@ async function exportExcel() {
 
 function toggleExportMenu() {
   const menu=document.getElementById('exportDropdown');
+  if (!menu) return;
   menu.classList.toggle('open');
 }
 document.addEventListener('click',e=>{
-  if(!document.getElementById('exportMenu').contains(e.target))
-    document.getElementById('exportDropdown').classList.remove('open');
+  const exportMenu = document.getElementById('exportMenu');
+  const exportDropdown = document.getElementById('exportDropdown');
+  if (!exportMenu || !exportDropdown) return;
+  if(!exportMenu.contains(e.target))
+    exportDropdown.classList.remove('open');
 });
 
 // ============================================================
@@ -1171,6 +1265,12 @@ async function lancerImport() {
 // IMPRESSION DASHBOARD
 // ============================================================
 function ouvrirImpressionDashboard() {
+  const printPrestataire = document.getElementById('printPrestataire');
+  const printDateDebut = document.getElementById('printDateDebut');
+  const printDateFin = document.getElementById('printDateFin');
+  if (printPrestataire) printPrestataire.value = document.getElementById('filterPrestataire').value;
+  if (printDateDebut) printDateDebut.value = document.getElementById('filterDateDebut').value;
+  if (printDateFin) printDateFin.value = document.getElementById('filterDateFin').value;
   document.getElementById('modalImpression').classList.add('active');
 }
 function fermerImpressionDashboard() {
@@ -1180,78 +1280,90 @@ document.getElementById('modalImpression').addEventListener('click', e => {
   if (e.target === e.currentTarget) fermerImpressionDashboard();
 });
 
-async function lancerImpressionDashboard() {
-  const prestataire = document.getElementById('printPrestataire').value;
-  const dateDebut   = document.getElementById('printDateDebut').value;
-  const dateFin     = document.getElementById('printDateFin').value;
-  const token       = localStorage.getItem(AUTH_KEY) || '';
-
-  const params = new URLSearchParams();
-  if (prestataire) params.append('prestataire', prestataire);
-  if (dateDebut)   params.append('date_debut_from', dateDebut);
-  if (dateFin)     params.append('date_debut_to', dateFin);
-
-  try {
-    const [r1, r2] = await Promise.all([
-      fetch(`${API}/interventions?${params}`, { headers: { 'X-Auth-Token': token } }),
-      fetch(`${API}/stats?${params}`, { headers: { 'X-Auth-Token': token } })
-    ]);
-    const interventions = await r1.json();
-    const stats         = await r2.json();
-    const filtreLabel   = [
-      prestataire ? `Prestataire : ${prestataire}` : '',
-      dateDebut   ? `Du ${formatDate(dateDebut)}`  : '',
-      dateFin     ? `Au ${formatDate(dateFin)}`     : ''
-    ].filter(Boolean).join(' — ') || 'Toutes les interventions';
-
-    const w = window.open('', '_blank');
-    w.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
-    <title>Tableau de bord — ${filtreLabel}</title>
-    <style>
-      body{font-family:system-ui,sans-serif;font-size:13px;color:#1e293b;margin:0;padding:24px}
-      h1{font-size:18px;font-weight:800;margin:0 0 4px}
-      .sub{color:#64748b;font-size:12px;margin-bottom:20px}
-      .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
-      .kpi{border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center}
-      .kpi-val{font-size:22px;font-weight:800;color:#2563eb}
-      .kpi-lbl{font-size:11px;color:#64748b;margin-top:3px}
-      table{width:100%;border-collapse:collapse;font-size:12px}
-      th{background:#f8fafc;padding:8px 10px;text-align:left;border-bottom:2px solid #e2e8f0;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.03em}
-      td{padding:7px 10px;border-bottom:1px solid #f1f5f9}
-      tr:nth-child(even) td{background:#f8fafc}
-      .badge{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
-      .plan{background:#d1fae5;color:#065f46}.dep{background:#fee2e2;color:#991b1b}
-      @media print{body{padding:12px}}
-    </style></head><body>
-    <h1>Tableau de bord — Suivi des Interventions</h1>
-    <div class="sub">Filtre : ${filtreLabel} · Généré le ${new Date().toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric'})}</div>
-    <div class="kpis">
-      <div class="kpi"><div class="kpi-val">${stats.total||0}</div><div class="kpi-lbl">Total interventions</div></div>
-      <div class="kpi"><div class="kpi-val">${stats.nb_prestataires||0}</div><div class="kpi-lbl">Prestataires</div></div>
-      <div class="kpi"><div class="kpi-val">${Math.round((stats.duree_totale_minutes||0)/60)}h</div><div class="kpi-lbl">Durée totale</div></div>
-      <div class="kpi"><div class="kpi-val">${stats.nb_sites||0}</div><div class="kpi-lbl">Sites couverts</div></div>
-      <div class="kpi"><div class="kpi-val">${Math.round(stats.duree_moyenne_minutes||0)} min</div><div class="kpi-lbl">Durée moyenne</div></div>
-      <div class="kpi"><div class="kpi-val">${stats.duree_max_minutes||0} min</div><div class="kpi-lbl">Durée max</div></div>
-    </div>
-    <table><thead><tr><th>#</th><th>Prestataire</th><th>Type</th><th>Statut</th><th>Site</th><th>Date</th><th>Durée</th><th>Superviseur</th><th>Équipe</th><th>Travaux</th></tr></thead><tbody>
-    ${(Array.isArray(interventions) ? interventions : []).map(i => {
-      const type = (i.type_intervention||'').toLowerCase().includes('plan') ? 'Planifiée' : 'Dépannage';
-      const dm = i.duree_minutes; const d = dm ? `${Math.floor(dm/60)}h${dm%60>0?dm%60+'min':''}` : '—';
-      const date = i.date_debut ? i.date_debut.split('-').reverse().join('/') : '—';
-      const sup = i.superviseur || i.technicien || '—';
-      const eq = i.equipe || '—';
-      return `<tr><td>${i.id}</td><td>${i.prestataire||'—'}</td>
-        <td><span class="badge ${type==='Planifiée'?'plan':'dep'}">${type}</span></td>
-        <td>${i.statut||'—'}</td><td>${i.site||'—'}</td><td>${date}</td><td>${d}</td>
-        <td>${sup}</td><td>${eq}</td>
-        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(i.travaux||'').substring(0,80)}</td></tr>`;
-    }).join('')}
-    </tbody></table>
-    <script>window.onload=()=>window.print()<\/script></body></html>`);
-    w.document.close();
-    fermerImpressionDashboard();
-  } catch(e) { afficherToast('Erreur génération impression', 'error'); }
+function construireLibelleImpressionDashboard() {
+  const filtres = obtenirFiltresActuels();
+  const morceaux = [];
+  if (filtres.prestataire) morceaux.push(`Prestataire : ${filtres.prestataire}`);
+  if (filtres.type_intervention) morceaux.push(`Type : ${filtres.type_intervention}`);
+  if (filtres.site) morceaux.push(`Site : ${filtres.site}`);
+  if (filtres.date_debut_from && filtres.date_debut_to) {
+    morceaux.push(`Période : ${formatDate(filtres.date_debut_from)} au ${formatDate(filtres.date_debut_to)}`);
+  } else if (filtres.date_debut_from) {
+    morceaux.push(`À partir du ${formatDate(filtres.date_debut_from)}`);
+  } else if (filtres.date_debut_to) {
+    morceaux.push(`Jusqu'au ${formatDate(filtres.date_debut_to)}`);
+  }
+  if (filtres.search) morceaux.push(`Recherche : ${filtres.search}`);
+  return morceaux.join(' · ') || 'Vue complète';
 }
+
+function synchroniserEnteteImpressionDashboard() {
+  const sousTitre = document.getElementById('dashboardPrintSub');
+  if (!sousTitre) return;
+  const maintenant = new Date().toLocaleDateString('fr-FR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  });
+  sousTitre.textContent = `${construireLibelleImpressionDashboard()} · Généré le ${maintenant}`;
+}
+
+function rafAttente() {
+  return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+
+async function preparerImpressionDashboard() {
+  synchroniserEnteteImpressionDashboard();
+  fermerImpressionDashboard();
+  fermerRecherche();
+  const sidebar = document.getElementById('sidebar');
+  const sidebarOverlay = document.getElementById('sidebarOverlay');
+  if (sidebar) sidebar.classList.remove('open');
+  if (sidebarOverlay) sidebarOverlay.classList.remove('open');
+  document.body.classList.add('printing-dashboard');
+  if (!modeImpressionDashboard) {
+    modeImpressionDashboard = true;
+    rerendreGraphiquesDashboard();
+  }
+  await rafAttente();
+  Object.values(charts).forEach(chart => {
+    if (!chart || typeof chart.resize !== 'function') return;
+    chart.resize();
+    chart.update('none');
+  });
+}
+
+function terminerImpressionDashboard() {
+  document.body.classList.remove('printing-dashboard');
+  if (!modeImpressionDashboard) return;
+  modeImpressionDashboard = false;
+  rerendreGraphiquesDashboard();
+}
+
+async function imprimerDashboardCourant() {
+  await preparerImpressionDashboard();
+  await new Promise(resolve => setTimeout(resolve, 160));
+  window.print();
+}
+
+async function lancerImpressionDashboard() {
+  document.getElementById('filterPrestataire').value = document.getElementById('printPrestataire').value;
+  document.getElementById('filterDateDebut').value = document.getElementById('printDateDebut').value;
+  document.getElementById('filterDateFin').value = document.getElementById('printDateFin').value;
+  majBadgeFiltres();
+  try {
+    await chargerDonnees(obtenirFiltresActuels());
+    await imprimerDashboardCourant();
+  } catch (e) {
+    console.error(e);
+    afficherToast('Erreur génération impression', 'error');
+  }
+}
+
+window.addEventListener('beforeprint', () => {
+  preparerImpressionDashboard();
+});
+window.addEventListener('afterprint', terminerImpressionDashboard);
 
 // ============================================================
 // DARK MODE
@@ -1263,6 +1375,11 @@ let _searchTimer = null;
 let _searchIdx = -1;
 
 document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+    e.preventDefault();
+    imprimerDashboardCourant();
+    return;
+  }
   if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
     e.preventDefault();
     ouvrirRecherche();
@@ -1406,6 +1523,7 @@ async function chargerBubbleChart() {
     });
     if (!r.ok) return;
     const data = await r.json();
+    prestataireStatsCourants = Array.isArray(data) ? data : [];
     creerBubbleChart('chartBubble', data);
   } catch (e) {}
 }
