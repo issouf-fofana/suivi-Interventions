@@ -121,25 +121,17 @@
 
         <label class="fc-label">Type <span class="required">*</span></label>
 
-        <div class="radio-group">
+        <select id="type_intervention" class="fc-input" onchange="onTypeChange()">
+          <option value="">— Sélectionner —</option>
+          <option value="Planifiée">Planifiée</option>
+          <option value="Dépannage">Dépannage</option>
+          <option value="Maintenance">Maintenance</option>
+          <option value="Urgence">Urgence</option>
+          <option value="Installation">Installation</option>
+          <option value="__autre__">Autre...</option>
+        </select>
 
-          <label class="radio-option">
-
-            <input type="radio" name="type_intervention" value="Planifiée" checked>
-
-            <span class="badge badge-planifiee"><span class="badge-dot"></span>Planifiée</span>
-
-          </label>
-
-          <label class="radio-option">
-
-            <input type="radio" name="type_intervention" value="Dépannage">
-
-            <span class="badge badge-depannage"><span class="badge-dot"></span>Dépannage</span>
-
-          </label>
-
-        </div>
+        <input type="text" id="typeAutre" class="fc-input autre-input" placeholder="Précisez le type">
 
         <span class="fc-error" id="errType">Sélectionnez un type</span>
 
@@ -612,17 +604,15 @@ function remplirFormulaire(data) {
 
 
 
-  document.querySelectorAll('input[name="type_intervention"]').forEach(r => {
-
-    const t = (data.type_intervention || '').toLowerCase();
-
-    if (t.includes('plan') && r.value === 'Planifiée') r.checked = true;
-
-    if ((t.includes('dep') || t.includes('dép')) && r.value === 'Dépannage') r.checked = true;
-
-  });
-
-
+  const selType = document.getElementById('type_intervention');
+  const typeVal = data.type_intervention || '';
+  if ([...selType.options].find(o => o.value === typeVal)) {
+    selType.value = typeVal;
+  } else if (typeVal) {
+    selType.value = '__autre__';
+    const ta = document.getElementById('typeAutre');
+    ta.value = typeVal; ta.classList.add('visible');
+  }
 
   const sSite = document.getElementById('site');
 
@@ -738,7 +728,7 @@ function validerFormulaire() {
 
   if (!obtenirPrestataire()) { err('grpPrestataire','errPrestataire'); ok = false; }
 
-  if (!document.querySelector('input[name="type_intervention"]:checked')) { err('grpType','errType'); ok = false; }
+  if (!obtenirType()) { err('grpType','errType'); ok = false; }
 
   if (!obtenirSite()) { err('grpSite','errSite'); ok = false; }
 
@@ -810,6 +800,20 @@ function obtenirSite() {
 
 }
 
+function obtenirType() {
+  const s = document.getElementById('type_intervention');
+  return s.value === '__autre__'
+    ? document.getElementById('typeAutre').value.trim()
+    : s.value;
+}
+
+function onTypeChange() {
+  const s = document.getElementById('type_intervention');
+  const a = document.getElementById('typeAutre');
+  a.classList.toggle('visible', s.value === '__autre__');
+  if (s.value === '__autre__') a.focus();
+}
+
 
 
 async function soumettreFormulaire(e) {
@@ -846,7 +850,7 @@ async function soumettreFormulaire(e) {
 
     prestataire: obtenirPrestataire(),
 
-    type_intervention: document.querySelector('input[name="type_intervention"]:checked').value,
+    type_intervention: obtenirType(),
 
     site: obtenirSite(),
 
@@ -963,6 +967,8 @@ function reinitialiserFormulaire() {
     document.getElementById('prestataireAutre').classList.remove('visible');
 
     document.getElementById('siteAutre').classList.remove('visible');
+
+    document.getElementById('typeAutre').classList.remove('visible');
 
     calculerDuree();
 

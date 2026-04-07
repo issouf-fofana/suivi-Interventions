@@ -133,6 +133,9 @@
               <option value="">Tous</option>
               <option value="Planifiée">Planifiée</option>
               <option value="Dépannage">Dépannage</option>
+              <option value="Maintenance">Maintenance</option>
+              <option value="Urgence">Urgence</option>
+              <option value="Installation">Installation</option>
             </select>
           </div>
           <div class="filter-group">
@@ -753,10 +756,15 @@ function afficherTableau() {
     </div></td></tr>`;
   } else {
     tbody.innerHTML = page.map(inter => {
-      const type = normaliseType(inter.type_intervention);
-      const badge = type==='Planifiée'
-        ? `<span class="badge badge-planifiee"><span class="badge-dot"></span>Planifiée</span>`
-        : `<span class="badge badge-depannage"><span class="badge-dot"></span>Dépannage</span>`;
+      const type = inter.type_intervention || '—';
+      const typeCfg = {
+        'Planifiée':   { bg:'#dbeafe', color:'#1d4ed8', dot:'#3b82f6' },
+        'Dépannage':   { bg:'#fee2e2', color:'#b91c1c', dot:'#ef4444' },
+        'Maintenance': { bg:'#fef9c3', color:'#a16207', dot:'#eab308' },
+        'Urgence':     { bg:'#fde8d8', color:'#c2410c', dot:'#f97316' },
+        'Installation':{ bg:'#dcfce7', color:'#15803d', dot:'#22c55e' },
+      }[type] || { bg:'#f1f5f9', color:'#475569', dot:'#94a3b8' };
+      const badge = `<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;background:${typeCfg.bg};color:${typeCfg.color}"><span style="width:6px;height:6px;border-radius:50%;background:${typeCfg.dot};flex-shrink:0"></span>${escHtml(type)}</span>`;
       const duree = inter.duree_minutes ? formatDuree(inter.duree_minutes) : '—';
       const longue = inter.duree_minutes && inter.duree_minutes > 480;
       const travaux = inter.travaux||'';
