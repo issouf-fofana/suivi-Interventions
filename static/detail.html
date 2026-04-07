@@ -2772,6 +2772,10 @@ function afficherPJ(liste, id) {
         <div class="pj-name">${escHtml(pj.nom_original)}</div>
         <div class="pj-size">${size} · ${(pj.created_at||'').substring(0,10)}</div>
       </div>
+      ${ext === 'pdf' ? `<a href="${API}/pieces-jointes/${pj.id}/telecharger?token=${localStorage.getItem('auth_token')}" class="pj-dl" target="_blank" style="background:#dc2626;color:#fff;border-color:#dc2626">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Ouvrir
+      </a>` : ''}
       <a href="${API}/pieces-jointes/${pj.id}/telecharger?token=${localStorage.getItem('auth_token')}" class="pj-dl" download="${escHtml(pj.nom_original)}">
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Télécharger

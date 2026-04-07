@@ -308,6 +308,28 @@
         <textarea id="notes" class="fc-input fc-textarea" placeholder="Remarques internes..."></textarea>
       </div>
 
+      <!-- Section PDF -->
+      <div class="fc-section-label fc-full">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Rapport PDF <span class="fc-opt" style="font-weight:400;font-size:11px;margin-left:4px">optionnel</span>
+      </div>
+
+      <div class="fc-group fc-full">
+        <label class="fc-label">Joindre un fichier PDF</label>
+        <div id="pdfDropZone" style="border:2px dashed var(--bordure,#e2e8f0);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s;background:var(--fond,#f8fafc)" onclick="document.getElementById('inputPdfForm').click()" ondragover="event.preventDefault();this.style.borderColor='#3b5bdb'" ondragleave="this.style.borderColor=''" ondrop="handlePdfDrop(event)">
+          <svg width="28" height="28" fill="none" stroke="#dc2626" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom:6px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <div id="pdfDropLabel" style="font-size:13px;color:var(--texte-doux,#64748b)">Glissez un PDF ici ou <span style="color:#3b5bdb;font-weight:600">cliquez pour choisir</span></div>
+        </div>
+        <input type="file" id="inputPdfForm" accept=".pdf" style="display:none" onchange="afficherPdfChoisi(this)">
+        <div id="pdfChoisiBadge" style="display:none;margin-top:8px;display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px">
+          <svg width="16" height="16" fill="none" stroke="#dc2626" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span id="pdfChoisNom" style="font-size:13px;font-weight:600;color:#dc2626;flex:1"></span>
+          <button type="button" onclick="retirerPdf()" style="background:none;border:none;cursor:pointer;color:#94a3b8;padding:2px">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
     </form>
 
   </div>
@@ -877,20 +899,32 @@ async function soumettreFormulaire(e) {
     if (res.ok) {
 
       const data = await res.json();
+      const newId = data.id || idEdition;
+
+      // Upload PDF si sélectionné
+      const pdfInput = document.getElementById('inputPdfForm');
+      if (!modeEdition && pdfInput && pdfInput.files.length) {
+        btn.innerHTML = `<div class="spinner" style="width:16px;height:16px;border-width:2px"></div> Upload PDF...`;
+        const formData = new FormData();
+        formData.append('fichier', pdfInput.files[0]);
+        try {
+          await fetch(`${API}/interventions/${newId}/pieces-jointes`, {
+            method: 'POST',
+            headers: { 'X-Auth-Token': localStorage.getItem(AUTH_KEY) || '' },
+            body: formData
+          });
+        } catch(e) {}
+      }
 
       afficherAlerte('success', modeEdition
-
         ? 'Intervention mise à jour ! Redirection dans 2 secondes...'
-
-        : 'Intervention enregistrée ! Redirection vers la liste...');
+        : pdfInput && pdfInput.files.length
+          ? 'Intervention enregistrée avec le PDF ! Redirection...'
+          : 'Intervention enregistrée ! Redirection...');
 
       setTimeout(() => {
-        if (modeEdition) {
-          window.location.href = `/detail?id=${idEdition}`;
-        } else {
-          window.location.href = '/interventions';
-        }
-      }, 2000);
+        window.location.href = `/detail?id=${newId}`;
+      }, 1800);
 
     } else {
 
@@ -966,6 +1000,36 @@ function masquerAlertes() {
 
   document.getElementById('alertError').classList.remove('visible');
 
+}
+
+function afficherPdfChoisi(input) {
+  if (!input.files.length) return;
+  const f = input.files[0];
+  document.getElementById('pdfChoisiBadge').style.display = 'flex';
+  document.getElementById('pdfChoisNom').textContent = f.name + ' (' + (f.size > 1024*1024 ? (f.size/1024/1024).toFixed(1)+' Mo' : Math.round(f.size/1024)+' Ko') + ')';
+  document.getElementById('pdfDropLabel').textContent = '✓ PDF sélectionné';
+  document.getElementById('pdfDropZone').style.borderColor = '#dc2626';
+}
+
+function retirerPdf() {
+  document.getElementById('inputPdfForm').value = '';
+  document.getElementById('pdfChoisiBadge').style.display = 'none';
+  document.getElementById('pdfDropLabel').innerHTML = 'Glissez un PDF ici ou <span style="color:#3b5bdb;font-weight:600">cliquez pour choisir</span>';
+  document.getElementById('pdfDropZone').style.borderColor = '';
+}
+
+function handlePdfDrop(event) {
+  event.preventDefault();
+  document.getElementById('pdfDropZone').style.borderColor = '';
+  const files = event.dataTransfer.files;
+  if (!files.length) return;
+  const f = files[0];
+  if (f.type !== 'application/pdf') { alert('Seuls les fichiers PDF sont acceptés.'); return; }
+  const dt = new DataTransfer();
+  dt.items.add(f);
+  const input = document.getElementById('inputPdfForm');
+  input.files = dt.files;
+  afficherPdfChoisi(input);
 }
 
 </script>

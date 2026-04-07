@@ -1086,7 +1086,12 @@ def telecharger_piece_jointe(pj_id: int, request: Request):
     chemin = os.path.join(UPLOAD_DIR, pj["nom_stockage"])
     if not os.path.exists(chemin):
         raise HTTPException(status_code=404, detail="Fichier introuvable sur le serveur")
-    return FileResponse(chemin, filename=pj["nom_original"], media_type=pj["type_mime"] or "application/octet-stream")
+    mime = pj["type_mime"] or "application/octet-stream"
+    if mime == "application/pdf":
+        return FileResponse(chemin, media_type=mime, headers={
+            "Content-Disposition": f'inline; filename="{pj["nom_original"]}"'
+        })
+    return FileResponse(chemin, filename=pj["nom_original"], media_type=mime)
 
 
 @app.delete("/api/pieces-jointes/{pj_id}", status_code=204)
@@ -1122,12 +1127,12 @@ def supprimer_piece_jointe(pj_id: int, request: Request):
 @app.get("/api/audit-logs")
 def liste_audit_logs(
     request: Request,
-    limit: int = Query(100, le=500),
+    limit: int = Query(200, le=500),
     offset: int = Query(0),
     username: Optional[str] = Query(None),
     action: Optional[str] = Query(None),
 ):
-    require_admin(request)
+    require_admin_or_manager(request)
     conn = get_db()
     where = "WHERE 1=1"
     params = []
