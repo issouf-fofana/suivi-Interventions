@@ -1848,31 +1848,42 @@ def rapport_prestataire_pdf(
     ]))
     elements.append(top_bar)
 
+    L_COL = 11.2*cm   # colonne gauche (contenu)
+    R_COL = 6.2*cm    # colonne droite
     hdr = Table([[
         Table([
-            [Paragraph('<font color="#94a3b8" size="8">RAPPORT CUMULATIF — PRESTATAIRE</font>',
-                       S(fontSize=8, fontName="Helvetica-Bold", textColor=SLATE))],
+            [Paragraph('RAPPORT CUMULATIF — PRESTATAIRE',
+                       S(fontSize=7.5, fontName="Helvetica-Bold", textColor=SLATE,
+                         letterSpacing=0.6))],
+            [Spacer(1, 4)],
             [Paragraph(prestataire.upper(),
-                       S(fontSize=24, fontName="Helvetica-Bold", textColor=colors.white, leading=28))],
-            [Paragraph(f'<font color="#a5b4fc">&#128197;  Période : {periode_str}</font>',
+                       S(fontSize=26, fontName="Helvetica-Bold", textColor=colors.white,
+                         leading=30))],
+            [Spacer(1, 6)],
+            [Paragraph(f'▪  Période : {periode_str}',
                        S(fontSize=10, fontName="Helvetica", textColor=colors.HexColor("#a5b4fc")))],
-        ], colWidths=[None]),
+        ], colWidths=[L_COL - 0.8*cm]),
         Table([
             [Paragraph(f'Généré le <b>{date.today().strftime("%d/%m/%Y")}</b>',
-                       S(fontSize=9, fontName="Helvetica", textColor=SLATE, alignment=TA_RIGHT))],
+                       S(fontSize=8.5, fontName="Helvetica", textColor=SLATE,
+                         alignment=TA_RIGHT))],
             [Paragraph(f'par <b>{user["username"]}</b>',
-                       S(fontSize=9, fontName="Helvetica", textColor=SLATE, alignment=TA_RIGHT))],
-            [Spacer(1, 6)],
+                       S(fontSize=8.5, fontName="Helvetica", textColor=SLATE,
+                         alignment=TA_RIGHT))],
+            [Spacer(1, 12)],
             [Paragraph(f'<b>{total}</b> intervention{"s" if total>1 else ""}',
-                       S(fontSize=13, fontName="Helvetica-Bold", textColor=colors.white, alignment=TA_RIGHT))],
+                       S(fontSize=15, fontName="Helvetica-Bold", textColor=colors.white,
+                         alignment=TA_RIGHT))],
             [Paragraph(f'<b>{terminées}</b> terminée{"s" if terminées>1 else ""}',
-                       S(fontSize=9, fontName="Helvetica", textColor=GREEN, alignment=TA_RIGHT))],
-        ], colWidths=[None]),
-    ]], colWidths=[12*cm, 5.4*cm])
+                       S(fontSize=9, fontName="Helvetica", textColor=GREEN,
+                         alignment=TA_RIGHT))],
+        ], colWidths=[R_COL - 0.6*cm]),
+    ]], colWidths=[L_COL, R_COL])
     hdr.setStyle(TableStyle([
         ("BACKGROUND",    (0,0),(-1,-1), DARK_BLUE),
-        ("TOPPADDING",    (0,0),(-1,-1), 22), ("BOTTOMPADDING",(0,0),(-1,-1),22),
-        ("LEFTPADDING",   (0,0),(0,-1),  22), ("RIGHTPADDING", (-1,0),(-1,-1),18),
+        ("TOPPADDING",    (0,0),(-1,-1), 20), ("BOTTOMPADDING",(0,0),(-1,-1),20),
+        ("LEFTPADDING",   (0,0),(0,-1),  22), ("RIGHTPADDING", (-1,0),(-1,-1),16),
+        ("LEFTPADDING",   (1,0),(1,-1),   6),
         ("VALIGN",        (0,0),(-1,-1), "MIDDLE"),
         ("ALIGN",         (1,0),(1,-1),  "RIGHT"),
     ]))

@@ -2,6 +2,7 @@
 <html lang="fr" data-theme="light">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Liste des interventions — Suivi des Interventions</title>
   <link rel="stylesheet" href="/static/style.css">
@@ -36,21 +37,21 @@
     </div>
 
     <!-- Filtres -->
-    <div class="filters-bar" id="filtersBar">
-      <div class="filters-toprow">
+    <div class="filters-bar" id="filtersBar" style="border-radius:14px;border:1.5px solid var(--border-color,#e2e8f0);background:var(--card-bg,#fff);box-shadow:0 2px 12px rgba(59,91,219,.06);padding:14px 16px 10px;">
+      <div class="filters-toprow" style="gap:10px;">
         <div style="position:relative;flex:1;min-width:0">
-          <svg style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--texte-doux);pointer-events:none" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="searchInput" placeholder="Rechercher prestataire, site, travaux..." style="padding-left:34px;width:100%;height:34px;font-size:13px" oninput="rechercheInstantanee()">
+          <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--texte-doux);pointer-events:none" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          <input type="text" id="searchInput" placeholder="Rechercher prestataire, site, travaux..." style="padding-left:36px;width:100%;height:36px;font-size:13px;border-radius:10px;border:1.5px solid var(--border-color,#e2e8f0);background:var(--input-bg,#f8fafc);outline:none;" oninput="rechercheInstantanee()">
         </div>
-        <button class="btn btn-ghost filters-toggle-btn" id="filtersToggleBtn" onclick="toggleFiltres()">
-          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        <button class="btn btn-ghost filters-toggle-btn" id="filtersToggleBtn" onclick="toggleFiltres()" style="height:36px;gap:6px;border-radius:10px;font-size:13px;">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
           Filtres
           <span id="filtresActifsCount" class="filters-badge" style="display:none">0</span>
           <svg id="filtersChevron" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="transition:transform .2s"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
-        <button class="btn btn-primary" onclick="appliquerFiltres()" style="height:34px;padding:0 14px;font-size:13px">
-          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          Filtrer
+        <button class="btn btn-primary" onclick="appliquerFiltres()" style="height:36px;padding:0 18px;font-size:13px;border-radius:10px;gap:6px;">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Appliquer
         </button>
       </div>
       <div class="filters-panel" id="filtersPanel">
@@ -340,17 +341,17 @@ function afficherTableau() {
         <td>${badgeEquipe}</td>
         ${trav}
         <td class="actions-cell">
-          <a href="/detail?id=${inter.id}" class="btn btn-sm btn-icon" style="background:#1d4ed8;color:#fff;box-shadow:0 2px 6px rgba(29,78,216,.4)" title="Voir le détail">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <a href="/detail?id=${inter.id}" class="btn btn-icon" style="background:#1d4ed8;color:#fff;box-shadow:0 2px 8px rgba(29,78,216,.4);padding:8px;border-radius:8px" title="Voir le détail">
+            <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </a>
-          <a href="/form?id=${inter.id}" class="btn btn-sm btn-primary btn-icon" title="Modifier" style="background:#2563eb;box-shadow:0 2px 6px rgba(37,99,235,.35)">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <a href="/form?id=${inter.id}" class="btn btn-icon" title="Modifier" style="background:#2563eb;color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.35);padding:8px;border-radius:8px">
+            <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </a>
-          <button class="btn btn-sm btn-icon" onclick="dupliquer(${inter.id})" title="Dupliquer" style="background:#059669;color:#fff;box-shadow:0 2px 6px rgba(5,150,105,.35)">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <button class="btn btn-icon" onclick="dupliquer(${inter.id})" title="Dupliquer" style="background:#059669;color:#fff;box-shadow:0 2px 8px rgba(5,150,105,.35);padding:8px;border-radius:8px">
+            <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
           </button>
-          ${role !== 'manager' ? `<button class="btn btn-sm btn-danger btn-icon" onclick="confirmerSuppression(${inter.id})" title="Supprimer" style="box-shadow:0 2px 6px rgba(220,38,38,.35)">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          ${role !== 'manager' ? `<button class="btn btn-icon btn-danger" onclick="confirmerSuppression(${inter.id})" title="Supprimer" style="box-shadow:0 2px 8px rgba(220,38,38,.35);padding:8px;border-radius:8px">
+            <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
           </button>` : ''}
         </td>
       </tr>`;
