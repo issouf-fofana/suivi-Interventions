@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+.env
+
+# Base de données (données de production — ne jamais versionner)
+interventions.db
+*.db-shm
+*.db-wal
+
+# Uploads utilisateurs
+uploads/
+
+# Backups
+backups/
+
+# Config locale
+config.json
+
+# OS
+.DS_Store
+Thumbs.db
