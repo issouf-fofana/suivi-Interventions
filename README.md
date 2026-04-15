@@ -45,3 +45,15 @@ Ce dépôt : https://github.com/issouf-fofana/suivi-Interventions
 - API endpoints définis dans `main.py`
 - `@media print` dans `static/detail.html` gère l’affichage pour impression
 - Correction appliquée : `ajouterCommentaire()` met `Content-Type: application/json`
+
+
+
+
+
+
+
+cd /opt/suivi-Interventions
+mv interventions.db /tmp/ && git pull && mv /tmp/interventions.db .
+sudo systemctl restart suivi-interventions
+sudo systemctl status suivi-interventions
+

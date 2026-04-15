@@ -13,6 +13,7 @@
   const isCalendar = page === "calendar";
   const isAdmin = page === "admin";
   const isRapport = page === "rapport";
+  const isAudit = page === "audit";
   const isInterventionGroupActive = isInterventions || isForm;
   // Ouvert uniquement si on est sur une page interventions/form/detail — jamais mémorisé
   const isInterventionGroupOpen = isInterventionGroupActive;
@@ -123,6 +124,14 @@
       Rapport prestataire
     </a>
 
+    <a href="/audit" class="sidebar-link${isAudit ? " active" : ""}" id="sidebarAuditLink" style="display:none">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M9 11l3 3L22 4"></path>
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+      </svg>
+      Journal d'audit
+    </a>
+
     <!-- ── SECTION : COMPTE ── -->
     <div class="sidebar-section-label" style="margin-top:10px">Compte</div>
 
@@ -179,6 +188,13 @@
   const sidebar = document.getElementById("sidebar");
   const overlay = document.getElementById("sidebarOverlay");
   const toggleButton = document.getElementById("sidebarToggle");
+
+  // Afficher le lien Journal d'audit seulement pour les admins
+  const _storedRole = localStorage.getItem('auth_role');
+  if (_storedRole === 'admin') {
+    const auditLink = document.getElementById('sidebarAuditLink');
+    if (auditLink) auditLink.style.display = '';
+  }
   const isCompactViewport = function () {
     return window.innerWidth <= SIDEBAR_COMPACT_BREAKPOINT;
   };

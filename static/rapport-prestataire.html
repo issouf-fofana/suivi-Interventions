@@ -762,20 +762,30 @@
             <div class="chart-wrap"><canvas id="chart-site"></canvas></div>
           </div>
 
-        </div>
-      </div>
+          <!-- Répartition par type -->
+          <div class="chart-card">
+            <div class="chart-card-title">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+                <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+              </svg>
+              Planifiée vs Dépannage (types)
+            </div>
+            <div class="chart-wrap"><canvas id="chart-type"></canvas></div>
+          </div>
 
-    
+          <!-- Top sites visités (histogramme) -->
+          <div class="chart-card" id="top-sites-section" style="display:none">
+            <div class="chart-card-title">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+              </svg>
+              Top sites visités (durée totale)
+            </div>
+            <div class="chart-wrap" style="height:300px"><canvas id="chart-sites-bar"></canvas></div>
+          </div>
 
-      <!-- Top sites visités -->
-      <div id="top-sites-section" style="display:none;margin-bottom:28px">
-        <div class="charts-section-title" style="margin-bottom:16px">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-          </svg>
-          Top sites visités
         </div>
-        <div id="top-sites-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px"></div>
       </div>
 
       <!-- Liste des interventions -->
@@ -1117,10 +1127,9 @@
     "#7c3aed","#0891b2","#be185d","#65a30d",
   ];
 
-  // ── Top sites visités ─────────────────────────────────────────
+  // ── Top sites visités (histogramme Chart.js) ──────────────────
   function afficherTopSites(list) {
     const section = document.getElementById("top-sites-section");
-    const container = document.getElementById("top-sites-list");
     if (!list.length) { section.style.display = "none"; return; }
 
     // Agréger par site
@@ -1132,41 +1141,65 @@
       sitesMap[site].duree += i.duree_minutes || 0;
     });
 
-    const dureeMax = Math.max(...Object.values(sitesMap).map(s => s.duree));
-    const sorted = Object.entries(sitesMap)
-      .sort((a, b) => b[1].duree - a[1].duree);
+    const sorted = Object.entries(sitesMap).sort((a, b) => b[1].duree - a[1].duree);
+    const labels = sorted.map(([site]) => site);
+    const durees = sorted.map(([, d]) => parseFloat((d.duree / 60).toFixed(2)));
+    const nbs    = sorted.map(([, d]) => d.nb);
 
-    const rankColors = ["#f59e0b","#94a3b8","#cd7f32","#3b5bdb"];
-
-    container.innerHTML = sorted.map(([site, data], idx) => {
-      const pct = dureeMax > 0 ? Math.round((data.duree / dureeMax) * 100) : 0;
-      const h = Math.floor(data.duree / 60);
-      const m = data.duree % 60;
-      const dureeLabel = data.duree >= 1440
-        ? `${(data.duree / 1440).toFixed(1)} j`
-        : h > 0 ? `${h}h${m > 0 ? m + "min" : ""}` : `${m}min`;
-      const color = rankColors[idx] || "#6366f1";
-      const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${idx+1}`;
-      return `
-        <div style="background:var(--card-bg,#fff);border:1px solid var(--border-color,#e2e8f0);border-radius:14px;padding:16px 18px;box-shadow:0 2px 10px rgba(0,0,0,.04)">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-            <span style="font-size:18px;line-height:1">${medal}</span>
-            <div style="flex:1;min-width:0">
-              <div style="font-weight:700;font-size:13px;color:var(--texte,#1e293b);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escHtml(site)}">${escHtml(site)}</div>
-              <div style="font-size:11px;color:#64748b;margin-top:1px">${data.nb} intervention${data.nb > 1 ? "s" : ""}</div>
-            </div>
-            <div style="text-align:right;flex-shrink:0">
-              <div style="font-weight:800;font-size:16px;color:${color}">${dureeLabel}</div>
-              <div style="font-size:10px;color:#94a3b8">${data.duree} min</div>
-            </div>
-          </div>
-          <div style="background:#f1f5f9;border-radius:6px;height:6px;overflow:hidden">
-            <div style="height:100%;width:${pct}%;background:${color};border-radius:6px;transition:width .6s ease"></div>
-          </div>
-        </div>`;
-    }).join("");
+    const barColors = ["#f59e0b","#3b5bdb","#059669","#dc2626","#8b5cf6","#f97316","#0891b2","#94a3b8"];
 
     section.style.display = "block";
+
+    const dark = isDark();
+    const txtColor = couleurTexte();
+    const gridColor = couleurGrille();
+
+    if (_charts.sitesBar) { _charts.sitesBar.destroy(); }
+    _charts.sitesBar = new Chart(document.getElementById("chart-sites-bar"), {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          label: "Durée (h)",
+          data: durees,
+          backgroundColor: labels.map((_, i) => barColors[i % barColors.length]),
+          borderRadius: 6,
+          borderSkipped: false,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const h = ctx.parsed.y;
+                const nb = nbs[ctx.dataIndex];
+                return [` Durée : ${h} h`, ` Interventions : ${nb}`];
+              }
+            }
+          },
+          datalabels: { display: false },
+        },
+        scales: {
+          x: {
+            ticks: { color: txtColor, font: { size: 11, weight: "600" } },
+            grid: { display: false },
+          },
+          y: {
+            ticks: {
+              color: txtColor,
+              font: { size: 10 },
+              callback: v => v + " h",
+            },
+            grid: { color: gridColor },
+            title: { display: true, text: "Durée totale (heures)", color: txtColor, font: { size: 10 } },
+          },
+        },
+      },
+    });
   }
 
   function escHtml(s) {
@@ -1372,6 +1405,42 @@
             ticks: { color: txtColor, font: { size: 10 } },
             grid: { display: false },
           },
+        },
+      },
+    });
+
+    // ── 5. Répartition par type (donut) ──────────────────────────
+    const typeCount = {};
+    list.forEach(i => { const t = i.type_intervention || "—"; typeCount[t] = (typeCount[t] || 0) + 1; });
+    const typeColors = {
+      "Planifiée":    "#3b5bdb",
+      "Dépannage":    "#dc2626",
+      "Maintenance":  "#d97706",
+      "Urgence":      "#f97316",
+      "Installation": "#059669",
+    };
+
+    _charts.type = new Chart(document.getElementById("chart-type"), {
+      type: "doughnut",
+      data: {
+        labels: Object.keys(typeCount),
+        datasets: [{
+          data: Object.values(typeCount),
+          backgroundColor: Object.keys(typeCount).map(t => typeColors[t] || "#6366f1"),
+          borderWidth: 0,
+          hoverOffset: 8,
+        }],
+      },
+      options: {
+        ...baseOpts,
+        cutout: "65%",
+        plugins: {
+          ...baseOpts.plugins,
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.label} : ${ctx.parsed} intervention${ctx.parsed > 1 ? "s" : ""}`,
+            }
+          }
         },
       },
     });

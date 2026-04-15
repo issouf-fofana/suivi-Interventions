@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journal d'audit — Suivi des Interventions</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/sidebar.js" defer></script>
+  <style>
+    .audit-page { max-width: 1200px; margin: 0 auto; padding: 32px 24px 60px; }
+    .audit-header { margin-bottom: 28px; }
+    .audit-header h1 { font-size: 1.5rem; font-weight: 900; color: var(--texte); margin: 0 0 4px; letter-spacing: -.5px; }
+    .audit-header p { font-size: 13px; color: var(--texte-doux); margin: 0; }
+    .audit-filters { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; align-items: flex-end; }
+    .audit-filters input, .audit-filters select {
+      padding: 9px 14px; border-radius: 10px; border: 1.5px solid var(--bordure, #e2e8f0);
+      background: var(--blanc); color: var(--texte); font-size: 13px; outline: none;
+      transition: border-color .2s;
+    }
+    .audit-filters input:focus, .audit-filters select:focus { border-color: #3b5bdb; }
+    .audit-filters input { flex: 1; min-width: 180px; }
+    .audit-filters select { min-width: 220px; }
+    .audit-btn-refresh {
+      padding: 9px 18px; border-radius: 10px; border: 1.5px solid var(--bordure, #e2e8f0);
+      background: var(--blanc); color: var(--texte); font-size: 13px; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap;
+    }
+    .audit-btn-refresh:hover { border-color: #3b5bdb; color: #3b5bdb; }
+    .audit-count { font-size: 12px; color: var(--texte-doux); margin-bottom: 12px; }
+    .audit-table-wrap { background: var(--blanc); border: 1px solid var(--bordure, #e2e8f0); border-radius: 14px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.04); }
+    .audit-table { width: 100%; border-collapse: collapse; }
+    .audit-table thead th { background: var(--gris-50, #f8fafc); padding: 11px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--texte-doux); text-align: left; border-bottom: 1px solid var(--bordure, #e2e8f0); white-space: nowrap; }
+    .audit-table tbody tr { border-bottom: 1px solid var(--bordure, #e2e8f0); transition: background .15s; }
+    .audit-table tbody tr:last-child { border-bottom: none; }
+    .audit-table tbody tr:hover { background: var(--gris-50, #f8fafc); }
+    .audit-table td { padding: 10px 14px; font-size: 13px; vertical-align: middle; }
+    .audit-table td.td-date { font-size: 12px; color: var(--texte-doux); white-space: nowrap; }
+    .audit-table td.td-user { font-weight: 700; }
+    .audit-table td.td-detail { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--texte-doux); font-size: 12px; }
+    .audit-table td.td-ip { font-size: 11px; color: var(--texte-doux); }
+    .action-badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .audit-empty { text-align: center; padding: 48px 20px; color: var(--texte-doux); font-size: 14px; }
+    .audit-access-denied { text-align: center; padding: 80px 20px; }
+    .audit-access-denied svg { color: #dc2626; margin-bottom: 16px; }
+    .audit-access-denied h2 { color: var(--texte); font-size: 1.2rem; margin: 0 0 8px; }
+    .audit-access-denied p { color: var(--texte-doux); font-size: 13px; margin: 0; }
+  </style>
+</head>
+<body data-sidebar-page="audit" data-sidebar-subtitle="Journal d'audit">
+
+<div class="app-layout">
+<div class="page-content">
+<div class="audit-page">
+
+  <div class="audit-header">
+    <h1>
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:-4px;margin-right:8px;color:#3b5bdb"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Journal d'audit
+    </h1>
+    <p>Historique de toutes les actions effectuées sur la plateforme</p>
+  </div>
+
+  <div id="accessDenied" class="audit-access-denied" style="display:none">
+    <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+    <h2>Accès refusé</h2>
+    <p>Seul le super administrateur peut consulter le journal d'audit.</p>
+  </div>
+
+  <div id="auditContent">
+    <div class="audit-filters">
+      <input type="text" id="filterUser" placeholder="Filtrer par utilisateur..." oninput="chargerAudit()">
+      <select id="filterAction" onchange="chargerAudit()">
+        <option value="">— Toutes les actions —</option>
+        <option value="__no_auth__" selected>Exclure login / logout</option>
+        <option value="login">login</option>
+        <option value="logout">logout</option>
+        <option value="create_intervention">create_intervention</option>
+        <option value="update_intervention">update_intervention</option>
+        <option value="delete_intervention">delete_intervention</option>
+        <option value="create_user">create_user</option>
+        <option value="modify_user">modify_user</option>
+        <option value="delete_user">delete_user</option>
+        <option value="add_comment">add_comment</option>
+        <option value="delete_comment">delete_comment</option>
+        <option value="upload_file">upload_file</option>
+        <option value="delete_file">delete_file</option>
+        <option value="generate_pdf">generate_pdf</option>
+        <option value="backup">backup</option>
+      </select>
+      <button class="audit-btn-refresh" onclick="chargerAudit()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.6"/></svg>
+        Actualiser
+      </button>
+    </div>
+    <div class="audit-count" id="auditCount"></div>
+    <div class="audit-table-wrap">
+      <div id="auditBody"><div class="audit-empty">Chargement...</div></div>
+    </div>
+  </div>
+
+</div>
+</div>
+</div>
+
+<script>
+const API = `${window.location.protocol}//${window.location.host}/api`;
+const AUTH_KEY = 'auth_token';
+
+function toggleDark() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  localStorage.setItem('theme', isDark ? 'light' : 'dark');
+  const icon = document.getElementById('iconDark');
+  if (icon) icon.innerHTML = isDark
+    ? `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`
+    : `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+}
+
+function headersAuth() {
+  return { 'X-Auth-Token': localStorage.getItem(AUTH_KEY) || '' };
+}
+
+async function seDeconnecter() {
+  try { await fetch(`${API}/auth/logout`, { method: 'POST', headers: headersAuth() }); } catch(e) {}
+  ['auth_token','auth_username','auth_role'].forEach(k => localStorage.removeItem(k));
+  window.location.href = '/connexion';
+}
+
+function verifierAuth() {
+  const token = localStorage.getItem(AUTH_KEY);
+  if (!token) { window.location.href = '/connexion'; return null; }
+  const role = localStorage.getItem('auth_role');
+  const username = localStorage.getItem('auth_username') || '?';
+
+  const avatar = document.getElementById('sidebarAvatar');
+  if (avatar) avatar.textContent = username.charAt(0).toUpperCase();
+  document.getElementById('sidebarUsername').textContent = username;
+  document.getElementById('sidebarRole').textContent =
+    role === 'admin' ? 'Administrateur' : role === 'manager' ? 'Manager' : 'Utilisateur';
+
+  if (role === 'admin') document.getElementById('btnAdmin').style.display = '';
+  else if (role === 'manager') document.getElementById('btnProfil').style.display = '';
+
+  const saved = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+  if (saved === 'dark') toggleDark();
+
+  return role;
+}
+
+async function chargerAudit() {
+  const el = document.getElementById('auditBody');
+  const user = document.getElementById('filterUser')?.value || '';
+  const action = document.getElementById('filterAction')?.value || '';
+
+  try {
+    const params = new URLSearchParams({ limit: 200 });
+    if (user) params.append('username', user);
+    if (action && action !== '__no_auth__') params.append('action', action);
+
+    const r = await fetch(`${API}/audit-logs?${params}`, { headers: headersAuth() });
+    if (r.status === 403) {
+      document.getElementById('accessDenied').style.display = 'block';
+      document.getElementById('auditContent').style.display = 'none';
+      return;
+    }
+    if (!r.ok) throw new Error();
+
+    const { data: rawData, total } = await r.json();
+    const data = action === '__no_auth__'
+      ? rawData.filter(a => a.action !== 'login' && a.action !== 'logout')
+      : rawData;
+
+    document.getElementById('auditCount').textContent =
+      `${data.length} entrée${data.length > 1 ? 's' : ''} affichée${data.length > 1 ? 's' : ''} (${total} au total)`;
+
+    if (!data.length) {
+      el.innerHTML = `<div class="audit-empty">Aucune entrée dans le journal pour ces filtres.</div>`;
+      return;
+    }
+
+    const actionColors = {
+      login: '#059669', logout: '#64748b',
+      create_intervention: '#3b5bdb', update_intervention: '#d97706',
+      delete_intervention: '#dc2626', delete_user: '#dc2626',
+      add_comment: '#7c3aed', upload_file: '#0891b2',
+      backup: '#059669', create_user: '#059669',
+      modify_user: '#d97706', generate_pdf: '#6366f1',
+      delete_comment: '#ef4444', delete_file: '#ef4444',
+    };
+
+    el.innerHTML = `<table class="audit-table">
+      <thead><tr>
+        <th>Date</th><th>Utilisateur</th><th>Action</th>
+        <th>Ressource</th><th>Détail</th><th>IP</th>
+      </tr></thead>
+      <tbody>` +
+      data.map(a => {
+        const c = actionColors[a.action] || '#64748b';
+        const dt = (a.created_at || '').replace('T', ' ').substring(0, 16);
+        return `<tr>
+          <td class="td-date">${dt}</td>
+          <td class="td-user">${escHtml(a.username || '—')}</td>
+          <td><span class="action-badge" style="background:${c}18;color:${c}">${escHtml(a.action)}</span></td>
+          <td style="font-size:12px">${a.ressource ? escHtml(a.ressource) + (a.ressource_id ? ` #${a.ressource_id}` : '') : '—'}</td>
+          <td class="td-detail" title="${escHtml(a.detail || '')}">${escHtml(a.detail || '—')}</td>
+          <td class="td-ip">${a.ip || '—'}</td>
+        </tr>`;
+      }).join('') +
+      `</tbody></table>`;
+
+  } catch(e) {
+    el.innerHTML = `<div class="audit-empty">Erreur de chargement du journal.</div>`;
+  }
+}
+
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const role = verifierAuth();
+  if (!role) return;
+  if (role !== 'admin') {
+    document.getElementById('accessDenied').style.display = 'block';
+    document.getElementById('auditContent').style.display = 'none';
+    return;
+  }
+  chargerAudit();
+});
+</script>
+</body>
+</html>

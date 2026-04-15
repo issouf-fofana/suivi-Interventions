@@ -346,6 +346,10 @@ async def page_interventions():
 async def page_admin():
     return serve("admin.html")
 
+@app.get("/audit", include_in_schema=False)
+async def page_audit():
+    return serve("audit.html")
+
 @app.get("/connexion", include_in_schema=False)
 async def page_connexion():
     return serve("login.html")
@@ -1509,11 +1513,12 @@ def rapport_prestataire_pdf(
         from reportlab.lib import colors
         from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
         from reportlab.lib.units import cm
-        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, PageBreak
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, PageBreak, KeepTogether
         from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
-        from reportlab.graphics.shapes import Drawing, Rect, String as GStr, Line
+        from reportlab.graphics.shapes import Drawing, Rect, String as GStr, Line, Circle
         from reportlab.graphics.charts.barcharts import VerticalBarChart, HorizontalBarChart
         from reportlab.graphics.charts.piecharts import Pie
+        from reportlab.graphics.charts.linecharts import HorizontalLineChart
     except ImportError:
         raise HTTPException(status_code=500, detail="reportlab non installé. Lancez: pip install reportlab")
 
@@ -1579,14 +1584,15 @@ def rapport_prestataire_pdf(
         return ParagraphStyle(f"_s{_sc[0]}", parent=styles["Normal"], **kw)
 
     # Styles texte réutilisables
-    label_s  = S(fontSize=8,  fontName="Helvetica-Bold", textColor=SLATE)
-    value_sm = S(fontSize=10, fontName="Helvetica",      textColor=TEXT, leading=14)
-    sec_s    = S(fontSize=10, fontName="Helvetica-Bold", textColor=colors.white)
-    body_s   = S(fontSize=9,  fontName="Helvetica",      textColor=TEXT, leading=13)
-    small_s  = S(fontSize=8,  fontName="Helvetica",      textColor=SLATE)
-    foot_s   = S(fontSize=7,  fontName="Helvetica",      textColor=SLATE, alignment=TA_CENTER)
-    it_s     = S(fontSize=13, fontName="Helvetica-Bold", textColor=colors.white)
-    is_s     = S(fontSize=9,  fontName="Helvetica",      textColor=colors.HexColor("#c5d0fc"))
+    label_s  = S(fontSize=7.5, fontName="Helvetica-Bold", textColor=SLATE,
+                 textTransform="uppercase", letterSpacing=0.3)
+    value_sm = S(fontSize=9.5, fontName="Helvetica",      textColor=TEXT, leading=14)
+    sec_s    = S(fontSize=9,   fontName="Helvetica-Bold", textColor=DARK_BLUE)
+    body_s   = S(fontSize=8.5, fontName="Helvetica",      textColor=TEXT, leading=13)
+    small_s  = S(fontSize=7.5, fontName="Helvetica",      textColor=TEXT)
+    foot_s   = S(fontSize=6.5, fontName="Helvetica",      textColor=SLATE, alignment=TA_CENTER)
+    it_s     = S(fontSize=13,  fontName="Helvetica-Bold", textColor=colors.white)
+    is_s     = S(fontSize=8.5, fontName="Helvetica",      textColor=colors.HexColor("#94a3b8"))
 
     # ── Helpers ───────────────────────────────────────────────────
     def fmt_date(d):
@@ -1604,30 +1610,61 @@ def rapport_prestataire_pdf(
         return [Paragraph(lbl, label_s), Paragraph(str(val) if val else "—", value_sm)]
 
     def sec_bar(title):
-        t = Table([[Paragraph(title, sec_s)]], colWidths=[W])
+        """Section header : barre primaire à gauche + fond gris clair."""
+        accent_col = Table([[""]], colWidths=[0.25*cm], rowHeights=[0.55*cm])
+        accent_col.setStyle(TableStyle([
+            ("BACKGROUND",    (0,0),(-1,-1), PRIMARY),
+            ("TOPPADDING",    (0,0),(-1,-1),0), ("BOTTOMPADDING",(0,0),(-1,-1),0),
+            ("LEFTPADDING",   (0,0),(-1,-1),0), ("RIGHTPADDING", (0,0),(-1,-1),0),
+        ]))
+        txt_col = Table([[Paragraph(title,
+            S(fontSize=8.5, fontName="Helvetica-Bold", textColor=DARK_BLUE,
+              letterSpacing=0.4))]], colWidths=[W - 0.25*cm])
+        txt_col.setStyle(TableStyle([
+            ("BACKGROUND",    (0,0),(-1,-1), LIGHT_GRAY),
+            ("TOPPADDING",    (0,0),(-1,-1), 8), ("BOTTOMPADDING",(0,0),(-1,-1),8),
+            ("LEFTPADDING",   (0,0),(-1,-1),10), ("RIGHTPADDING", (0,0),(-1,-1),10),
+            ("VALIGN",        (0,0),(-1,-1),"MIDDLE"),
+        ]))
+        t = Table([[accent_col, txt_col]], colWidths=[0.25*cm, W - 0.25*cm])
         t.setStyle(TableStyle([
-            ("BACKGROUND",    (0,0),(-1,-1), DARK_BLUE),
-            ("TOPPADDING",    (0,0),(-1,-1), 7), ("BOTTOMPADDING",(0,0),(-1,-1),7),
-            ("LEFTPADDING",   (0,0),(-1,-1),12), ("RIGHTPADDING", (0,0),(-1,-1),12),
+            ("TOPPADDING",    (0,0),(-1,-1),0), ("BOTTOMPADDING",(0,0),(-1,-1),0),
+            ("LEFTPADDING",   (0,0),(-1,-1),0), ("RIGHTPADDING", (0,0),(-1,-1),0),
+            ("BOX",           (0,0),(-1,-1), 0.5, MID_GRAY),
         ]))
         return t
 
-    def kpi_box(lbl, val, sub="", vc=None):
-        vc = vc or TEXT
-        rows_k = [
-            [Paragraph(f'<font color="#94a3b8" size="7">{lbl}</font>', S(fontSize=7, fontName="Helvetica-Bold", textColor=SLATE))],
-            [Paragraph(val, S(fontSize=17, fontName="Helvetica-Bold", textColor=vc))],
-        ]
-        if sub:
-            rows_k.append([Paragraph(sub, S(fontSize=7, fontName="Helvetica", textColor=SLATE))])
-        t = Table(rows_k, colWidths=[W/4 - 0.3*cm])
-        t.setStyle(TableStyle([
-            ("BACKGROUND",    (0,0),(-1,-1), LIGHT_GRAY),
-            ("BOX",           (0,0),(-1,-1), 0.5, MID_GRAY),
-            ("TOPPADDING",    (0,0),(-1,-1),10), ("BOTTOMPADDING",(0,0),(-1,-1),10),
-            ("LEFTPADDING",   (0,0),(-1,-1),10), ("RIGHTPADDING", (0,0),(-1,-1),10),
+    KPI_W = W/4 - 0.35*cm   # largeur fixe d'une KPI card
+
+    def kpi_box(lbl, val, sub=" ", vc=None, accent=None):
+        """KPI card hauteur uniforme — toujours 3 lignes (label / valeur / sous-titre)."""
+        vc     = vc     or TEXT
+        accent = accent or PRIMARY
+        # Barre colorée en haut
+        top_bar = Table([[""]], colWidths=[KPI_W], rowHeights=[3])
+        top_bar.setStyle(TableStyle([
+            ("BACKGROUND",    (0,0),(-1,-1), accent),
+            ("TOPPADDING",    (0,0),(-1,-1),0), ("BOTTOMPADDING",(0,0),(-1,-1),0),
+            ("LEFTPADDING",   (0,0),(-1,-1),0), ("RIGHTPADDING", (0,0),(-1,-1),0),
         ]))
-        return t
+        body = Table([
+            [Paragraph(lbl,  S(fontSize=7,  fontName="Helvetica-Bold", textColor=SLATE))],
+            [Paragraph(val,  S(fontSize=16, fontName="Helvetica-Bold", textColor=vc, leading=20))],
+            [Paragraph(sub,  S(fontSize=7,  fontName="Helvetica",      textColor=SLATE))],
+        ], colWidths=[KPI_W], rowHeights=[12, 24, 12])
+        body.setStyle(TableStyle([
+            ("BACKGROUND",    (0,0),(-1,-1), colors.white),
+            ("TOPPADDING",    (0,0),(-1,-1), 3), ("BOTTOMPADDING",(0,0),(-1,-1),3),
+            ("LEFTPADDING",   (0,0),(-1,-1),10), ("RIGHTPADDING", (0,0),(-1,-1),6),
+            ("VALIGN",        (0,0),(-1,-1), "MIDDLE"),
+        ]))
+        wrapper = Table([[top_bar], [body]], colWidths=[KPI_W])
+        wrapper.setStyle(TableStyle([
+            ("BOX",           (0,0),(-1,-1), 0.5, MID_GRAY),
+            ("TOPPADDING",    (0,0),(-1,-1),0), ("BOTTOMPADDING",(0,0),(-1,-1),0),
+            ("LEFTPADDING",   (0,0),(-1,-1),0), ("RIGHTPADDING", (0,0),(-1,-1),0),
+        ]))
+        return wrapper
 
     # ── Graphiques ReportLab ──────────────────────────────────────
     DW = W/2 - 0.4*cm   # largeur par graphique ≈ 228pt
@@ -1703,6 +1740,45 @@ def rapport_prestataire_pdf(
                            fillColor=RED, textAnchor="start"))
         return d
 
+    def _make_donut(d, smap, color_fn, total_label="interv."):
+        """Dessine un donut chart dans le Drawing d."""
+        lbls_p = list(smap.keys())
+        vals_p = list(smap.values())
+        total_p = sum(vals_p)
+        pie_sz = min(DH - 36, DW * 0.46)
+        cx = 8 + pie_sz / 2
+        cy = (DH - 36 - pie_sz) / 2 + 2 + pie_sz / 2
+        pc = Pie()
+        pc.x = 8; pc.y = (DH - 36 - pie_sz) / 2 + 2
+        pc.width = pie_sz; pc.height = pie_sz
+        pc.data   = vals_p
+        pc.labels = [""] * len(vals_p)
+        for j, lbl in enumerate(lbls_p):
+            pc.slices[j].fillColor   = color_fn(lbl, j)
+            pc.slices[j].strokeColor = colors.white
+            pc.slices[j].strokeWidth = 2
+        d.add(pc)
+        # Cercle blanc central → effet donut
+        hole_r = pie_sz * 0.32
+        d.add(Circle(cx, cy, hole_r, fillColor=colors.white, strokeColor=colors.white, strokeWidth=0))
+        # Texte centré dans le donut
+        d.add(GStr(cx, cy + 5, str(total_p),
+                   fontSize=11, fontName="Helvetica-Bold", fillColor=DARK_BLUE, textAnchor="middle"))
+        d.add(GStr(cx, cy - 6, total_label,
+                   fontSize=6, fontName="Helvetica", fillColor=SLATE, textAnchor="middle"))
+        # Légende à droite
+        lx = pie_sz + 20
+        ly = DH - 32
+        for j, lbl in enumerate(lbls_p):
+            col = color_fn(lbl, j)
+            pct = round(vals_p[j] / total_p * 100) if total_p else 0
+            yy = ly - j * 16
+            d.add(Circle(lx + 4.5, yy + 4.5, 4.5, fillColor=col, strokeColor=None))
+            d.add(GStr(lx + 13, yy + 5, lbl,
+                       fontSize=6.5, fontName="Helvetica-Bold", fillColor=TEXT))
+            d.add(GStr(lx + 13, yy - 3, f"{vals_p[j]} interv. · {pct}%",
+                       fontSize=5.5, fontName="Helvetica", fillColor=SLATE))
+
     def chart_statuts():
         d = Drawing(DW, DH)
         _cht_title(d, "RÉPARTITION PAR STATUT")
@@ -1712,32 +1788,7 @@ def rapport_prestataire_pdf(
             smap[s] = smap.get(s, 0) + 1
         if not smap:
             _no_data(d); return d
-        lbls_p = list(smap.keys())
-        vals_p = list(smap.values())
-        pie_sz = min(DH - 36, DW * 0.48)
-        pc = Pie()
-        pc.x = 8; pc.y = (DH - 36 - pie_sz) / 2 + 2
-        pc.width = pie_sz; pc.height = pie_sz
-        pc.data   = vals_p
-        total_p = sum(vals_p)
-        pc.labels = [""] * len(vals_p)
-        for j, lbl in enumerate(lbls_p):
-            pc.slices[j].fillColor   = SC_COLORS.get(lbl, SLATE)
-            pc.slices[j].strokeColor = colors.white
-            pc.slices[j].strokeWidth = 1.5
-            pc.slices[j].labelRadius = 0.6
-        d.add(pc)
-        lx = pie_sz + 20
-        ly = DH - 32
-        for j, lbl in enumerate(lbls_p):
-            col = SC_COLORS.get(lbl, SLATE)
-            pct = round(vals_p[j] / total_p * 100) if total_p else 0
-            yy = ly - j * 16
-            d.add(Rect(lx, yy, 9, 9, fillColor=col, strokeColor=None))
-            d.add(GStr(lx + 13, yy + 5, lbl,
-                       fontSize=6.5, fontName="Helvetica-Bold", fillColor=TEXT))
-            d.add(GStr(lx + 13, yy - 3, f"{vals_p[j]} interv. · {pct}%",
-                       fontSize=5.5, fontName="Helvetica", fillColor=SLATE))
+        _make_donut(d, smap, lambda lbl, j: SC_COLORS.get(lbl, SLATE))
         return d
 
     def chart_evolution():
@@ -1754,30 +1805,47 @@ def rapport_prestataire_pdf(
         keys = sorted(mmap.keys())
         lbls = [f"{MOIS_FR[int(k[5:])-1]} {k[2:4]}" for k in keys]
         vals = [mmap[k] for k in keys]
-        bc = VerticalBarChart()
-        bc.x, bc.y = 28, 22
-        bc.height = DH - 46
-        bc.width  = DW - 36
-        bc.data   = [vals]
-        bc.strokeColor = None; bc.fillColor = None
-        bc.bars[0].fillColor = PRIMARY; bc.bars[0].strokeColor = None
-        bc.valueAxis.valueMin = 0
-        bc.valueAxis.valueMax = max(vals) * 1.45 if max(vals) > 0 else 5
-        bc.valueAxis.labelTextFormat = '%d'
-        _axis_style(bc.valueAxis, True)
-        bc.categoryAxis.categoryNames = lbls
-        _axis_style(bc.categoryAxis, False)
+        if len(vals) == 1:
+            # Avec un seul point, line chart ne fonctionne pas bien — on double
+            vals = vals * 2
+            lbls = lbls * 2
+        lc = HorizontalLineChart()
+        lc.x, lc.y = 28, 22
+        lc.height = DH - 46
+        lc.width  = DW - 36
+        lc.data   = [vals]
+        lc.strokeColor = None
+        lc.lines[0].strokeColor = PRIMARY
+        lc.lines[0].strokeWidth = 2
+        lc.lines[0].symbol = None
+        # Remplissage sous la courbe
+        try:
+            lc.lines[0].fillColor = colors.HexColor("#3b5bdb22")
+        except Exception:
+            pass
+        lc.valueAxis.valueMin = 0
+        lc.valueAxis.valueMax = max(vals) * 1.5 if max(vals) > 0 else 5
+        lc.valueAxis.labelTextFormat = '%d'
+        _axis_style(lc.valueAxis, True)
+        lc.categoryAxis.categoryNames = lbls
+        _axis_style(lc.categoryAxis, False)
         if len(lbls) > 5:
-            bc.categoryAxis.labels.angle = 30
-            bc.categoryAxis.labels.boxAnchor = 'ne'
-        bc.barWidth = min(18, (bc.width / max(len(vals), 1)) * 0.65)
-        bc.barLabelFormat = '%d'
-        bc.barLabels.nudge = 5
-        bc.barLabels.fontSize = 7
-        bc.barLabels.fontName = 'Helvetica-Bold'
-        bc.barLabels.fillColor = PRIMARY
-        bc.barLabels.boxAnchor = 's'
-        d.add(bc)
+            lc.categoryAxis.labels.angle = 30
+            lc.categoryAxis.labels.boxAnchor = 'ne'
+        d.add(lc)
+        # Points sur la courbe
+        lc_x0 = lc.x
+        lc_w  = lc.width
+        lc_y0 = lc.y
+        lc_h  = lc.height
+        vmax  = lc.valueAxis.valueMax
+        n = len(vals)
+        for i2, v in enumerate(vals):
+            px = lc_x0 + (i2 / max(n - 1, 1)) * lc_w
+            py = lc_y0 + (v / vmax) * lc_h if vmax else lc_y0
+            d.add(Circle(px, py, 3.5, fillColor=PRIMARY, strokeColor=colors.white, strokeWidth=1))
+            d.add(GStr(px, py + 5, str(v),
+                       fontSize=6.5, fontName="Helvetica-Bold", fillColor=PRIMARY, textAnchor="middle"))
         return d
 
     def chart_sites():
@@ -1829,6 +1897,67 @@ def rapport_prestataire_pdf(
         bc.barLabels.fontName = 'Helvetica-Bold'
         bc.barLabels.fillColor = TEXT
         bc.barLabels.boxAnchor = 'w'
+        d.add(bc)
+        return d
+
+    def chart_types():
+        TYPE_COLORS = {
+            "Planifiée":   PRIMARY,
+            "Dépannage":   RED,
+            "Maintenance": GREEN,
+            "Audit":       PURPLE,
+            "Autre":       ORANGE,
+        }
+        d = Drawing(DW, DH)
+        _cht_title(d, "RÉPARTITION PAR TYPE D'INTERVENTION")
+        tmap = {}
+        for i2 in interventions:
+            t = i2.get("type_intervention") or "—"
+            tmap[t] = tmap.get(t, 0) + 1
+        if not tmap:
+            _no_data(d); return d
+        _make_donut(d, tmap,
+                    lambda lbl, j: TYPE_COLORS.get(lbl, CHART_PAL[j % len(CHART_PAL)]))
+        return d
+
+    def chart_top_sites():
+        """Bar chart vertical : top 6 sites par nombre d'interventions."""
+        d = Drawing(DW, DH)
+        _cht_title(d, "TOP SITES (nb interventions)")
+        smap = {}
+        for i2 in interventions:
+            s = i2.get("site") or "—"
+            smap[s] = smap.get(s, 0) + 1
+        if not smap:
+            _no_data(d); return d
+        sorted_s = sorted(smap.items(), key=lambda x: x[1], reverse=True)[:6]
+        lbls = [s[0][:12] for s in sorted_s]
+        vals = [s[1] for s in sorted_s]
+        bc = VerticalBarChart()
+        bc.x, bc.y = 28, 22
+        bc.height = DH - 46
+        bc.width  = DW - 36
+        bc.data   = [vals]
+        bc.strokeColor = None; bc.fillColor = None
+        for i2, col in enumerate(CHART_PAL[:len(vals)]):
+            bc.bars[(0, i2)].fillColor   = col
+            bc.bars[(0, i2)].strokeColor = None
+        bc.valueAxis.valueMin = 0
+        bc.valueAxis.valueMax = max(vals) * 1.45 if max(vals) > 0 else 5
+        bc.valueAxis.labelTextFormat = '%d'
+        _axis_style(bc.valueAxis, True)
+        bc.categoryAxis.categoryNames = lbls
+        _axis_style(bc.categoryAxis, False)
+        if len(lbls) > 4:
+            bc.categoryAxis.labels.angle = 25
+            bc.categoryAxis.labels.boxAnchor = 'ne'
+        bc.barWidth = min(20, (bc.width / max(len(vals), 1)) * 0.6)
+        bc.barLabelFormat = '%d'
+        bc.barLabels.nudge = 5
+        bc.barLabels.fontSize = 7
+        bc.barLabels.fontName = 'Helvetica-Bold'
+        bc.barLabels.fillColor = TEXT
+        bc.barLabels.boxAnchor = 's'
         d.add(bc)
         return d
 
@@ -1896,15 +2025,19 @@ def rapport_prestataire_pdf(
     elements.append(Spacer(1, 0.4*cm))
 
     # ── 4 KPI CARDS ───────────────────────────────────────────────
-    dur_col = RED if duree_totale > 2880 else TEXT
+    dur_col    = RED if duree_totale > 2880 else TEXT
+    dur_accent = RED if duree_totale > 2880 else PRIMARY
     kpis_row = Table([[
         kpi_box("TOTAL INTERVENTIONS", str(total),
-                f"{terminées} terminée{'s' if terminées>1 else ''}"),
+                f"{terminées} terminée{'s' if terminées>1 else ''}",
+                accent=PRIMARY),
         kpi_box("DURÉE TOTALE",    fmt_dur(duree_totale),
-                f"{duree_totale} min", dur_col),
-        kpi_box("DURÉE MOYENNE",   fmt_dur(duree_moy)),
+                f"{duree_totale} min", vc=dur_col, accent=dur_accent),
+        kpi_box("DURÉE MOYENNE",   fmt_dur(duree_moy),
+                f"par intervention", accent=PURPLE),
         kpi_box("SITES COUVERTS",  str(len(sites_list)),
-                ", ".join(sites_list[:2]) + ("…" if len(sites_list)>2 else "")),
+                ", ".join(sites_list[:2]) + ("…" if len(sites_list)>2 else ""),
+                accent=GREEN),
     ]], colWidths=[W/4]*4)
     kpis_row.setStyle(TableStyle([
         ("TOPPADDING",  (0,0),(-1,-1),0), ("BOTTOMPADDING",(0,0),(-1,-1),0),
@@ -1919,6 +2052,7 @@ def rapport_prestataire_pdf(
     charts_tbl = Table([
         [chart_duree_inter(), chart_statuts()],
         [chart_evolution(),   chart_sites()],
+        [chart_types(),       chart_top_sites()],
     ], colWidths=[W/2, W/2])
     charts_tbl.setStyle(TableStyle([
         ("TOPPADDING",    (0,0),(-1,-1), 4), ("BOTTOMPADDING",(0,0),(-1,-1),4),
@@ -1960,34 +2094,39 @@ def rapport_prestataire_pdf(
     elements.append(sec_bar("TABLEAU DE SYNTHÈSE DES INTERVENTIONS"))
     elements.append(Spacer(1, 0.15*cm))
 
+    sh_s = S(fontSize=7.5, fontName="Helvetica-Bold", textColor=SLATE,
+             textTransform="uppercase", letterSpacing=0.3)
     def sh(txt):
-        return Paragraph(txt, S(fontSize=8, fontName="Helvetica-Bold", textColor=colors.white))
+        return Paragraph(txt, sh_s)
 
-    synth_rows = [[sh("N°"), sh("DATE DÉBUT"), sh("DATE FIN"),
-                   sh("SITE"), sh("TYPE"), sh("DURÉE"), sh("STATUT")]]
+    synth_rows = [[sh("N°"), sh("Date début"), sh("Date fin"),
+                   sh("Site"), sh("Type"), sh("Durée"), sh("Statut")]]
     for inter in interventions:
         dm = inter.get("duree_minutes") or 0
         st_col = {"Terminée": GREEN, "En cours": PRIMARY,
-                  "En attente": ORANGE, "Annulée": RED}.get(inter.get("statut") or "", PRIMARY)
+                  "En attente": ORANGE, "Annulée": RED}.get(inter.get("statut") or "", SLATE)
         synth_rows.append([
-            Paragraph(f"#{inter['id']}", small_s),
+            Paragraph(f"#{inter['id']}",
+                      S(fontSize=8, fontName="Helvetica-Bold", textColor=PRIMARY)),
             Paragraph(fmt_date(inter.get("date_debut")), small_s),
             Paragraph(fmt_date(inter.get("date_fin")),   small_s),
             Paragraph(inter.get("site") or "—",          small_s),
             Paragraph(inter.get("type_intervention") or "—", small_s),
-            Paragraph(fmt_dur(dm), S(fontSize=8, fontName="Helvetica-Bold",
-                                     textColor=RED if dm > 480 else TEXT)),
+            Paragraph(fmt_dur(dm) if dm else "—",
+                      S(fontSize=8, fontName="Helvetica-Bold",
+                        textColor=RED if dm > 480 else TEXT)),
             Paragraph(inter.get("statut") or "—",
                       S(fontSize=8, fontName="Helvetica-Bold", textColor=st_col)),
         ])
     synth_tbl = Table(synth_rows, colWidths=[1.4*cm, 2.5*cm, 2.5*cm, 3.8*cm, 2.8*cm, 2.2*cm, 2.2*cm])
     synth_tbl.setStyle(TableStyle([
-        ("BACKGROUND",    (0,0),(-1,0),  DARK_BLUE),
-        ("ROWBACKGROUNDS",(0,1),(-1,-1), [colors.white, LIGHT_GRAY]),
-        ("TOPPADDING",    (0,0),(-1,-1), 5), ("BOTTOMPADDING",(0,0),(-1,-1),5),
-        ("LEFTPADDING",   (0,0),(-1,-1), 6), ("RIGHTPADDING", (0,0),(-1,-1),6),
-        ("LINEBELOW",     (0,0),(-1,-2), 0.3, MID_GRAY),
-        ("BOX",           (0,0),(-1,-1), 0.4, MID_GRAY),
+        ("BACKGROUND",    (0,0),(-1,0),  colors.HexColor("#f1f5f9")),
+        ("LINEBELOW",     (0,0),(-1,0),  1.5, PRIMARY),
+        ("ROWBACKGROUNDS",(0,1),(-1,-1), [colors.white, colors.HexColor("#fafbfc")]),
+        ("TOPPADDING",    (0,0),(-1,-1), 6), ("BOTTOMPADDING",(0,0),(-1,-1),6),
+        ("LEFTPADDING",   (0,0),(-1,-1), 7), ("RIGHTPADDING", (0,0),(-1,-1),7),
+        ("LINEBELOW",     (0,1),(-1,-2), 0.3, MID_GRAY),
+        ("BOX",           (0,0),(-1,-1), 0.5, MID_GRAY),
         ("VALIGN",        (0,0),(-1,-1), "MIDDLE"),
     ]))
     elements.append(synth_tbl)
@@ -1999,66 +2138,75 @@ def rapport_prestataire_pdf(
 
     for idx, inter in enumerate(interventions):
         dm     = inter.get("duree_minutes") or 0
-        dur_c  = RED if dm > 480 else TEXT
         statut = inter.get("statut") or "—"
-        st_cfg = {"Terminée": (GREEN, GREEN_BG), "En cours": (PRIMARY, BLUE_BG),
-                  "En attente": (ORANGE, ORANGE_BG), "Annulée": (RED, RED_BG)
-                  }.get(statut, (PRIMARY, BLUE_BG))
-
+        st_color = {"Terminée": GREEN, "En cours": PRIMARY,
+                    "En attente": ORANGE, "Annulée": RED}.get(statut, SLATE)
         site_txt = inter.get("site") or "—"
         mois_txt = f"{(inter.get('mois') or '').capitalize()} {inter.get('annee') or ''}".strip()
 
-        # En-tête carte
+        card_parts = []
+
+        # ── En-tête carte (fond sombre, sobre) ───────────────────────
         card_hdr = Table([[
             Table([
                 [Paragraph(f"INTERVENTION #{inter['id']}  ·  {idx+1}/{total}",
-                           S(fontSize=8, fontName="Helvetica-Bold",
-                             textColor=colors.HexColor("#a5b4fc")))],
-                [Paragraph(site_txt, it_s)],
-                [Paragraph(mois_txt, is_s)],
-            ]),
+                           S(fontSize=7.5, fontName="Helvetica-Bold",
+                             textColor=colors.HexColor("#94a3b8")))],
+                [Paragraph(site_txt,
+                           S(fontSize=14, fontName="Helvetica-Bold", textColor=colors.white, leading=18))],
+                [Paragraph(mois_txt,
+                           S(fontSize=8, fontName="Helvetica", textColor=colors.HexColor("#94a3b8")))],
+            ], colWidths=[12*cm]),
             Table([[
-                Paragraph(f'<font color="#64748b" size="7">STATUT</font><br/><b>{statut}</b>',
-                          S(fontSize=10, fontName="Helvetica-Bold", textColor=st_cfg[0]))
-            ]], colWidths=[3.5*cm]),
-        ]], colWidths=[13.4*cm, 4*cm])
+                Paragraph(f'<font size="7" color="#94a3b8">STATUT</font>',
+                          S(fontSize=7, fontName="Helvetica-Bold", textColor=SLATE, alignment=2)),
+                ],[
+                Paragraph(f'<b>{statut}</b>',
+                          S(fontSize=10, fontName="Helvetica-Bold", textColor=st_color, alignment=2)),
+            ]], colWidths=[4*cm]),
+        ]], colWidths=[13*cm, 4.4*cm])
         card_hdr.setStyle(TableStyle([
             ("BACKGROUND",    (0,0),(-1,-1), DARK_BLUE),
-            ("TOPPADDING",    (0,0),(-1,-1),10), ("BOTTOMPADDING",(0,0),(-1,-1),10),
-            ("LEFTPADDING",   (0,0),(0,-1), 12), ("RIGHTPADDING", (-1,0),(-1,-1),8),
+            ("TOPPADDING",    (0,0),(-1,-1), 10), ("BOTTOMPADDING",(0,0),(-1,-1),10),
+            ("LEFTPADDING",   (0,0),(0,-1),  14), ("RIGHTPADDING", (-1,0),(-1,-1),12),
             ("VALIGN",        (0,0),(-1,-1), "MIDDLE"),
             ("ALIGN",         (1,0),(1,-1),  "RIGHT"),
         ]))
-        elements.append(card_hdr)
+        card_parts.append(card_hdr)
 
-        # Timeline
+        # ── Timeline (fond gris très léger, couleurs neutres) ────────
         tl = Table([[
             Table([[Paragraph("DÉBUT", S(fontSize=7, fontName="Helvetica-Bold", textColor=SLATE))],
                    [Paragraph(fmt_date(inter.get("date_debut")),
                               S(fontSize=11, fontName="Helvetica-Bold", textColor=TEXT))],
                    [Paragraph(inter.get("heure_debut") or "—",
-                              S(fontSize=10, fontName="Helvetica-Bold", textColor=PRIMARY))]]),
-            Paragraph("→", S(fontSize=14, textColor=SLATE, alignment=1)),
+                              S(fontSize=9, fontName="Helvetica", textColor=SLATE))]],
+                  colWidths=[4.5*cm]),
+            Paragraph("→", S(fontSize=13, textColor=SLATE, alignment=1)),
             Table([[Paragraph("DURÉE", S(fontSize=7, fontName="Helvetica-Bold", textColor=SLATE, alignment=1))],
-                   [Paragraph(fmt_dur(dm), S(fontSize=14, fontName="Helvetica-Bold", textColor=dur_c, alignment=1))],
-                   [Paragraph(f"{dm} min" if dm else "—", S(fontSize=7, textColor=SLATE, alignment=1))]]),
-            Paragraph("→", S(fontSize=14, textColor=SLATE, alignment=1)),
+                   [Paragraph(fmt_dur(dm) if dm else "—",
+                              S(fontSize=13, fontName="Helvetica-Bold",
+                                textColor=PRIMARY, alignment=1))],
+                   [Paragraph(f"{dm} min" if dm else "", S(fontSize=7, textColor=SLATE, alignment=1))]],
+                  colWidths=[4*cm]),
+            Paragraph("→", S(fontSize=13, textColor=SLATE, alignment=1)),
             Table([[Paragraph("FIN", S(fontSize=7, fontName="Helvetica-Bold", textColor=SLATE, alignment=2))],
                    [Paragraph(fmt_date(inter.get("date_fin")),
                               S(fontSize=11, fontName="Helvetica-Bold", textColor=TEXT, alignment=2))],
                    [Paragraph(inter.get("heure_fin") or "—",
-                              S(fontSize=10, fontName="Helvetica-Bold", textColor=GREEN, alignment=2))]]),
+                              S(fontSize=9, fontName="Helvetica", textColor=SLATE, alignment=2))]],
+                  colWidths=[5.5*cm]),
         ]], colWidths=[4.5*cm, 1.2*cm, 4*cm, 1.2*cm, 6.5*cm])
         tl.setStyle(TableStyle([
-            ("BACKGROUND",    (0,0),(-1,-1), LIGHT_GRAY),
-            ("BOX",           (0,0),(-1,-1), 0.4, MID_GRAY),
-            ("TOPPADDING",    (0,0),(-1,-1), 8), ("BOTTOMPADDING",(0,0),(-1,-1),8),
+            ("BACKGROUND",    (0,0),(-1,-1), colors.HexColor("#f8fafc")),
+            ("BOX",           (0,0),(-1,-1), 0.5, MID_GRAY),
+            ("TOPPADDING",    (0,0),(-1,-1), 9), ("BOTTOMPADDING",(0,0),(-1,-1),9),
             ("LEFTPADDING",   (0,0),(-1,-1),10), ("RIGHTPADDING", (0,0),(-1,-1),10),
             ("VALIGN",        (0,0),(-1,-1), "MIDDLE"),
         ]))
-        elements.append(tl)
+        card_parts.append(tl)
 
-        # Infos
+        # ── Infos (tableau sobre, labels gris) ───────────────────────
         info_rows = [
             row2("TYPE D'INTERVENTION", inter.get("type_intervention") or "—"),
             row2("SITE",               inter.get("site") or "—"),
@@ -2070,60 +2218,65 @@ def rapport_prestataire_pdf(
             info_rows.append(row2("PROCHAINE INTERVENTION", fmt_date(inter["prochaine_intervention"])))
         info_tbl = Table(info_rows, colWidths=[4.5*cm, 12.9*cm])
         info_tbl.setStyle(TableStyle([
-            ("BACKGROUND",    (0,0),(0,-1), LIGHT_GRAY),
-            ("BOX",           (0,0),(-1,-1), 0.4, MID_GRAY),
+            ("BACKGROUND",    (0,0),(0,-1), colors.HexColor("#f1f5f9")),
+            ("BOX",           (0,0),(-1,-1), 0.5, MID_GRAY),
             ("TOPPADDING",    (0,0),(-1,-1), 5), ("BOTTOMPADDING",(0,0),(-1,-1),5),
             ("LEFTPADDING",   (0,0),(-1,-1), 8),
             ("LINEBELOW",     (0,0),(-1,-2), 0.3, MID_GRAY),
             ("VALIGN",        (0,0),(-1,-1), "TOP"),
         ]))
-        elements.append(info_tbl)
+        card_parts.append(info_tbl)
 
-        # Travaux
+        # ── Travaux ──────────────────────────────────────────────────
         if inter.get("travaux"):
-            tw_hdr = Table([[Paragraph("TRAVAUX EFFECTUÉS",
-                S(fontSize=8, fontName="Helvetica-Bold", textColor=colors.white))
+            tw_lbl = Table([[Paragraph("TRAVAUX EFFECTUÉS",
+                S(fontSize=7.5, fontName="Helvetica-Bold", textColor=SLATE))
             ]], colWidths=[W])
-            tw_hdr.setStyle(TableStyle([
-                ("BACKGROUND",    (0,0),(-1,-1), PRIMARY),
+            tw_lbl.setStyle(TableStyle([
+                ("BACKGROUND",    (0,0),(-1,-1), colors.HexColor("#e2e8f0")),
                 ("TOPPADDING",    (0,0),(-1,-1), 4), ("BOTTOMPADDING",(0,0),(-1,-1),4),
                 ("LEFTPADDING",   (0,0),(-1,-1),10),
+                ("BOX",           (0,0),(-1,-1), 0.5, MID_GRAY),
             ]))
-            elements.append(tw_hdr)
             tw_body = Table([[Paragraph(inter["travaux"], body_s)]], colWidths=[W])
             tw_body.setStyle(TableStyle([
-                ("BACKGROUND",    (0,0),(-1,-1), LIGHT_GRAY),
-                ("BOX",           (0,0),(-1,-1), 0.4, MID_GRAY),
-                ("TOPPADDING",    (0,0),(-1,-1), 6), ("BOTTOMPADDING",(0,0),(-1,-1),6),
+                ("BACKGROUND",    (0,0),(-1,-1), colors.white),
+                ("BOX",           (0,0),(-1,-1), 0.5, MID_GRAY),
+                ("TOPPADDING",    (0,0),(-1,-1), 7), ("BOTTOMPADDING",(0,0),(-1,-1),7),
                 ("LEFTPADDING",   (0,0),(-1,-1),10), ("RIGHTPADDING", (0,0),(-1,-1),10),
             ]))
-            elements.append(tw_body)
+            card_parts.append(tw_lbl)
+            card_parts.append(tw_body)
 
-        # Notes
+        # ── Notes ────────────────────────────────────────────────────
         if inter.get("notes"):
-            nt_hdr = Table([[Paragraph("NOTES INTERNES",
-                S(fontSize=8, fontName="Helvetica-Bold", textColor=colors.white))
+            nt_lbl = Table([[Paragraph("NOTES INTERNES",
+                S(fontSize=7.5, fontName="Helvetica-Bold", textColor=SLATE))
             ]], colWidths=[W])
-            nt_hdr.setStyle(TableStyle([
-                ("BACKGROUND",    (0,0),(-1,-1), ORANGE),
+            nt_lbl.setStyle(TableStyle([
+                ("BACKGROUND",    (0,0),(-1,-1), colors.HexColor("#e2e8f0")),
                 ("TOPPADDING",    (0,0),(-1,-1), 4), ("BOTTOMPADDING",(0,0),(-1,-1),4),
                 ("LEFTPADDING",   (0,0),(-1,-1),10),
+                ("BOX",           (0,0),(-1,-1), 0.5, MID_GRAY),
             ]))
-            elements.append(nt_hdr)
             nt_body = Table([[Paragraph(inter["notes"], body_s)]], colWidths=[W])
             nt_body.setStyle(TableStyle([
-                ("BACKGROUND",    (0,0),(-1,-1), LIGHT_GRAY),
-                ("BOX",           (0,0),(-1,-1), 0.4, MID_GRAY),
-                ("TOPPADDING",    (0,0),(-1,-1), 6), ("BOTTOMPADDING",(0,0),(-1,-1),6),
+                ("BACKGROUND",    (0,0),(-1,-1), colors.white),
+                ("BOX",           (0,0),(-1,-1), 0.5, MID_GRAY),
+                ("TOPPADDING",    (0,0),(-1,-1), 7), ("BOTTOMPADDING",(0,0),(-1,-1),7),
                 ("LEFTPADDING",   (0,0),(-1,-1),10), ("RIGHTPADDING", (0,0),(-1,-1),10),
             ]))
-            elements.append(nt_body)
+            card_parts.append(nt_lbl)
+            card_parts.append(nt_body)
 
-        # Séparateur
+        # ── Garder la carte entière sur la même page ─────────────────
+        elements.append(KeepTogether(card_parts))
+
+        # Séparateur discret entre interventions
         if idx < total - 1:
-            elements.append(Spacer(1, 0.4*cm))
-            elements.append(HRFlowable(width="100%", thickness=1, color=PRIMARY, dash=(4,3)))
-            elements.append(Spacer(1, 0.3*cm))
+            elements.append(Spacer(1, 0.35*cm))
+            elements.append(HRFlowable(width="100%", thickness=0.5, color=MID_GRAY))
+            elements.append(Spacer(1, 0.25*cm))
 
     # ── FOOTER ────────────────────────────────────────────────────
     elements.append(Spacer(1, 0.8*cm))
